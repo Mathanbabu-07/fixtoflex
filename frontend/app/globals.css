@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1E1B4B;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-plus-jakarta), sans-serif;
+  
+  --animate-drift-slow: drift-slow 20s infinite alternate ease-in-out;
+  --animate-drift-slower: drift-slower 25s infinite alternate ease-in-out;
+  --animate-drift-slowest: drift-slowest 30s infinite alternate ease-in-out;
+
+  @keyframes drift-slow {
+    0% { transform: translate(0px, 0px) scale(1); }
+    100% { transform: translate(60px, 40px) scale(1.1); }
+  }
+  @keyframes drift-slower {
+    0% { transform: translate(0px, 0px) scale(1.15); }
+    100% { transform: translate(-60px, 30px) scale(0.9); }
+  }
+  @keyframes drift-slowest {
+    0% { transform: translate(0px, 0px) scale(0.9); }
+    100% { transform: translate(40px, -50px) scale(1.05); }
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-plus-jakarta), sans-serif;
+  overflow-x: hidden;
+}
