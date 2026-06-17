@@ -12,9 +12,9 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 h-[80px] bg-white/70 backdrop-blur-md border-b border-purple-100/30 flex items-center justify-between px-6 md:px-12 transition-all">
       {/* Logo and Brand */}
       <Link href="/" className="flex items-center gap-3 group">
-        <div className="relative h-[60px] w-[60px] overflow-hidden rounded-xl bg-black flex items-center justify-center border border-slate-200/50 shadow-md">
+        <div className="relative h-[60px] w-[60px] overflow-hidden rounded-xl bg-transparent flex items-center justify-center border border-slate-200/50 shadow-md">
           <Image
-            src="/logo.jpeg"
+            src="/logo.png"
             alt="FixToFlex Logo"
             width={60}
             height={60}
