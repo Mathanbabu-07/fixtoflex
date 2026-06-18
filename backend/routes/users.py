@@ -12,6 +12,11 @@ router = APIRouter(prefix="/users", tags=["Users"])
 class UserProfileUpdate(BaseModel):
     full_name: Optional[str] = None
     profile_picture: Optional[str] = None
+    headline: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    github_url: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    resume_url: Optional[str] = None
 
 @router.get("/me", status_code=status.HTTP_200_OK)
 async def get_my_profile(current_user: dict = Depends(get_current_user)):

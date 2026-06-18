@@ -111,6 +111,11 @@ class UserService:
                 "full_name": full_name,
                 "profile_picture": profile_picture,
                 "role": role,
+                "linkedin_url": None,
+                "github_url": None,
+                "portfolio_url": None,
+                "resume_url": None,
+                "headline": None,
                 "created_at": "2026-06-17T00:00:00Z"
             }
 

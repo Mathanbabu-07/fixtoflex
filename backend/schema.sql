@@ -8,6 +8,11 @@ CREATE TABLE IF NOT EXISTS users (
     full_name TEXT,
     profile_picture TEXT,
     role TEXT DEFAULT 'candidate',
+    linkedin_url TEXT,
+    github_url TEXT,
+    portfolio_url TEXT,
+    resume_url TEXT,
+    headline TEXT,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 

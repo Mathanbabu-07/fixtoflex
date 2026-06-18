@@ -191,7 +191,7 @@ export default function Navbar() {
       {/* Desktop Links */}
       <div className="hidden md:flex items-center gap-10">
         <Link
-          href="#candidate"
+          href="/candidate"
           className="text-[18px] font-medium text-slate-600 hover:text-[#4F46E5] transition-colors duration-200"
         >
           Candidate
@@ -370,7 +370,7 @@ export default function Navbar() {
       {isOpen && (
         <div className="absolute top-[80px] left-0 right-0 bg-white/95 backdrop-blur-lg border-b border-slate-200/50 flex flex-col py-6 px-6 gap-6 shadow-xl animate-fade-in md:hidden">
           <Link
-            href="#candidate"
+            href="/candidate"
             onClick={() => setIsOpen(false)}
             className="text-[18px] font-medium text-slate-700 hover:text-[#4F46E5] py-2 border-b border-slate-100"
           >

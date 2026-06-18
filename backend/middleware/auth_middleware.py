@@ -68,5 +68,10 @@ def get_current_user(request: Request) -> dict:
         "email": email or "user@example.com",
         "full_name": "Temporary Sandbox User",
         "profile_picture": None,
-        "role": role
+        "role": role,
+        "linkedin_url": None,
+        "github_url": None,
+        "portfolio_url": None,
+        "resume_url": None,
+        "headline": None
     }
