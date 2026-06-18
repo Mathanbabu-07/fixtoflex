@@ -40,3 +40,16 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Python and FastAPI specific ignores
+**/__pycache__/
+*.py[cod]
+*$py.class
+backend/.env
+.pytest_cache/
+.mypy_cache/
+venv/
+.venv/
+env/
+*.log
+
