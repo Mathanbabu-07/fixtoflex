@@ -12,11 +12,23 @@ function LinkedInCallbackContent() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const getApiUrl = (path: string): string => {
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      if (hostname === "localhost" || hostname === "127.0.0.1") {
+        return `http://localhost:8000${path}`;
+      }
+      return `http://${hostname}:8000${path}`;
+    }
+    return `http://localhost:8000${path}`;
+  };
+
   useEffect(() => {
     const code = searchParams.get("code");
     const state = searchParams.get("state");
 
     if (!code || !state) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus("error");
       setErrorMessage("Required authentication parameters (code or state) were missing from the callback URL.");
       return;
@@ -28,7 +40,9 @@ function LinkedInCallbackContent() {
       try {
         setStatusMsg("Exchanging authorization token...");
         
-        const response = await fetch("http://localhost:8000/auth/linkedin/callback", {
+        const apiEndpoint = getApiUrl("/auth/linkedin/callback");
+        console.log("[CALLBACK] Sending code and state validation to:", apiEndpoint);
+        const response = await fetch(apiEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -45,20 +59,21 @@ function LinkedInCallbackContent() {
 
         if (data.success) {
           setStatus("success");
-          setStatusMsg("Welcome! Building your workspace dashboard...");
+          setStatusMsg("Welcome! Redirecting to home page...");
           localStorage.setItem("user_session", JSON.stringify(data.user));
           
-          console.log("[STEP 9] Redirecting to dashboard");
+          console.log("[STEP 9] Redirecting to home");
           setTimeout(() => {
-            router.push("/dashboard");
+            router.push("/");
           }, 1500);
         } else {
           throw new Error("Local session establishment was unsuccessful.");
         }
-      } catch (err: any) {
-        console.error("LinkedIn login callback failure:", err);
+      } catch (err: unknown) {
+        const error = err as Error;
+        console.error("LinkedIn login callback failure:", error);
         setStatus("error");
-        setErrorMessage(err.message || "An unexpected error occurred during LinkedIn OAuth validation.");
+        setErrorMessage(error.message || "An unexpected error occurred during LinkedIn OAuth validation.");
       }
     };
 
