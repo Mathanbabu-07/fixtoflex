@@ -69,7 +69,7 @@ export default function DashboardMockup() {
         
         {/* MAIN LAPTOP STRUCTURE */}
         <div 
-          className="relative transition-transform duration-700 hover:rotate-y-[-10deg] hover:rotate-x-12 duration-300"
+          className="relative transition-transform duration-700 hover:rotate-y-[-10deg] hover:rotate-x-12"
           style={{
             transform: "perspective(1500px) rotateX(12deg) rotateY(-16deg) rotateZ(2deg)",
             transformStyle: "preserve-3d",
