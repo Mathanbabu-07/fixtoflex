@@ -81,7 +81,7 @@ function LinkedInCallbackContent() {
   }, [searchParams, router]);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff] px-6">
+    <div className="relative min-h-screen flex items-center justify-center bg-linear-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff] px-6">
       {/* Blurred background aesthetic elements */}
       <div className="absolute w-[400px] h-[400px] rounded-full bg-purple-400/10 blur-[100px] top-[20%] left-[10%] pointer-events-none" />
       <div className="absolute w-[400px] h-[400px] rounded-full bg-blue-400/10 blur-[100px] bottom-[20%] right-[10%] pointer-events-none" />
@@ -126,7 +126,7 @@ function LinkedInCallbackContent() {
             <div className="pt-4 w-full">
               <Link
                 href="/"
-                className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-semibold rounded-xl shadow-md transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-semibold rounded-xl shadow-md transition-all duration-200"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Return to Home
@@ -143,7 +143,7 @@ export default function LinkedInCallbackPage() {
   return (
     <Suspense 
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff]">
+        <div className="min-h-screen flex items-center justify-center bg-linear-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff]">
           <Loader2 className="w-10 h-10 text-[#7C3AED] animate-spin" />
         </div>
       }

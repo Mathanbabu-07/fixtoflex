@@ -7,7 +7,7 @@ import DashboardMockup from "./DashboardMockup";
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen pt-[120px] pb-16 flex items-center justify-center overflow-hidden bg-gradient-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff]">
+    <section className="relative min-h-screen pt-[120px] pb-16 flex items-center justify-center overflow-hidden bg-linear-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff]">
       
       {/* BACKGROUND BLUR ORBS */}
       {/* Blurred purple orb */}
@@ -52,14 +52,14 @@ export default function Hero() {
           >
             <h1 className="font-extrabold text-[36px] leading-[1.08] xs:text-[46px] sm:text-[60px] lg:text-[66px] xl:text-[76px] tracking-[-0.03em] flex flex-col gap-2 text-[#1E1B4B]">
               <span className="block lg:whitespace-nowrap">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#22C55E] to-[#10B981]">Fix</span>{" "}
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#7C3AED] to-[#4F46E5]">Your Profile</span>
+                <span className="bg-clip-text text-transparent bg-linear-to-r from-[#22C55E] to-[#10B981]">Fix</span>{" "}
+                <span className="bg-clip-text text-transparent bg-linear-to-r from-[#7C3AED] to-[#4F46E5]">Your Profile</span>
               </span>
               <span className="block lg:whitespace-nowrap">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#6D28D9] to-[#4F46E5]">Flex</span>{" "}
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#3B82F6] to-[#6366F1]">On Every</span>
+                <span className="bg-clip-text text-transparent bg-linear-to-r from-[#6D28D9] to-[#4F46E5]">Flex</span>{" "}
+                <span className="bg-clip-text text-transparent bg-linear-to-r from-[#3B82F6] to-[#6366F1]">On Every</span>
               </span>
-              <span className="block lg:whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-[#3B82F6] to-[#6366F1]">
+              <span className="block lg:whitespace-nowrap bg-clip-text text-transparent bg-linear-to-r from-[#3B82F6] to-[#6366F1]">
                 Recruiter
               </span>
             </h1>
@@ -87,7 +87,7 @@ export default function Hero() {
               href="#get-started"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.98 }}
-              className="px-8 py-4 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] text-white text-[16px] sm:text-[18px] font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 flex items-center justify-center gap-2 group flex-1 xs:flex-initial"
+              className="px-8 py-4 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-[16px] sm:text-[18px] font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 flex items-center justify-center gap-2 group flex-1 xs:flex-initial"
             >
               Get Started 
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />

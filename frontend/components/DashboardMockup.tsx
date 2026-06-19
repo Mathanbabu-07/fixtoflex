@@ -12,7 +12,6 @@ import {
   CheckCircle2, 
   Search, 
   ArrowRight,
-  Play,
   Bookmark,
   Sparkles,
   Send,
@@ -70,7 +69,7 @@ export default function DashboardMockup() {
         
         {/* MAIN LAPTOP STRUCTURE */}
         <div 
-          className="relative transition-transform duration-700 hover:rotate-y-[-10deg] hover:rotate-x-[12deg] duration-300"
+          className="relative transition-transform duration-700 hover:rotate-y-[-10deg] hover:rotate-x-12 duration-300"
           style={{
             transform: "perspective(1500px) rotateX(12deg) rotateY(-16deg) rotateZ(2deg)",
             transformStyle: "preserve-3d",
@@ -89,7 +88,7 @@ export default function DashboardMockup() {
                   <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-extrabold text-white text-base shadow-md">
                     F
                   </div>
-                  <div className="w-full h-[1px] bg-indigo-900/40 px-2" />
+                  <div className="w-full h-px bg-indigo-900/40 px-2" />
                   <Home className="w-5 h-5 text-indigo-400 cursor-pointer hover:text-white transition-colors" />
                   <Briefcase className="w-5 h-5 cursor-pointer hover:text-white transition-colors" />
                   <FileText className="w-5 h-5 cursor-pointer hover:text-white transition-colors" />
@@ -165,7 +164,7 @@ export default function DashboardMockup() {
                         <span className="text-[10px] font-extrabold text-[#7C3AED]">92/100</span>
                       </div>
                       <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] h-full rounded-full w-[92%]" />
+                        <div className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] h-full rounded-full w-[92%]" />
                       </div>
                     </div>
                   </div>
@@ -245,7 +244,7 @@ export default function DashboardMockup() {
             </div>
 
             {/* Bottom Screen Notch */}
-            <div className="h-2 w-16 bg-slate-950 mx-auto rounded-b-md mt-[1px]" />
+            <div className="h-2 w-16 bg-slate-950 mx-auto rounded-b-md mt-px" />
           </div>
 
           {/* Laptop Base and Keyboard (tilted forward) */}
@@ -391,7 +390,7 @@ export default function DashboardMockup() {
           duration={4.6}
         >
           <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-            <Check className="w-4 h-4 stroke-[3]" />
+            <Check className="w-4 h-4 stroke-3" />
           </div>
           <div>
             <h5 className="text-[11px] font-extrabold text-[#1E1B4B] leading-tight">Great Match!</h5>
@@ -452,12 +451,12 @@ export default function DashboardMockup() {
 
         {/* B. Notebook with Pen (Bottom Left edge) */}
         <FloatingCard 
-          className="bottom-[-130px] left-[0px] w-[120px] h-[90px] pointer-events-none"
+          className="bottom-[-130px] left-0 w-[120px] h-[90px] pointer-events-none"
           delay={1.9}
           duration={4.5}
         >
           {/* Custom SVG Notebook */}
-          <div className="relative w-full h-full bg-white rounded-lg border border-slate-200 shadow-lg p-2.5 transform rotate-[-6deg] overflow-visible">
+          <div className="relative w-full h-full bg-white rounded-lg border border-slate-200 shadow-lg p-2.5 transform rotate-[-6] overflow-visible">
             {/* Spiral Binding rings */}
             <div className="absolute top-[8px] left-[-3px] flex flex-col gap-1.5">
               {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -466,12 +465,12 @@ export default function DashboardMockup() {
             </div>
             {/* Lined paper interior representation */}
             <div className="h-full w-full flex flex-col justify-between pl-2.5 py-1">
-              <div className="w-full h-[1px] bg-slate-100" />
-              <div className="w-full h-[1px] bg-slate-100" />
-              <div className="w-full h-[1px] bg-indigo-50" />
-              <div className="w-full h-[1px] bg-slate-100" />
-              <div className="w-full h-[1px] bg-slate-100" />
-              <div className="w-full h-[1px] bg-indigo-50" />
+              <div className="w-full h-px bg-slate-100" />
+              <div className="w-full h-px bg-slate-100" />
+              <div className="w-full h-px bg-indigo-50" />
+              <div className="w-full h-px bg-slate-100" />
+              <div className="w-full h-px bg-slate-100" />
+              <div className="w-full h-px bg-indigo-50" />
             </div>
             {/* Pen Overlay */}
             <div className="absolute bottom-[20px] right-[-10px] w-[80px] h-3 bg-purple-600 rounded-full shadow-md transform rotate-[-35deg] border border-purple-500 flex items-center justify-end px-1">
@@ -486,18 +485,18 @@ export default function DashboardMockup() {
           delay={0.5}
           duration={3.0}
         >
-          <div className="transform rotate-[15deg]">
+          <div className="transform rotate-15">
             <Send className="w-8 h-8 text-indigo-400/90 fill-indigo-100 drop-shadow-md" />
           </div>
         </FloatingCard>
 
         {/* D. Floating Spheres (Tiny 3D dots) */}
         {/* Purple Sphere (Top Middle) */}
-        <div className="absolute top-[-90px] left-[50%] w-5 h-5 rounded-full bg-gradient-to-br from-purple-400 to-indigo-600 shadow-md animate-drift-slow pointer-events-none" />
+        <div className="absolute top-[-90px] left-[50%] w-5 h-5 rounded-full bg-linear-to-br from-purple-400 to-indigo-600 shadow-md animate-drift-slow pointer-events-none" />
         {/* Yellow Sphere (Right Center) */}
-        <div className="absolute top-[200px] right-[-90px] w-4 h-4 rounded-full bg-gradient-to-br from-yellow-300 to-amber-500 shadow-md animate-drift-slower pointer-events-none" />
+        <div className="absolute top-[200px] right-[-90px] w-4 h-4 rounded-full bg-linear-to-br from-yellow-300 to-amber-500 shadow-md animate-drift-slower pointer-events-none" />
         {/* Teal Sphere (Center Left) */}
-        <div className="absolute top-[260px] left-[-90px] w-3 h-3 rounded-full bg-gradient-to-br from-teal-300 to-emerald-500 shadow-md animate-drift-slowest pointer-events-none" />
+        <div className="absolute top-[260px] left-[-90px] w-3 h-3 rounded-full bg-linear-to-br from-teal-300 to-emerald-500 shadow-md animate-drift-slowest pointer-events-none" />
         
       </div>
     </div>

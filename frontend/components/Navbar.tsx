@@ -183,7 +183,7 @@ export default function Navbar() {
             priority
           />
         </div>
-        <span className="font-extrabold text-[34px] tracking-tight bg-gradient-to-r from-[#22C55E] via-[#7C3AED] to-[#4F46E5] bg-clip-text text-transparent transition-all duration-300 group-hover:brightness-110">
+        <span className="font-extrabold text-[34px] tracking-tight bg-linear-to-r from-[#22C55E] via-[#7C3AED] to-[#4F46E5] bg-clip-text text-transparent transition-all duration-300 group-hover:brightness-110">
           FixToFlex
         </span>
       </Link>
@@ -255,7 +255,7 @@ export default function Navbar() {
             {/* Small CTA matching the dashboard */}
             <Link
               href="#get-started"
-              className="bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-medium px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+              className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-medium px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
             >
               Get Started
             </Link>
@@ -334,7 +334,7 @@ export default function Navbar() {
                     </div>
 
                     {/* Middle divider */}
-                    <div className="w-[1px] h-12 bg-slate-100 shrink-0" />
+                    <div className="w-px h-12 bg-slate-100 shrink-0" />
 
                     {/* Right: Horizontal/Side Logout Button */}
                     <button
@@ -431,7 +431,7 @@ export default function Navbar() {
               <Link
                 href="#get-started"
                 onClick={() => setIsOpen(false)}
-                className="bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] text-white text-center font-medium py-3 rounded-xl shadow-md"
+                className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-center font-medium py-3 rounded-xl shadow-md"
               >
                 Get Started
               </Link>
