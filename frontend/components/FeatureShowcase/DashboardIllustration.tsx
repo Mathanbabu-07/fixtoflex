@@ -264,15 +264,15 @@ export default function DashboardIllustration({ mouseX, mouseY }: DashboardIllus
         {/* Plant leaves (purple) */}
         <div className="relative w-16 h-16 flex items-center justify-center mb-[-4px]">
           {/* Leaf 1 (Left) */}
-          <div className="absolute w-8 h-8 bg-purple-400/80 rounded-tl-full rounded-br-full rotate-[-45deg] origin-bottom-right bottom-0 right-1/2 shadow-xs" />
+          <div className="absolute w-8 h-8 bg-purple-400/80 rounded-tl-full rounded-br-full rotate-[-45] origin-bottom-right bottom-0 right-1/2 shadow-xs" />
           {/* Leaf 2 (Right) */}
-          <div className="absolute w-8 h-8 bg-purple-500/80 rounded-tr-full rounded-bl-full rotate-[45deg] origin-bottom-left bottom-0 left-1/2 shadow-xs" />
+          <div className="absolute w-8 h-8 bg-purple-500/80 rounded-tr-full rounded-bl-full rotate-[45] origin-bottom-left bottom-0 left-1/2 shadow-xs" />
           {/* Leaf 3 (Center High) */}
           <div className="absolute w-7 h-10 bg-indigo-500/90 rounded-t-full bottom-2 shadow-sm" />
           {/* Leaf 4 (Far Left) */}
           <div className="absolute w-6 h-6 bg-purple-300/60 rounded-tl-full rounded-br-full rotate-[-75deg] origin-bottom-right bottom-1 right-2/3 shadow-2xs" />
           {/* Leaf 5 (Far Right) */}
-          <div className="absolute w-6 h-6 bg-indigo-300/60 rounded-tr-full rounded-bl-full rotate-[75deg] origin-bottom-left bottom-1 left-2/3 shadow-2xs" />
+          <div className="absolute w-6 h-6 bg-indigo-300/60 rounded-tr-full rounded-bl-full rotate-[75] origin-bottom-left bottom-1 left-2/3 shadow-2xs" />
         </div>
         {/* Potted Ceramic Pot */}
         <div className="w-12 h-10 bg-slate-100 border border-slate-200 rounded-b-xl rounded-t-sm shadow-[0_5px_15px_rgba(0,0,0,0.04)] flex items-center justify-center">

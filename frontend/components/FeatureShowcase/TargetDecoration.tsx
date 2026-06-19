@@ -57,7 +57,7 @@ export default function TargetDecoration({ mouseX, mouseY }: TargetDecorationPro
             {/* Concentric rings */}
             <div className="w-17 h-17 rounded-full bg-purple-50 border border-purple-200/80 flex items-center justify-center">
               <div className="w-12 h-12 rounded-full bg-purple-200 border border-purple-300/80 flex items-center justify-center">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-full bg-linear-to-tr from-purple-600 to-indigo-600 flex items-center justify-center">
                   <div className="w-2.5 h-2.5 rounded-full bg-white" />
                 </div>
               </div>

@@ -46,7 +46,7 @@ export default function VerificationShield({ mouseX, mouseY }: VerificationShiel
           repeat: Infinity,
           ease: "easeInOut"
         }}
-        className="relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center border border-white/20 overflow-hidden"
+        className="relative w-11 h-11 sm:w-13 sm:h-13 bg-linear-to-tr from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center border border-white/20 overflow-hidden"
       >
         {/* Shine Sweep Overlay */}
         <motion.div

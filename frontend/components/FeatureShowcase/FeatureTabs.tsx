@@ -105,7 +105,7 @@ function TabItem({ label, icon: Icon, isActive, onClick }: TabItemProps) {
       {isActive && (
         <motion.div
           layoutId="activeTabBackground"
-          className="absolute inset-0 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl -z-10 shadow-[0_4px_18px_rgba(124,58,237,0.3)]"
+          className="absolute inset-0 bg-linear-to-r from-violet-600 to-indigo-600 rounded-xl -z-10 shadow-[0_4px_18px_rgba(124,58,237,0.3)]"
           transition={{ type: "spring", stiffness: 120, damping: 16 }}
         />
       )}

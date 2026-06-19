@@ -79,7 +79,7 @@ export default function SkillsCard({ mouseX, mouseY }: SkillsCardProps) {
       whileHover={{ scale: 1.04, rotateY: 5, rotateX: 5 }}
       className="absolute bottom-[-10%] left-[-2%] sm:left-[-4%] xl:left-[-2%] w-[180px] sm:w-[210px] bg-white/70 backdrop-blur-xl rounded-2xl border border-white/40 shadow-[0_10px_30px_rgba(124,58,237,0.1)] p-3 sm:p-4 flex flex-col gap-3 select-none z-20"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-40 -z-10" />
+      <div className="absolute inset-0 bg-linear-to-br from-indigo-500/5 to-purple-500/5 opacity-40 -z-10" />
 
       {/* Label */}
       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
@@ -128,7 +128,7 @@ export default function SkillsCard({ mouseX, mouseY }: SkillsCardProps) {
         </div>
         <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
           <motion.div 
-            className="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full"
+            className="bg-linear-to-r from-purple-500 to-indigo-500 h-full rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${fillWidth}%` }}
             transition={{ duration: 1.2, ease: "easeOut", delay: 1 }}

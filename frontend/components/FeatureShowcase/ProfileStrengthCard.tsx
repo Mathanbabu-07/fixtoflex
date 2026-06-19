@@ -39,7 +39,7 @@ export default function ProfileStrengthCard({ mouseX, mouseY }: ProfileStrengthC
       className="absolute top-[8%] right-[-6%] sm:right-[-10%] lg:right-[-14%] xl:right-[-12%] w-[140px] sm:w-[170px] bg-white/70 backdrop-blur-xl rounded-2xl border border-white/40 shadow-[0_10px_30px_rgba(124,58,237,0.1)] p-3 sm:p-4 flex flex-col items-center text-center select-none overflow-hidden"
     >
       {/* Decorative gradient border glow */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-indigo-500/10 opacity-50 -z-10" />
+      <div className="absolute inset-0 bg-linear-to-tr from-purple-500/10 to-indigo-500/10 opacity-50 -z-10" />
       
       {/* Subtitle / Label */}
       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
