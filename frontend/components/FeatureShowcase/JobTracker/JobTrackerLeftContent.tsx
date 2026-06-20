@@ -63,7 +63,7 @@ export default function JobTrackerLeftContent({ tabIndexStr = "03 / 05" }: JobTr
         className="font-extrabold text-[32px] sm:text-[42px] lg:text-[48px] leading-[1.12] tracking-tight text-[#1E1B4B] w-full"
       >
         Track Every{" "}
-        <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 drop-shadow-xs">
+        <span className="bg-clip-text text-transparent bg-linear-to-r from-violet-600 to-indigo-600 drop-shadow-xs">
           Opportunity
         </span>
       </motion.h2>
@@ -82,7 +82,7 @@ export default function JobTrackerLeftContent({ tabIndexStr = "03 / 05" }: JobTr
         whileHover={{ y: -3 }}
         className="w-full bg-purple-50/40 hover:bg-purple-50/60 border border-purple-100/50 backdrop-blur-md p-4 rounded-xl shadow-xs transition-all duration-300 relative group overflow-hidden"
       >
-        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-purple-400 via-indigo-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-linear-to-r from-purple-400 via-indigo-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="flex gap-3">
           <span className="text-lg mt-0.5 shrink-0 select-none">✨</span>
           <div className="space-y-1">
@@ -126,7 +126,7 @@ export default function JobTrackerLeftContent({ tabIndexStr = "03 / 05" }: JobTr
             boxShadow: "0 10px 25px rgba(124, 58, 237, 0.25)",
           }}
           whileTap={{ scale: 0.98 }}
-          className="px-7 py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-[14px] rounded-xl flex items-center justify-center gap-2 group shadow-lg transition-all duration-300 cursor-pointer"
+          className="px-7 py-3.5 bg-linear-to-r from-violet-600 to-indigo-600 text-white font-bold text-[14px] rounded-xl flex items-center justify-center gap-2 group shadow-lg transition-all duration-300 cursor-pointer"
         >
           <span>Get Started</span>
           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

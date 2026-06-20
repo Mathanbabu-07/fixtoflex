@@ -314,7 +314,7 @@ export default function MyAppsDashboard() {
             </div>
 
             {/* 2. AI Insight Card */}
-            <div className="bg-gradient-to-tr from-[#1E1B4B] to-[#2d2769] rounded-2xl p-4 shadow-sm text-white space-y-3 relative overflow-hidden">
+            <div className="bg-linear-to-tr from-[#1E1B4B] to-[#2d2769] rounded-2xl p-4 shadow-sm text-white space-y-3 relative overflow-hidden">
               <div className="absolute top-[-20%] right-[-20%] w-24 h-24 bg-purple-500/10 rounded-full blur-xl" />
               
               <div className="flex items-center justify-between text-[10px] font-bold text-purple-300">
@@ -370,7 +370,7 @@ export default function MyAppsDashboard() {
         {/* ========================================================================= */}
         {/* BOTTOM MOTIVATION BANNER                                                  */}
         {/* ========================================================================= */}
-        <div className="relative bg-gradient-to-r from-purple-50/60 via-indigo-50/40 to-purple-50/60 border border-purple-100/50 backdrop-blur-md rounded-2xl p-5 shadow-xs flex items-center justify-between w-full overflow-hidden mt-2 select-none">
+        <div className="relative bg-linear-to-r from-purple-50/60 via-indigo-50/40 to-purple-50/60 border border-purple-100/50 backdrop-blur-md rounded-2xl p-5 shadow-xs flex items-center justify-between w-full overflow-hidden mt-2 select-none">
           <div className="absolute top-0 right-1/4 w-32 h-32 bg-purple-300/10 rounded-full blur-2xl pointer-events-none" />
           
           {/* Motivation Text */}
@@ -391,7 +391,7 @@ export default function MyAppsDashboard() {
           </div>
 
           {/* Action templates CTA */}
-          <button className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-[9px] px-4.5 py-2.5 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md hover:scale-102 cursor-pointer select-none">
+          <button className="bg-linear-to-r from-violet-600 to-indigo-600 text-white font-bold text-[9px] px-4.5 py-2.5 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md hover:scale-102 cursor-pointer select-none">
             View Follow-up Templates →
           </button>
         </div>
@@ -416,7 +416,7 @@ export default function MyAppsDashboard() {
               <div className="h-0.5 bg-slate-200 rounded-full w-4/5" />
             </div>
             {/* Folder Front */}
-            <div className="w-[66px] h-[52px] bg-gradient-to-tr from-violet-600 to-indigo-600 rounded-lg shadow-md relative z-10 flex flex-col p-2">
+            <div className="w-[66px] h-[52px] bg-linear-to-tr from-violet-600 to-indigo-600 rounded-lg shadow-md relative z-10 flex flex-col p-2">
               <div className="w-6 h-2 bg-violet-600 rounded-t-md absolute top-[-6px] left-[8px] z-0" />
               {/* Folder tab logo mock */}
               <div className="mt-auto w-3 h-3 rounded bg-white/20 flex items-center justify-center">
@@ -435,8 +435,8 @@ export default function MyAppsDashboard() {
             </div>
             <div className="h-1 bg-purple-400 rounded-full w-3/4 mt-1" />
             <div className="space-y-1">
-              <div className="flex items-center gap-1 text-[8px]"><Check className="w-2 h-2 text-emerald-500 stroke-[3]" /> <span className="h-0.5 bg-slate-200 w-6" /></div>
-              <div className="flex items-center gap-1 text-[8px]"><Check className="w-2 h-2 text-emerald-500 stroke-[3]" /> <span className="h-0.5 bg-slate-200 w-8" /></div>
+              <div className="flex items-center gap-1 text-[8px]"><Check className="w-2 h-2 text-emerald-500 stroke-3" /> <span className="h-0.5 bg-slate-200 w-6" /></div>
+              <div className="flex items-center gap-1 text-[8px]"><Check className="w-2 h-2 text-emerald-500 stroke-3" /> <span className="h-0.5 bg-slate-200 w-8" /></div>
               <div className="flex items-center gap-1 text-[8px]"><div className="w-2 h-2 rounded-full border border-slate-200" /> <span className="h-0.5 bg-slate-200 w-5" /></div>
             </div>
           </div>
@@ -468,8 +468,8 @@ export default function MyAppsDashboard() {
         {/* 5. Small potted plant (Bottom Left-ish) */}
         <div className="absolute bottom-[-45px] left-[150px] z-20 flex flex-col items-center">
           <div className="relative w-9 h-9 flex items-center justify-center mb-[-2px]">
-            <div className="absolute w-4 h-4 bg-purple-400/80 rounded-tl-full rounded-br-full rotate-[-45deg] origin-bottom-right bottom-0 right-1/2" />
-            <div className="absolute w-4 h-4 bg-indigo-500/80 rounded-tr-full rounded-bl-full rotate-[45deg] origin-bottom-left bottom-0 left-1/2" />
+            <div className="absolute w-4 h-4 bg-purple-400/80 rounded-tl-full rounded-br-full rotate-[-45] origin-bottom-right bottom-0 right-1/2" />
+            <div className="absolute w-4 h-4 bg-indigo-500/80 rounded-tr-full rounded-bl-full rotate-[45] origin-bottom-left bottom-0 left-1/2" />
             <div className="absolute w-3.5 h-5 bg-indigo-600/80 rounded-t-full bottom-1" />
           </div>
           <div className="w-6 h-4 bg-slate-100 border border-slate-200 rounded-b-md rounded-t-xs" />

@@ -120,7 +120,7 @@ export default function JobTrackerDashboard({ mouseX, mouseY }: JobTrackerDashbo
 
   return (
     <div className="scale-[0.62] xs:scale-[0.72] sm:scale-[0.78] md:scale-[0.85] lg:scale-100 origin-center transition-all duration-500 w-full flex items-center justify-center overflow-visible">
-      <div className="relative w-full aspect-[1.25/1] max-w-[700px] flex items-center justify-center select-none z-10 pt-6 pb-14 overflow-visible">
+      <div className="relative w-full aspect-1.25/1 max-w-[700px] flex items-center justify-center select-none z-10 pt-6 pb-14 overflow-visible">
 
         {/* ============================================================ */}
         {/* SVG WORKFLOW LINES                                            */}
@@ -171,7 +171,7 @@ export default function JobTrackerDashboard({ mouseX, mouseY }: JobTrackerDashbo
               y: { type: "tween", duration: 4.5, repeat: Infinity, ease: "easeInOut" },
               rotate: { type: "tween", duration: 0.4 }
             }}
-            className="w-12 h-12 bg-gradient-to-tr from-violet-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-[0_8px_24px_rgba(124,58,237,0.3)] border border-white/20"
+            className="w-12 h-12 bg-linear-to-tr from-violet-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-[0_8px_24px_rgba(124,58,237,0.3)] border border-white/20"
           >
             <Briefcase className="w-6 h-6 text-white" />
           </motion.div>
@@ -484,7 +484,7 @@ export default function JobTrackerDashboard({ mouseX, mouseY }: JobTrackerDashbo
           >
             {/* Glow sweep */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full"
+              className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full"
               animate={{ translateX: ["-100%", "200%"] }}
               transition={{ duration: 3, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
             />
@@ -498,7 +498,7 @@ export default function JobTrackerDashboard({ mouseX, mouseY }: JobTrackerDashbo
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-3 py-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-[8px] font-bold rounded-lg flex items-center gap-1 cursor-pointer relative z-10"
+              className="px-3 py-1.5 bg-linear-to-r from-violet-600 to-indigo-600 text-white text-[8px] font-bold rounded-lg flex items-center gap-1 cursor-pointer relative z-10"
             >
               View Suggestions
               <ArrowRight className="w-3 h-3" />
@@ -561,7 +561,7 @@ export default function JobTrackerDashboard({ mouseX, mouseY }: JobTrackerDashbo
                 whileInView={{ height: h * 0.5 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.8 + i * 0.1, ease: "easeOut" }}
-                className={`w-3 rounded-t-md ${i === 4 ? "bg-gradient-to-t from-violet-600 to-indigo-500" : "bg-indigo-200"}`}
+                className={`w-3 rounded-t-md ${i === 4 ? "bg-linear-to-t from-violet-600 to-indigo-500" : "bg-indigo-200"}`}
               />
             ))}
           </div>
@@ -621,7 +621,7 @@ export default function JobTrackerDashboard({ mouseX, mouseY }: JobTrackerDashbo
             transition={{ type: "tween", duration: 4, repeat: Infinity, ease: "easeInOut" }}
             className="relative"
           >
-            <div className="w-10 h-10 bg-gradient-to-tr from-amber-400 to-yellow-300 rounded-xl flex items-center justify-center shadow-md border border-amber-300/50">
+            <div className="w-10 h-10 bg-linear-to-tr from-amber-400 to-yellow-300 rounded-xl flex items-center justify-center shadow-md border border-amber-300/50">
               <Star className="w-5 h-5 text-white fill-white" />
             </div>
             {/* Sparkle particles */}
@@ -683,7 +683,7 @@ export default function JobTrackerDashboard({ mouseX, mouseY }: JobTrackerDashbo
           transition={{ duration: 0.6, delay: 0.8 }}
           className="absolute bottom-[-14%] left-[6%] right-[6%] z-20"
         >
-          <div className="bg-gradient-to-r from-[#1E1B4B] via-[#2d2769] to-[#1E1B4B] rounded-2xl px-6 py-3 flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(30,27,75,0.2)]">
+          <div className="bg-linear-to-r from-[#1E1B4B] via-[#2d2769] to-[#1E1B4B] rounded-2xl px-6 py-3 flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(30,27,75,0.2)]">
             <span className="text-amber-400 text-lg">⭐</span>
             <span className="text-white text-[11px] font-bold">
               Small steps today, dream job tomorrow. Keep going! 💪
