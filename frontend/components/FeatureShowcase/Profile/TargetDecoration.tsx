@@ -31,6 +31,7 @@ export default function TargetDecoration({ mouseX, mouseY }: TargetDecorationPro
             opacity: [0.3, 0.6, 0.3]
           }}
           transition={{
+            type: "tween",
             duration: 2.5,
             repeat: Infinity,
             ease: "easeInOut"
@@ -45,6 +46,7 @@ export default function TargetDecoration({ mouseX, mouseY }: TargetDecorationPro
             y: [0, -4, 0]
           }}
           transition={{
+            type: "tween",
             duration: 6,
             repeat: Infinity,
             ease: "easeInOut"
@@ -71,6 +73,7 @@ export default function TargetDecoration({ mouseX, mouseY }: TargetDecorationPro
                 scale: [0.95, 1, 0.95]
               }}
               transition={{
+                type: "tween",
                 duration: 2.2,
                 repeat: Infinity,
                 ease: "easeInOut"

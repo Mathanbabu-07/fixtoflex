@@ -5,7 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Sparkles, Code, Briefcase, Send, Terminal } from "lucide-react";
 
 import FeatureTabs from "./FeatureTabs";
-import UpgradeProfileSection from "./UpgradeProfileSection";
+import UpgradeProfileSection from "./Profile/UpgradeProfileSection";
+import PortfolioSetupSection from "./Portfolio/PortfolioSetupSection";
+import JobTrackerSection from "./JobTracker/JobTrackerSection";
+import MyAppsSection from "./MyApps/MyAppsSection";
 
 export default function FeatureShowcase() {
   const [activeTab, setActiveTab] = useState(0);
@@ -19,6 +22,79 @@ export default function FeatureShowcase() {
     { name: "Draft Email", badge: "05 / 05" }
   ];
 
+  const renderActiveSection = () => {
+    switch (activeTab) {
+      case 0:
+        return (
+          <motion.div
+            key="upgrade-profile"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="w-full overflow-visible"
+          >
+            <UpgradeProfileSection tabIndexStr="01 / 05" />
+          </motion.div>
+        );
+      case 1:
+        return (
+          <motion.div
+            key="portfolio-setup"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="w-full overflow-visible"
+          >
+            <PortfolioSetupSection tabIndexStr="02 / 05" />
+          </motion.div>
+        );
+      case 2:
+        return (
+          <motion.div
+            key="job-tracker"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="w-full overflow-visible"
+          >
+            <JobTrackerSection tabIndexStr="03 / 05" />
+          </motion.div>
+        );
+      case 3:
+        return (
+          <motion.div
+            key="my-applications"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="w-full overflow-visible"
+          >
+            <MyAppsSection tabIndexStr="04 / 05" />
+          </motion.div>
+        );
+      default:
+        return (
+          <motion.div
+            key={`placeholder-${activeTab}`}
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="w-full"
+          >
+            <PlaceholderSection
+              badge={tabInfo[activeTab].badge}
+              title={tabInfo[activeTab].name}
+            />
+          </motion.div>
+        );
+    }
+  };
+
   return (
     <section className="relative w-full pt-2 pb-16 flex flex-col items-center bg-linear-to-b from-[#f3f0ff] via-[#ffffff] to-[#f8fafc] overflow-hidden">
       
@@ -31,32 +107,7 @@ export default function FeatureShowcase() {
       {/* Dynamic Tab Showcase Container */}
       <div className="w-full relative min-h-[600px] flex items-center justify-center overflow-visible">
         <AnimatePresence mode="wait">
-          {activeTab === 0 ? (
-            <motion.div
-              key="upgrade-profile"
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 30 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="w-full overflow-visible"
-            >
-              <UpgradeProfileSection tabIndexStr="01 / 05" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key={`placeholder-${activeTab}`}
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 30 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="w-full"
-            >
-              <PlaceholderSection 
-                badge={tabInfo[activeTab].badge}
-                title={tabInfo[activeTab].name}
-              />
-            </motion.div>
-          )}
+          {renderActiveSection()}
         </AnimatePresence>
       </div>
     </section>

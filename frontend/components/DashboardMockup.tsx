@@ -357,7 +357,7 @@ export default function DashboardMockup() {
 
         {/* 4. Find Right Jobs Card (Bottom Center) */}
         <FloatingCard 
-          className="bottom-[-100px] left-[70px] w-[270px] bg-white rounded-2xl shadow-xl border border-slate-100 p-4 z-20"
+          className="bottom-[-100px] left-[176px] w-[270px] bg-white rounded-2xl shadow-xl border border-slate-100 p-4 z-20"
           delay={2.2}
           duration={4.0}
         >

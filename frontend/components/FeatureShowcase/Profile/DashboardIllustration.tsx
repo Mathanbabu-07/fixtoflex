@@ -127,6 +127,7 @@ export default function DashboardIllustration({ mouseX, mouseY }: DashboardIllus
           opacity: [0, 0.9, 0]
         }}
         transition={{
+          type: "tween",
           duration: 6,
           repeat: Infinity,
           repeatDelay: 2,
@@ -145,6 +146,7 @@ export default function DashboardIllustration({ mouseX, mouseY }: DashboardIllus
           scale: [0.99, 1.01, 0.99]
         }}
         transition={{
+          type: "tween",
           duration: 6,
           repeat: Infinity,
           ease: "easeInOut"
