@@ -151,7 +151,7 @@ export default function MailDashboard() {
           </div>
           
           {/* AI Assistant illustration on right */}
-          <div className="flex items-center gap-3 mr-4 lg:flex hidden">
+          <div className="hidden lg:flex items-center gap-3 mr-4">
             {/* Robot Head */}
             <div className="relative w-12 h-10 bg-slate-50 border border-slate-200 rounded-xl flex flex-col items-center justify-center shadow-xs">
               <div className="flex gap-1.5 mb-1">
@@ -444,7 +444,7 @@ export default function MailDashboard() {
               {/* Envelopes poking out */}
               <div className="flex gap-1">
                 <div className="w-4 h-3 bg-white rounded-xs -rotate-6" />
-                <div className="w-4 h-3 bg-white rounded-xs rotate-[12deg]" />
+                <div className="w-4 h-3 bg-white rounded-xs rotate-12" />
               </div>
             </div>
             {/* Pedestal post */}

@@ -136,12 +136,12 @@ export default function MailLeftContent({ tabIndexStr = "05 / 05" }: MailLeftCon
       {/* ============================================================ */}
       {/* DECORATIVE OBJECTS (Bottom-left plant, envelope, mug)        */}
       {/* ============================================================ */}
-      <div className="absolute bottom-[-180px] left-0 flex items-end gap-3 pointer-events-none select-none z-10 lg:flex hidden">
+      <div className="absolute bottom-[-180px] left-0 hidden lg:flex items-end gap-3 pointer-events-none select-none z-10">
         {/* Potted Plant */}
         <div className="flex flex-col items-center">
           <div className="relative w-12 h-14 flex items-center justify-center mb-[-2px]">
-            <div className="absolute w-5 h-5 bg-purple-400/70 rounded-tl-full rounded-br-full rotate-[-45deg] origin-bottom-right bottom-0 right-1/2" />
-            <div className="absolute w-5 h-5 bg-indigo-500/70 rounded-tr-full rounded-bl-full rotate-[45deg] origin-bottom-left bottom-0 left-1/2" />
+            <div className="absolute w-5 h-5 bg-purple-400/70 rounded-tl-full rounded-br-full -rotate-45 origin-bottom-right bottom-0 right-1/2" />
+            <div className="absolute w-5 h-5 bg-indigo-500/70 rounded-tr-full rounded-bl-full rotate-45 origin-bottom-left bottom-0 left-1/2" />
             <div className="absolute w-4 h-6 bg-indigo-600/70 rounded-t-full bottom-1" />
           </div>
           <div className="w-8 h-5 bg-slate-100 border border-slate-200 rounded-b-lg rounded-t-sm" />
@@ -149,7 +149,7 @@ export default function MailLeftContent({ tabIndexStr = "05 / 05" }: MailLeftCon
 
         {/* Envelope with @ card */}
         <div className="relative">
-          <div className="absolute top-[-15px] left-1/2 -translate-x-1/2 w-14 h-16 bg-white border border-slate-200 rounded-lg shadow-xs flex items-center justify-center rotate-[-6deg] z-0">
+          <div className="absolute top-[-15px] left-1/2 -translate-x-1/2 w-14 h-16 bg-white border border-slate-200 rounded-lg shadow-xs flex items-center justify-center -rotate-6 z-0">
             <span className="text-purple-600 font-extrabold text-[18px]">@</span>
           </div>
           <div className="w-[84px] h-[58px] bg-linear-to-tr from-violet-600 to-indigo-600 rounded-xl relative z-10 flex flex-col p-2.5 shadow-md">
