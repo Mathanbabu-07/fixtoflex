@@ -1,19 +1,16 @@
 "use client";
 
 import React from "react";
-import MyAppsLeftContent from "./MyAppsLeftContent";
-import MyAppsDashboard from "./MyAppsDashboard";
+import MailLeftContent from "./MailLeftContent";
+import MailDashboard from "./MailDashboard";
 import AnimatedBackground from "../AnimatedBackground";
 import { useMotionValue } from "framer-motion";
 
-interface MyAppsSectionProps {
+interface MailSectionProps {
   tabIndexStr?: string;
 }
 
-export default function MyAppsSection({ tabIndexStr = "04 / 05" }: MyAppsSectionProps) {
-  // We keep motion value initializations to satisfy AnimatedBackground imports
-  // but we do not track cursor move coords to prevent dynamic parallax tilts,
-  // keeping the dashboard clean, readable and stable as requested.
+export default function MailSection({ tabIndexStr = "05 / 05" }: MailSectionProps) {
   const dummyMouseX = useMotionValue(0);
   const dummyMouseY = useMotionValue(0);
 
@@ -23,11 +20,11 @@ export default function MyAppsSection({ tabIndexStr = "04 / 05" }: MyAppsSection
       <AnimatedBackground mouseX={dummyMouseX} mouseY={dummyMouseY} />
 
       {/* Left Column (Content Panel) */}
-      <MyAppsLeftContent tabIndexStr={tabIndexStr} />
+      <MailLeftContent tabIndexStr={tabIndexStr} />
 
-      {/* Right Column (Stable Premium Applications Dashboard) */}
+      {/* Right Column (Stable Premium AI Email Workspace) */}
       <div className="w-full flex justify-center lg:justify-end overflow-visible lg:mt-14">
-        <MyAppsDashboard />
+        <MailDashboard />
       </div>
     </div>
   );

@@ -18,8 +18,75 @@ import {
   MapPin,
   Calendar,
   Briefcase,
-  AlertCircle
+  AlertCircle,
+  ArrowRight
 } from "lucide-react";
+
+/* ------------------------------------------------------------------ */
+/*  COMPANY LOGO                                                       */
+/* ------------------------------------------------------------------ */
+function CompanyLogo({ name, color }: { name: string; color: string }) {
+  const logoName = name.toLowerCase();
+  let logoContent = null;
+  let bgStyle = { backgroundColor: color };
+
+  if (logoName === "google") {
+    bgStyle = { backgroundColor: "#FFFFFF" };
+    logoContent = (
+      <svg viewBox="0 0 24 24" className="w-4 h-4">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+      </svg>
+    );
+  } else if (logoName === "microsoft") {
+    bgStyle = { backgroundColor: "#FFFFFF" };
+    logoContent = (
+      <svg viewBox="0 0 23 23" className="w-4 h-4">
+        <rect x="0" y="0" width="10.5" height="10.5" fill="#F25022"/>
+        <rect x="11.5" y="0" width="10.5" height="10.5" fill="#7FBA00"/>
+        <rect x="0" y="11.5" width="10.5" height="10.5" fill="#00A4EF"/>
+        <rect x="11.5" y="11.5" width="10.5" height="10.5" fill="#FFB900"/>
+      </svg>
+    );
+  } else if (logoName === "amazon") {
+    bgStyle = { backgroundColor: "#FFFFFF" };
+    logoContent = (
+      <svg viewBox="0 0 24 24" className="w-[18px] h-[18px]">
+        <path fill="#FF9900" d="M18.8 17.85c-2.3 1.83-5.75 2.85-8.77 2.85-4.22 0-7.9-1.92-9.98-4.9-.22-.32.02-.65.36-.45 2.37 1.4 5.3 2.22 8.35 2.22 2.76 0 5.82-.68 8.16-2.04.38-.22.65.1.13.32v-.01z"/>
+        <path fill="#232F3E" d="M11.95 5.56c-2.2 0-4.08 1.4-4.08 4.2 0 2.2 1.3 3.65 3.3 3.65 1.5 0 2.44-.8 2.94-1.57l.08.06c.07.28.2.4.45.4h2.2c-.15-.46-.3-.98-.3-1.78v-4.5c0-2.48-1.56-4.66-4.59-4.66zm.85 6.78c-.28.43-.83.83-1.46.83-.8 0-1.22-.64-1.22-1.63 0-1.45.86-2.15 2.68-2.15v2.95zm6.54 6.72c-.22.18-.32.32-.2.53l.42.66c.2.32.48.24.76-.05 1.25-1.28 2.03-2.9 2.03-4.75 0-3.32-2.15-5.77-5.58-5.77-2.37 0-4.23 1.2-4.94 2.8-.1.25 0 .4.22.42l.74.07c.23 0 .34-.1.45-.3.52-1.07 1.8-1.94 3.52-1.94 2.5 0 3.86 1.7 3.86 4.3 0 1.2-.55 2.63-1.28 3.56v.47z"/>
+      </svg>
+    );
+  } else if (logoName === "adobe") {
+    logoContent = (
+      <svg viewBox="0 0 24 24" className="w-[15px] h-[15px] fill-white">
+        <path d="M14.6 2h7.4v19.8l-7.4-19.8zm-5.2 0H2v19.8L9.4 2zm2.6 6.4L17.2 22h-3.2l-2-4.8H8l2.8-5.9z"/>
+      </svg>
+    );
+  } else if (logoName === "infosys") {
+    logoContent = (
+      <svg viewBox="0 0 24 24" className="w-4 h-4">
+        <text x="12" y="17" fill="#FFFFFF" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="13" textAnchor="middle">I</text>
+      </svg>
+    );
+  } else {
+    logoContent = name[0];
+  }
+
+  return (
+    <div
+      className={`w-8 h-8 rounded-xl flex items-center justify-center text-white font-extrabold text-[12px] shadow-xs shrink-0 border ${
+        logoName === "google" || logoName === "microsoft" || logoName === "amazon"
+          ? "border-slate-200/60"
+          : "border-transparent"
+      }`}
+      style={bgStyle}
+    >
+      {logoContent}
+    </div>
+  );
+}
 
 export default function MyAppsDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -201,9 +268,7 @@ export default function MyAppsDashboard() {
                 >
                   {/* Company Logo + Job details */}
                   <div className="flex items-center gap-3 w-[200px] shrink-0">
-                    <div className={`w-8 h-8 rounded-xl ${row.logoColor} text-white flex items-center justify-center font-extrabold text-[12px] shadow-xs shrink-0`}>
-                      {row.logoLetter}
-                    </div>
+                    <CompanyLogo name={row.company} color={row.logoColor.includes("#") ? row.logoColor.match(/#\w+/)?.[0] || "#7C3AED" : "#7C3AED"} />
                     <div className="min-w-0">
                       <span className="text-[11px] font-bold text-[#1E1B4B] leading-tight block truncate">{row.role}</span>
                       <span className="text-[9px] text-slate-400 font-semibold leading-tight block">{row.company}</span>
@@ -329,157 +394,9 @@ export default function MyAppsDashboard() {
               </button>
             </div>
 
-            {/* 3. Upcoming Reminders */}
-            <div className="bg-white/90 backdrop-blur-md border border-slate-200/50 rounded-2xl p-4 shadow-xs flex flex-col gap-2">
-              <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 select-none pb-1.5 border-b border-slate-100">
-                <Bell className="w-3.5 h-3.5 text-purple-500" />
-                <span>Upcoming Reminders</span>
-              </div>
-              
-              <div className="space-y-2">
-                {[
-                  { title: "Technical Round", company: "Google", date: "24 May", time: "10:00 AM", color: "bg-purple-500" },
-                  { title: "Online Assessment", company: "Microsoft", date: "22 May", time: "11:30 AM", color: "bg-blue-500" }
-                ].map((r) => (
-                  <div key={r.title} className="flex items-start gap-2.5">
-                    <div className={`w-5 h-5 rounded-lg ${r.color} flex items-center justify-center shrink-0 mt-0.5 shadow-xs`}>
-                      <Bell className="w-2.5 h-2.5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[9px] font-bold text-[#1E1B4B] truncate">{r.title}</div>
-                      <div className="text-[8px] text-slate-400 font-semibold truncate">{r.company}</div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-[9px] font-bold text-[#1E1B4B]">{r.date}</div>
-                      <div className="text-[7px] text-slate-400 font-semibold">{r.time}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <a href="#reminders" className="text-[8px] font-extrabold text-purple-600 hover:text-purple-700 flex items-center gap-0.5 transition-colors group pt-1 border-t border-slate-50 mt-1 select-none">
-                View All Reminders
-                <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
-              </a>
-            </div>
-
           </div>
 
         </div>
-
-        {/* ========================================================================= */}
-        {/* BOTTOM MOTIVATION BANNER                                                  */}
-        {/* ========================================================================= */}
-        <div className="relative bg-linear-to-r from-purple-50/60 via-indigo-50/40 to-purple-50/60 border border-purple-100/50 backdrop-blur-md rounded-2xl p-5 shadow-xs flex items-center justify-between w-full overflow-hidden mt-2 select-none">
-          <div className="absolute top-0 right-1/4 w-32 h-32 bg-purple-300/10 rounded-full blur-2xl pointer-events-none" />
-          
-          {/* Motivation Text */}
-          <div className="space-y-1">
-            <h4 className="text-[12px] font-bold text-[#1E1B4B] flex items-center gap-1.5">
-              Stay Ahead of the Competition! 🚀
-            </h4>
-            <p className="text-[10px] text-slate-500 font-medium">
-              Timely follow-ups can 2X your chances of getting a response.
-            </p>
-            
-            {/* Quick Actions indicators */}
-            <div className="flex items-center gap-4 pt-2 text-[9px] font-bold text-slate-500">
-              <span className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-[8px]">✓</span> Personalize your follow-ups</span>
-              <span className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-[8px]">✓</span> Highlight your achievements</span>
-              <span className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-[8px]">✓</span> Keep it short & professional</span>
-            </div>
-          </div>
-
-          {/* Action templates CTA */}
-          <button className="bg-linear-to-r from-violet-600 to-indigo-600 text-white font-bold text-[9px] px-4.5 py-2.5 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md hover:scale-102 cursor-pointer select-none">
-            View Follow-up Templates →
-          </button>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* DECORATIVE OBJECTS (Folder, Clipboard, Clock, Trophy, Plant, Orbs)          */}
-        {/* ========================================================================= */}
-        
-        {/* 1. Paper Airplane (Top Left path trail) */}
-        <div className="absolute top-[-30px] left-[260px] text-purple-400 select-none opacity-60">
-          <Send className="w-6 h-6 rotate-15 transform" />
-        </div>
-
-        {/* 2. Folder with resumes (Bottom Left) */}
-        <div className="absolute bottom-[-45px] left-[-35px] z-20">
-          <div className="relative">
-            {/* Papers behind */}
-            <div className="absolute top-[-10px] left-[6px] w-[54px] h-[58px] bg-slate-50 border border-slate-200 rounded-md rotate-[4] shadow-xs flex flex-col p-1.5 gap-1.5">
-              <div className="h-1 bg-purple-300 rounded-full w-4/5" />
-              <div className="h-0.5 bg-slate-200 rounded-full w-full" />
-              <div className="h-0.5 bg-slate-200 rounded-full w-5/6" />
-              <div className="h-0.5 bg-slate-200 rounded-full w-4/5" />
-            </div>
-            {/* Folder Front */}
-            <div className="w-[66px] h-[52px] bg-linear-to-tr from-violet-600 to-indigo-600 rounded-lg shadow-md relative z-10 flex flex-col p-2">
-              <div className="w-6 h-2 bg-violet-600 rounded-t-md absolute top-[-6px] left-[8px] z-0" />
-              {/* Folder tab logo mock */}
-              <div className="mt-auto w-3 h-3 rounded bg-white/20 flex items-center justify-center">
-                <FileText className="w-1.5 h-1.5 text-white" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 3. Clipboard with checkboxes & Stopwatch (Bottom Center Left) */}
-        <div className="absolute bottom-[-55px] left-[45px] z-20 flex items-end gap-2.5">
-          {/* Clipboard */}
-          <div className="relative w-[60px] h-[72px] bg-white border border-slate-200/80 rounded-lg p-2 flex flex-col gap-1.5 shadow-md">
-            <div className="w-5 h-2 bg-slate-300 rounded-t-sm absolute top-[-5px] left-1/2 -translate-x-1/2 flex items-center justify-center">
-              <div className="w-2.5 h-0.5 bg-slate-400 rounded-full" />
-            </div>
-            <div className="h-1 bg-purple-400 rounded-full w-3/4 mt-1" />
-            <div className="space-y-1">
-              <div className="flex items-center gap-1 text-[8px]"><Check className="w-2 h-2 text-emerald-500 stroke-3" /> <span className="h-0.5 bg-slate-200 w-6" /></div>
-              <div className="flex items-center gap-1 text-[8px]"><Check className="w-2 h-2 text-emerald-500 stroke-3" /> <span className="h-0.5 bg-slate-200 w-8" /></div>
-              <div className="flex items-center gap-1 text-[8px]"><div className="w-2 h-2 rounded-full border border-slate-200" /> <span className="h-0.5 bg-slate-200 w-5" /></div>
-            </div>
-          </div>
-
-          {/* Stopwatch */}
-          <div className="relative w-9 h-9 bg-amber-50 border border-amber-200 rounded-full flex items-center justify-center shadow-md pb-0.5">
-            <div className="relative w-6 h-6 border-2 border-slate-400 rounded-full flex items-center justify-center">
-              <div className="w-0.5 h-2.5 bg-slate-800 rounded-full absolute bottom-1/2 origin-bottom left-1/2 -translate-x-1/2" />
-              <div className="w-0.5 h-2.5 bg-purple-500 rounded-full absolute bottom-1/2 origin-bottom left-1/2 -translate-x-1/2 rotate-90" />
-              <div className="w-1 h-1 bg-slate-800 rounded-full" />
-            </div>
-            <div className="absolute top-[-3px] left-1/2 -translate-x-1/2 w-1.5 h-1 bg-slate-400 border border-slate-500 rounded-t-sm" />
-          </div>
-        </div>
-
-        {/* 4. Trophy (Bottom Right) */}
-        <div className="absolute bottom-[-50px] right-[-15px] z-20">
-          <div className="relative flex flex-col items-center">
-            {/* Trophy shape in SVGs */}
-            <div className="w-12 h-12 bg-linear-to-tr from-violet-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg border border-white/20">
-              <Award className="w-6 h-6 text-white" />
-            </div>
-            {/* Pedestal */}
-            <div className="w-10 h-3 bg-slate-200 rounded-t-md -mt-1 shadow-xs border-b border-slate-300" />
-            <div className="w-14 h-1.5 bg-slate-300 rounded-full" />
-          </div>
-        </div>
-
-        {/* 5. Small potted plant (Bottom Left-ish) */}
-        <div className="absolute bottom-[-45px] left-[150px] z-20 flex flex-col items-center">
-          <div className="relative w-9 h-9 flex items-center justify-center mb-[-2px]">
-            <div className="absolute w-4 h-4 bg-purple-400/80 rounded-tl-full rounded-br-full rotate-[-45] origin-bottom-right bottom-0 right-1/2" />
-            <div className="absolute w-4 h-4 bg-indigo-500/80 rounded-tr-full rounded-bl-full rotate-[45] origin-bottom-left bottom-0 left-1/2" />
-            <div className="absolute w-3.5 h-5 bg-indigo-600/80 rounded-t-full bottom-1" />
-          </div>
-          <div className="w-6 h-4 bg-slate-100 border border-slate-200 rounded-b-md rounded-t-xs" />
-        </div>
-
-        {/* 6. Gradient spheres/particles */}
-        <div className="absolute top-[80px] left-[-30px] w-2.5 h-2.5 rounded-full bg-linear-to-br from-purple-400 to-indigo-600 shadow-xs opacity-50" />
-        <div className="absolute top-[400px] left-[-45px] w-2 h-2 rounded-full bg-linear-to-br from-yellow-300 to-amber-500 shadow-xs opacity-50" />
-        <div className="absolute top-[180px] right-[275px] w-3 h-3 rounded-full bg-linear-to-br from-purple-400 to-indigo-600 shadow-xs opacity-60" />
-        <div className="absolute bottom-[10px] right-[-30px] w-2 h-2 rounded-full bg-linear-to-br from-teal-300 to-emerald-500 shadow-xs opacity-50" />
 
       </div>
     </div>

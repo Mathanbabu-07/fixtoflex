@@ -2,13 +2,13 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Mail, Coffee } from "lucide-react";
 
-interface MyAppsLeftContentProps {
+interface MailLeftContentProps {
   tabIndexStr?: string;
 }
 
-export default function MyAppsLeftContent({ tabIndexStr = "04 / 05" }: MyAppsLeftContentProps) {
+export default function MailLeftContent({ tabIndexStr = "05 / 05" }: MailLeftContentProps) {
   const containerVariants: any = {
     hidden: { opacity: 0 },
     visible: {
@@ -30,12 +30,12 @@ export default function MyAppsLeftContent({ tabIndexStr = "04 / 05" }: MyAppsLef
   };
 
   const featureList = [
-    "Centralized Application Dashboard",
-    "Real-time Status Updates",
-    "AI Insights & Recommendations",
-    "Follow-up & Reminder Alerts",
-    "Document & Resume Tracking",
-    "Interview & Offer Management",
+    "Role-based Email Drafts",
+    "Personalized & Professional Tone",
+    "Automated Follow-ups",
+    "Smart Templates Library",
+    "Track Sent & Responses",
+    "Save Time, Get More Replies",
   ];
 
   return (
@@ -43,7 +43,7 @@ export default function MyAppsLeftContent({ tabIndexStr = "04 / 05" }: MyAppsLef
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
-      className="flex flex-col items-start text-left space-y-7 max-w-[560px] lg:max-w-none w-full"
+      className="flex flex-col items-start text-left space-y-7 max-w-[560px] lg:max-w-none w-full relative pb-48 lg:pb-0"
     >
       {/* Badge */}
       <motion.div
@@ -62,21 +62,21 @@ export default function MyAppsLeftContent({ tabIndexStr = "04 / 05" }: MyAppsLef
         variants={itemVariants}
         className="font-extrabold text-[32px] sm:text-[42px] lg:text-[48px] leading-[1.12] tracking-tight text-[#1E1B4B] w-full"
       >
-        My{" "}
+        Draft Smarter,<br />
         <span className="bg-clip-text text-transparent bg-linear-to-r from-violet-600 to-indigo-600 drop-shadow-xs">
-          Applications
+          Reach Better
         </span>
       </motion.h2>
 
       {/* Subtitle */}
       <motion.p
         variants={itemVariants}
-        className="text-[15px] sm:text-[16px] leading-[1.6] text-slate-500 font-medium"
+        className="text-[15px] sm:text-[16px] leading-[1.6] text-slate-500 font-medium animate-fade-in"
       >
-        All your applications, in one place. Track, manage & conquer your dream role.
+        Create personalized, professional emails in seconds with AI.
       </motion.p>
 
-      {/* AI Guidance Card */}
+      {/* AI Assistant Card */}
       <motion.div
         variants={itemVariants}
         whileHover={{ y: -3 }}
@@ -87,10 +87,10 @@ export default function MyAppsLeftContent({ tabIndexStr = "04 / 05" }: MyAppsLef
           <span className="text-lg mt-0.5 shrink-0 select-none">✨</span>
           <div className="space-y-1">
             <h4 className="text-[13px] font-bold text-[#1E1B4B]">
-              Get more personalized guidance
+              AI-Powered Email Assistant
             </h4>
             <p className="text-[11px] text-slate-500 leading-normal font-medium">
-              Our AI reviews your application progress and helps improve your chances with personalized recommendations.
+              Our AI writes the perfect email tailored to the role, company, recruiter, and context, helping you communicate professionally.
             </p>
           </div>
         </div>
@@ -132,6 +132,48 @@ export default function MyAppsLeftContent({ tabIndexStr = "04 / 05" }: MyAppsLef
           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
         </motion.button>
       </motion.div>
+
+      {/* ============================================================ */}
+      {/* DECORATIVE OBJECTS (Bottom-left plant, envelope, mug)        */}
+      {/* ============================================================ */}
+      <div className="absolute bottom-[-180px] left-0 flex items-end gap-3 pointer-events-none select-none z-10 lg:flex hidden">
+        {/* Potted Plant */}
+        <div className="flex flex-col items-center">
+          <div className="relative w-12 h-14 flex items-center justify-center mb-[-2px]">
+            <div className="absolute w-5 h-5 bg-purple-400/70 rounded-tl-full rounded-br-full rotate-[-45deg] origin-bottom-right bottom-0 right-1/2" />
+            <div className="absolute w-5 h-5 bg-indigo-500/70 rounded-tr-full rounded-bl-full rotate-[45deg] origin-bottom-left bottom-0 left-1/2" />
+            <div className="absolute w-4 h-6 bg-indigo-600/70 rounded-t-full bottom-1" />
+          </div>
+          <div className="w-8 h-5 bg-slate-100 border border-slate-200 rounded-b-lg rounded-t-sm" />
+        </div>
+
+        {/* Envelope with @ card */}
+        <div className="relative">
+          <div className="absolute top-[-15px] left-1/2 -translate-x-1/2 w-14 h-16 bg-white border border-slate-200 rounded-lg shadow-xs flex items-center justify-center rotate-[-6deg] z-0">
+            <span className="text-purple-600 font-extrabold text-[18px]">@</span>
+          </div>
+          <div className="w-[84px] h-[58px] bg-linear-to-tr from-violet-600 to-indigo-600 rounded-xl relative z-10 flex flex-col p-2.5 shadow-md">
+            <div className="w-7 h-2.5 bg-violet-700 rounded-t-md absolute top-[-7px] left-1/2 -translate-x-1/2 z-0" />
+            <Mail className="w-4 h-4 text-white mt-auto" />
+          </div>
+        </div>
+
+        {/* Gmail Coffee Mug */}
+        <div className="relative flex flex-col items-center">
+          <div className="w-9 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-xs relative z-10">
+            {/* Handle */}
+            <div className="absolute right-[-6px] top-2 w-3.5 h-5 border-2 border-slate-200 rounded-r-lg z-0 bg-white" />
+            {/* Logo */}
+            <svg viewBox="0 0 24 24" className="w-4 h-4 z-10">
+              <path fill="#EA4335" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" />
+              <path fill="#FBBC05" d="M22 6v12c0 1.1-.9 2-2 2h-2V8l-6 4-6-4v12H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h4l4 4 4-4h4c1.1 0 2 .9 2 2z" />
+              <path fill="#34A853" d="M2 6v12c0 1.1.9 2 2 2h2V8l6 4-10-6.67z" />
+              <path fill="#4285F4" d="M22 6v12c0 1.1-.9 2-2 2h-2V8l-6 4 10-6.67z" />
+            </svg>
+          </div>
+          <div className="w-10 h-1 bg-slate-200 rounded-full mt-[-2px]" />
+        </div>
+      </div>
     </motion.div>
   );
 }

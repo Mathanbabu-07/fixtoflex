@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   LayoutGrid,
   Edit,
@@ -30,8 +30,6 @@ interface PortfolioIllustrationProps {
 }
 
 export default function PortfolioIllustration({ mouseX, mouseY }: PortfolioIllustrationProps) {
-  const dx = useTransform(mouseX, (v: number) => v * 0.012);
-  const dy = useTransform(mouseY, (v: number) => v * 0.012);
 
   const drawLine: any = {
     hidden: { pathLength: 0, opacity: 0 },
@@ -101,45 +99,11 @@ export default function PortfolioIllustration({ mouseX, mouseY }: PortfolioIllus
         {/* ================================================================== */}
         {/* PAPER PLANE */}
         {/* ================================================================== */}
-        <motion.div
-          className="absolute top-[-20px] right-[80px] z-30 text-indigo-400 pointer-events-none"
-          animate={{
-            x: [0, 60, 120],
-            y: [0, -35, 5],
-            rotate: [0, 20, 40],
-            opacity: [0, 0.9, 0]
-          }}
-          transition={{
-            type: "tween",
-            duration: 5,
-            repeat: Infinity,
-            repeatDelay: 3,
-            ease: "easeInOut"
-          }}
-        >
+        <div className="absolute top-[-20px] right-[80px] z-30 text-indigo-400 pointer-events-none opacity-80">
           <Send className="w-5 h-5 fill-indigo-50/80 drop-shadow-md" />
-        </motion.div>
+        </div>
 
-        {/* ================================================================== */}
-        {/* TOP-LEFT CODE ICON FLOATING CARD */}
-        {/* ================================================================== */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.7, y: 20 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3, type: "spring", stiffness: 100 }}
-          style={{ willChange: "transform" }}
-          className="absolute top-[-12%] left-[30%] z-30"
-        >
-          <motion.div
-            animate={{ y: [0, -5, 0] }}
-            transition={{ type: "tween", duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="w-12 h-12 bg-gradient-to-tr from-violet-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-[0_8px_24px_rgba(124,58,237,0.3)] border border-white/20"
-          >
-            <Code className="w-6 h-6 text-white" />
-          </motion.div>
-        </motion.div>
-
+        
         {/* ================================================================== */}
         {/* LEFT FLOATING TOOLBAR */}
         {/* ================================================================== */}
@@ -151,7 +115,7 @@ export default function PortfolioIllustration({ mouseX, mouseY }: PortfolioIllus
           style={{ willChange: "transform" }}
           className="absolute left-[-2%] sm:left-[0%] top-[14%] z-20"
         >
-          <div className="bg-[#1E1B4B] rounded-2xl p-2.5 flex flex-col items-center gap-2.5 shadow-[0_15px_40px_rgba(30,27,75,0.25)] border border-indigo-900/30">
+          <div className="bg-[#39397a] rounded-2xl p-2.5 flex flex-col items-center gap-2.5 shadow-[0_15px_40px_rgba(30,27,75,0.25)] border border-indigo-900/30">
             {toolbarIcons.map((Icon, i) => (
               <motion.div
                 key={i}
@@ -174,12 +138,10 @@ export default function PortfolioIllustration({ mouseX, mouseY }: PortfolioIllus
         {/* MAIN BROWSER WINDOW (PORTFOLIO PREVIEW) */}
         {/* ================================================================== */}
         <motion.div
-          style={{ x: dx, y: dy, willChange: "transform" }}
-          animate={{ scale: [0.995, 1.005, 0.995] }}
-          transition={{ type: "tween", duration: 6, repeat: Infinity, ease: "easeInOut" }}
           initial={{ opacity: 0, scale: 0.92 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
           className="relative bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl w-[82%] aspect-[1.4/1] shadow-[0_25px_60px_rgba(30,27,75,0.1)] flex flex-col overflow-hidden ml-6"
         >
           {/* Browser Chrome */}
@@ -369,49 +331,7 @@ export default function PortfolioIllustration({ mouseX, mouseY }: PortfolioIllus
           </motion.div>
         </motion.div>
 
-        {/* ================================================================== */}
-        {/* ADD SECTIONS CARD (Bottom Center-Left) */}
-        {/* ================================================================== */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4, type: "spring", stiffness: 100 }}
-          style={{ willChange: "transform" }}
-          className="absolute bottom-[-10%] left-[8%] sm:left-[10%] z-20 w-[220px] sm:w-[250px]"
-        >
-          <motion.div
-            whileHover={{ y: -3 }}
-            className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl shadow-[0_10px_30px_rgba(124,58,237,0.08)] p-4 transition-all duration-300"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold text-slate-800">Add Sections</span>
-              <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 text-[10px] font-bold cursor-pointer hover:bg-purple-50 hover:text-purple-500 transition-colors">
-                +
-              </div>
-            </div>
-            <div className="flex items-center justify-between gap-1">
-              {sectionItems.map(({ icon: Icon, label }, i) => (
-                <motion.div
-                  key={label}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.3, delay: 0.5 + i * 0.08 }}
-                  whileHover={{ y: -3, scale: 1.05 }}
-                  className="flex flex-col items-center gap-1.5 cursor-pointer group"
-                >
-                  <div className="w-9 h-9 bg-slate-50 hover:bg-purple-50 border border-slate-100 hover:border-purple-100 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-purple-600 transition-all duration-300">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <span className="text-[7px] font-bold text-slate-400 group-hover:text-slate-600 transition-colors">
-                    {label}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </motion.div>
+
 
         {/* ================================================================== */}
         {/* AI SUGGESTION CARD (Bottom Center-Right) */}

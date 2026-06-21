@@ -39,7 +39,7 @@ export default function JobTrackerSection({ tabIndexStr = "03 / 05" }: JobTracke
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full max-w-7xl mx-auto px-6 md:px-12 py-16 grid grid-cols-1 lg:grid-cols-[40%_60%] gap-12 lg:gap-8 items-center z-10 overflow-visible"
+      className="relative w-full max-w-7xl mx-auto px-6 md:px-12 py-16 grid grid-cols-1 lg:grid-cols-[40%_60%] gap-12 lg:gap-8 items-start z-10 overflow-visible"
     >
       {/* Animated Aurora meshes and orbits */}
       <AnimatedBackground mouseX={mouseX} mouseY={mouseY} />
@@ -48,7 +48,7 @@ export default function JobTrackerSection({ tabIndexStr = "03 / 05" }: JobTracke
       <JobTrackerLeftContent tabIndexStr={tabIndexStr} />
 
       {/* Right Column (Premium Job Tracker Dashboard) */}
-      <div className="w-full flex justify-center lg:justify-end overflow-visible">
+      <div className="w-full flex justify-center lg:justify-end overflow-visible lg:mt-14">
         <JobTrackerDashboard mouseX={mouseX} mouseY={mouseY} />
       </div>
     </div>

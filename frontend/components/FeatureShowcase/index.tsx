@@ -9,6 +9,7 @@ import UpgradeProfileSection from "./Profile/UpgradeProfileSection";
 import PortfolioSetupSection from "./Portfolio/PortfolioSetupSection";
 import JobTrackerSection from "./JobTracker/JobTrackerSection";
 import MyAppsSection from "./MyApps/MyAppsSection";
+import MailSection from "./Mail/MailSection";
 
 export default function FeatureShowcase() {
   const [activeTab, setActiveTab] = useState(0);
@@ -74,6 +75,19 @@ export default function FeatureShowcase() {
             className="w-full overflow-visible"
           >
             <MyAppsSection tabIndexStr="04 / 05" />
+          </motion.div>
+        );
+      case 4:
+        return (
+          <motion.div
+            key="draft-email"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="w-full overflow-visible"
+          >
+            <MailSection tabIndexStr="05 / 05" />
           </motion.div>
         );
       default:
