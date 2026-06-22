@@ -24,8 +24,21 @@ import {
   ChevronDown,
   Loader2,
   Trash2,
-  TrendingUp
+  TrendingUp,
+  Calendar,
+  Phone,
+  MapPin,
+  Map,
+  GraduationCap,
+  Building,
+  Target,
+  Clock,
+  Code,
+  Hash,
+  Users
 } from "lucide-react";
+
+import AIAnalysisDashboard from "@/components/AIAnalysisDashboard";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 // Custom inline SVG icons because brand icons are missing from this lucide-react version
@@ -140,6 +153,19 @@ interface UserProfile {
   portfolio_url?: string;
   resume_url?: string;
   headline?: string;
+  date_of_birth?: string;
+  gender?: string;
+  mobile_number?: string;
+  state?: string;
+  district?: string;
+  institution_name?: string;
+  institution_district?: string;
+  interested_domain?: string;
+  target_job_role?: string;
+  experience?: string;
+  skills?: string;
+  language_proficiency?: string;
+  certifications?: string;
 }
 
 export default function CandidateDashboard() {
@@ -164,8 +190,24 @@ export default function CandidateDashboard() {
     linkedin_url: "",
     github_url: "",
     portfolio_url: "",
+    date_of_birth: "",
+    gender: "",
+    email: "",
+    mobile_number: "",
+    state: "",
+    district: "",
+    institution_name: "",
+    institution_district: "",
+    interested_domain: "",
+    target_job_role: "",
+    experience: "",
+    skills: "",
+    language_proficiency: "",
+    certifications: "",
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
 
   // Resume Upload State
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -199,6 +241,20 @@ export default function CandidateDashboard() {
             linkedin_url: parsed.linkedin_url || `https://linkedin.com/in/${(parsed.full_name || parsed.name || "arjun-kumar").toLowerCase().replace(/\s+/g, "-")}`,
             github_url: parsed.github_url || "",
             portfolio_url: parsed.portfolio_url || "",
+            date_of_birth: parsed.date_of_birth || "",
+            gender: parsed.gender || "",
+            email: parsed.email || "",
+            mobile_number: parsed.mobile_number || "",
+            state: parsed.state || "",
+            district: parsed.district || "",
+            institution_name: parsed.institution_name || "",
+            institution_district: parsed.institution_district || "",
+            interested_domain: parsed.interested_domain || "",
+            target_job_role: parsed.target_job_role || "",
+            experience: parsed.experience || "",
+            skills: parsed.skills || "",
+            language_proficiency: parsed.language_proficiency || "",
+            certifications: parsed.certifications || "",
           });
           if (parsed.resume_url) {
             setResumeUrl(parsed.resume_url);
@@ -231,6 +287,19 @@ export default function CandidateDashboard() {
           portfolio_url: userData.portfolio_url,
           resume_url: userData.resume_url,
           headline: userData.headline,
+          date_of_birth: userData.date_of_birth,
+          gender: userData.gender,
+          mobile_number: userData.mobile_number,
+          state: userData.state,
+          district: userData.district,
+          institution_name: userData.institution_name,
+          institution_district: userData.institution_district,
+          interested_domain: userData.interested_domain,
+          target_job_role: userData.target_job_role,
+          experience: userData.experience,
+          skills: userData.skills,
+          language_proficiency: userData.language_proficiency,
+          certifications: userData.certifications,
         };
         setUser(normalizedUser);
         localStorage.setItem("user_session", JSON.stringify(normalizedUser));
@@ -242,6 +311,20 @@ export default function CandidateDashboard() {
           linkedin_url: userData.linkedin_url || `https://linkedin.com/in/${(userData.full_name || "").toLowerCase().replace(/\s+/g, "-")}`,
           github_url: userData.github_url || "",
           portfolio_url: userData.portfolio_url || "",
+          date_of_birth: userData.date_of_birth || "",
+          gender: userData.gender || "",
+          email: userData.email || "",
+          mobile_number: userData.mobile_number || "",
+          state: userData.state || "",
+          district: userData.district || "",
+          institution_name: userData.institution_name || "",
+          institution_district: userData.institution_district || "",
+          interested_domain: userData.interested_domain || "",
+          target_job_role: userData.target_job_role || "",
+          experience: userData.experience || "",
+          skills: userData.skills || "",
+          language_proficiency: userData.language_proficiency || "",
+          certifications: userData.certifications || "",
         });
         if (userData.resume_url) {
           setResumeUrl(userData.resume_url);
@@ -273,6 +356,19 @@ export default function CandidateDashboard() {
       linkedin_url: "https://linkedin.com/in/arjun-kumar",
       github_url: "https://github.com/arjun-kumar",
       portfolio_url: "https://arjunkumar.dev",
+      date_of_birth: "2002-05-15",
+      gender: "Male",
+      mobile_number: "+91 98765 43210",
+      state: "Tamil Nadu",
+      district: "Chennai",
+      institution_name: "Anna University",
+      institution_district: "Chennai",
+      interested_domain: "Full Stack Development",
+      target_job_role: "Software Engineer",
+      experience: "Fresher",
+      skills: "React, TypeScript, Node.js, Python",
+      language_proficiency: "English, Tamil, Hindi",
+      certifications: "AWS Cloud Practitioner",
     };
     setUser(demoUser);
     setFormData({
@@ -281,6 +377,20 @@ export default function CandidateDashboard() {
       linkedin_url: demoUser.linkedin_url || "",
       github_url: demoUser.github_url || "",
       portfolio_url: demoUser.portfolio_url || "",
+      date_of_birth: demoUser.date_of_birth || "",
+      gender: demoUser.gender || "",
+      email: demoUser.email || "",
+      mobile_number: demoUser.mobile_number || "",
+      state: demoUser.state || "",
+      district: demoUser.district || "",
+      institution_name: demoUser.institution_name || "",
+      institution_district: demoUser.institution_district || "",
+      interested_domain: demoUser.interested_domain || "",
+      target_job_role: demoUser.target_job_role || "",
+      experience: demoUser.experience || "",
+      skills: demoUser.skills || "",
+      language_proficiency: demoUser.language_proficiency || "",
+      certifications: demoUser.certifications || "",
     });
   };
 
@@ -360,6 +470,20 @@ export default function CandidateDashboard() {
         linkedin_url: formData.linkedin_url,
         github_url: formData.github_url,
         portfolio_url: formData.portfolio_url,
+        date_of_birth: formData.date_of_birth,
+        gender: formData.gender,
+        email: formData.email,
+        mobile_number: formData.mobile_number,
+        state: formData.state,
+        district: formData.district,
+        institution_name: formData.institution_name,
+        institution_district: formData.institution_district,
+        interested_domain: formData.interested_domain,
+        target_job_role: formData.target_job_role,
+        experience: formData.experience,
+        skills: formData.skills,
+        language_proficiency: formData.language_proficiency,
+        certifications: formData.certifications,
       };
 
       if (!isDemoMode) {
@@ -392,6 +516,8 @@ export default function CandidateDashboard() {
       }
 
       setIsEditModalOpen(false);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3500);
     } catch (err) {
       console.error("Error saving profile details:", err);
       // Fallback update on exception
@@ -399,6 +525,8 @@ export default function CandidateDashboard() {
       setUser(merged);
       localStorage.setItem("user_session", JSON.stringify(merged));
       setIsEditModalOpen(false);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3500);
     } finally {
       setIsSavingProfile(false);
     }
@@ -621,6 +749,16 @@ export default function CandidateDashboard() {
             <span className="px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-100 text-[#7C3AED] text-xs font-bold capitalize">
               {user?.role || "Candidate"}
             </span>
+            <button 
+              onClick={() => {
+                setActiveTab("Fix My Profile");
+                setShowAIAnalysis(true);
+              }}
+              className="ml-4 px-4 py-1.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-xs font-bold rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Analyze
+            </button>
           </div>
 
           {/* Desktop Top Links & Authenticated state */}
@@ -784,152 +922,144 @@ export default function CandidateDashboard() {
                   transition={{ duration: 0.3 }}
                   className="flex flex-col gap-6"
                 >
-                  
-                  {/* GLASSMORPHIC PRIMARY WRITER CARD (Centered in layout) */}
-                  <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-6 lg:p-10 shadow-xl flex flex-col items-center text-center relative overflow-hidden">
-                    
-                    {/* Floating orbs specific to this card */}
-                    <div className="absolute top-[-40px] left-[10%] w-24 h-24 bg-purple-100 rounded-full blur-2xl opacity-60 pointer-events-none" />
-                    <div className="absolute bottom-[-40px] right-[10%] w-32 h-32 bg-indigo-50 rounded-full blur-3xl opacity-60 pointer-events-none" />
+                  {showAIAnalysis ? (
+                    <AIAnalysisDashboard 
+                      githubUrl={formData.github_url}
+                      onAnalysisComplete={(res) => {
+                        console.log("Analysis Complete", res);
+                      }}
+                      onRequestEditProfile={() => setIsEditModalOpen(true)}
+                      onCancel={() => setShowAIAnalysis(false)}
+                    />
+                  ) : (
+                    <>
+                      {/* GLASSMORPHIC PRIMARY WRITER CARD (Centered in layout) */}
+                      <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-6 lg:p-10 shadow-xl flex flex-col items-center text-center relative overflow-hidden">
+                        
+                        {/* Floating orbs specific to this card */}
+                        <div className="absolute top-[-40px] left-[10%] w-24 h-24 bg-purple-100 rounded-full blur-2xl opacity-60 pointer-events-none" />
+                        <div className="absolute bottom-[-40px] right-[10%] w-32 h-32 bg-indigo-50 rounded-full blur-3xl opacity-60 pointer-events-none" />
 
-                    {/* Middle Circular User Icon decoration */}
-                    <div className="w-14 h-14 bg-purple-50 border border-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-6 shadow-sm">
-                      <User className="w-6 h-6" />
-                    </div>
-
-                    {/* Titles */}
-                    <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 leading-tight">
-                      Welcome Back! 👋
-                    </h2>
-                    <p className="text-xl lg:text-2xl font-extrabold bg-linear-to-r from-[#7C3AED] to-[#4F46E5] bg-clip-text text-transparent mt-2 tracking-tight">
-                      Let&apos;s build a recruiter-ready profile.
-                    </p>
-
-                    {/* ILLUSTRATION COMPONENT (Visual representation of dashboard preview) */}
-                    <div className="w-full max-w-[420px] aspect-[1.4/1] bg-slate-50/50 rounded-2xl border border-slate-200/40 p-4 shadow-sm my-8 relative flex flex-col overflow-hidden">
-                      {/* Top bar */}
-                      <div className="flex items-center justify-between mb-3 border-b border-slate-200/30 pb-2">
-                        <div className="flex items-center gap-1">
-                          <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
-                          <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                        </div>
-                        <span className="text-[9px] font-bold text-slate-400 tracking-wider">PROFILE_PREVIEW</span>
-                      </div>
-
-                      {/* Mockup layout */}
-                      <div className="flex-1 grid grid-cols-[1fr_1.1fr] gap-3">
-                        {/* Mockup Left Details */}
-                        <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-xs flex flex-col justify-between">
-                          <div className="flex flex-col gap-2">
-                            {/* Avatar placeholder circle */}
-                            <div className="w-8 h-8 rounded-full bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600">
-                              <User className="w-4 h-4" />
-                            </div>
-                            <div className="h-2 w-16 bg-slate-100 rounded-full" />
-                            <div className="h-1.5 w-12 bg-slate-50/80 rounded-full" />
-                          </div>
-                          
-                          {/* Progress bar in graphic */}
-                          <div className="space-y-1">
-                            <div className="flex justify-between items-center text-[8px] font-bold text-slate-400">
-                              <span>STRENGTH</span>
-                              <span className="text-purple-600">82%</span>
-                            </div>
-                            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden w-full">
-                              <div className="bg-linear-to-r from-purple-500 to-indigo-600 h-full rounded-full w-[82%]" />
-                            </div>
-                          </div>
+                        {/* Middle Circular User Icon decoration */}
+                        <div className="w-14 h-14 bg-purple-50 border border-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-6 shadow-sm">
+                          <User className="w-6 h-6" />
                         </div>
 
-                        {/* Mockup Checklist Details */}
-                        <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-xs flex flex-col justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600">
-                              <User className="w-3.5 h-3.5" />
+                        {/* Titles */}
+                        <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 leading-tight">
+                          Welcome Back! 👋
+                        </h2>
+                        <p className="text-xl lg:text-2xl font-extrabold bg-linear-to-r from-[#7C3AED] to-[#4F46E5] bg-clip-text text-transparent mt-2 tracking-tight">
+                          Let&apos;s build a recruiter-ready profile.
+                        </p>
+
+                        {/* ILLUSTRATION COMPONENT (Visual representation of dashboard preview) */}
+                        <div className="w-full max-w-[420px] aspect-[1.4/1] bg-slate-50/50 rounded-2xl border border-slate-200/40 p-4 shadow-sm my-8 relative flex flex-col overflow-hidden">
+                          {/* Top bar */}
+                          <div className="flex items-center justify-between mb-3 border-b border-slate-200/30 pb-2">
+                            <div className="flex items-center gap-1">
+                              <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                              <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                             </div>
-                            <div className="flex-1 h-2 bg-slate-100 rounded-full" />
+                            <span className="text-[9px] font-bold text-slate-400 tracking-wider">PROFILE_PREVIEW</span>
                           </div>
-                          
-                          {/* Checked lines */}
-                          <div className="space-y-2 py-1">
-                            {[1, 2, 3].map((i) => (
-                              <div key={i} className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center">
-                                  <Check className="w-2 h-2" />
-                                </span>
-                                <div className="h-1.5 flex-1 bg-slate-50 rounded-full" />
+
+                          {/* Mockup layout */}
+                          <div className="flex-1 grid grid-cols-[1fr_1.1fr] gap-3">
+                            {/* Mockup Left Details */}
+                            <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-xs flex flex-col justify-between">
+                              <div className="flex flex-col gap-2">
+                                {/* Avatar placeholder circle */}
+                                <div className="w-8 h-8 bg-purple-100 rounded-full animate-pulse" />
+                                <div className="w-24 h-2.5 bg-slate-200 rounded-full mt-1" />
+                                <div className="w-16 h-2 bg-slate-100 rounded-full" />
                               </div>
-                            ))}
+                              <div className="space-y-1.5 mt-4">
+                                <div className="w-full h-1.5 bg-slate-100 rounded-full" />
+                                <div className="w-[80%] h-1.5 bg-slate-100 rounded-full" />
+                                <div className="w-[90%] h-1.5 bg-slate-100 rounded-full" />
+                              </div>
+                            </div>
+                            
+                            {/* Mockup Right Stats/Graph */}
+                            <div className="flex flex-col gap-3">
+                              <div className="flex-1 bg-white rounded-xl border border-slate-100 shadow-xs p-3 flex flex-col justify-center gap-2">
+                                <div className="flex justify-between items-end">
+                                  <div className="w-2 h-8 bg-indigo-200 rounded-t-sm" />
+                                  <div className="w-2 h-12 bg-purple-400 rounded-t-sm" />
+                                  <div className="w-2 h-6 bg-slate-200 rounded-t-sm" />
+                                  <div className="w-2 h-10 bg-indigo-300 rounded-t-sm" />
+                                  <div className="w-2 h-14 bg-purple-500 rounded-t-sm" />
+                                </div>
+                                <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2" />
+                              </div>
+                              <div className="h-10 bg-white rounded-xl border border-slate-100 shadow-xs flex items-center px-3 gap-2">
+                                <div className="w-4 h-4 rounded-md bg-emerald-100 flex items-center justify-center">
+                                  <Check className="w-2.5 h-2.5 text-emerald-500" />
+                                </div>
+                                <div className="w-16 h-2 bg-slate-200 rounded-full" />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Drawn Pen overlay */}
+                          <div className="absolute bottom-[20px] left-[20px] w-24 h-4 bg-purple-600 rounded-full shadow-md transform rotate-[-40deg] border border-purple-500 flex items-center justify-end px-1.5 pointer-events-none animate-bounce">
+                            <div className="w-2 h-2 bg-yellow-400 rounded-full" />
                           </div>
                         </div>
-                      </div>
 
-                      {/* Small plant decoration graphic in corner */}
-                      <div className="absolute bottom-2 right-2 w-10 h-10 pointer-events-none opacity-90 flex items-end justify-center">
-                        <div className="w-3 h-4 bg-purple-200/80 rounded-t-full relative">
-                          <div className="absolute -top-2 left-[-4px] w-2 h-3 bg-purple-400 rounded-full transform -rotate-45" />
-                          <div className="absolute -top-3 right-[-4px] w-2.5 h-3.5 bg-purple-300 rounded-full transform rotate-45" />
+                        {/* Invitation Header */}
+                        <div className="space-y-1">
+                          <h3 className="text-md font-bold text-slate-800">
+                            Please update your profile details.
+                          </h3>
+                          <p className="text-xs text-slate-400 font-semibold">
+                            Complete your profile to unlock
+                          </p>
                         </div>
-                        <div className="w-5 h-3 bg-slate-200 border border-slate-300/50 rounded-b-md" />
+
+                        {/* Features cards grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full my-8">
+                          {[
+                            { title: "Better ATS Score", icon: TrendingUp, color: "bg-blue-50 text-blue-600 border-blue-100/50" },
+                            { title: "Better Job Matching", icon: Briefcase, color: "bg-indigo-50 text-indigo-600 border-indigo-100/50" },
+                            { title: "AI Resume Analysis", icon: Sparkles, color: "bg-purple-50 text-purple-600 border-purple-100/50" },
+                            { title: "Portfolio Generation", icon: Globe, color: "bg-emerald-50 text-emerald-600 border-emerald-100/50" },
+                          ].map((card, idx) => {
+                            const CardIcon = card.icon;
+                            return (
+                              <div 
+                                key={idx} 
+                                className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center gap-2 shadow-xs transition-all duration-300 hover:scale-[1.03] ${card.color}`}
+                              >
+                                <CardIcon className="w-5 h-5 shrink-0" />
+                                <span className="text-[10px] font-extrabold uppercase tracking-wide leading-tight">
+                                  {card.title}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Main CTA */}
+                        <button 
+                          onClick={() => setIsEditModalOpen(true)}
+                          className="px-8 py-3.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-bold rounded-2xl shadow-lg hover:shadow-indigo-500/20 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 group text-sm"
+                        >
+                          <span>Update Profile</span>
+                          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                        </button>
+
+                        {/* Bottom Security Note */}
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold mt-4">
+                          <Lock className="w-3.5 h-3.5" />
+                          <span>Your data is safe and secure with us.</span>
+                        </div>
+
                       </div>
-
-                      {/* Drawn Pen overlay */}
-                      <div className="absolute bottom-[20px] left-[20px] w-24 h-4 bg-purple-600 rounded-full shadow-md transform rotate-[-40deg] border border-purple-500 flex items-center justify-end px-1.5 pointer-events-none animate-bounce">
-                        <div className="w-2 h-2 bg-yellow-400 rounded-full" />
-                      </div>
-                    </div>
-
-                    {/* Invitation Header */}
-                    <div className="space-y-1">
-                      <h3 className="text-md font-bold text-slate-800">
-                        Please update your profile details.
-                      </h3>
-                      <p className="text-xs text-slate-400 font-semibold">
-                        Complete your profile to unlock
-                      </p>
-                    </div>
-
-                    {/* Features cards grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full my-8">
-                      {[
-                        { title: "Better ATS Score", icon: TrendingUp, color: "bg-blue-50 text-blue-600 border-blue-100/50" },
-                        { title: "Better Job Matching", icon: Briefcase, color: "bg-indigo-50 text-indigo-600 border-indigo-100/50" },
-                        { title: "AI Resume Analysis", icon: Sparkles, color: "bg-purple-50 text-purple-600 border-purple-100/50" },
-                        { title: "Portfolio Generation", icon: Globe, color: "bg-emerald-50 text-emerald-600 border-emerald-100/50" },
-                      ].map((card, idx) => {
-                        const CardIcon = card.icon;
-                        return (
-                          <div 
-                            key={idx} 
-                            className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center gap-2 shadow-xs transition-all duration-300 hover:scale-[1.03] ${card.color}`}
-                          >
-                            <CardIcon className="w-5 h-5 shrink-0" />
-                            <span className="text-[10px] font-extrabold uppercase tracking-wide leading-tight">
-                              {card.title}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Main CTA */}
-                    <button 
-                      onClick={() => setIsEditModalOpen(true)}
-                      className="px-8 py-3.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-bold rounded-2xl shadow-lg hover:shadow-indigo-500/20 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 group text-sm"
-                    >
-                      <span>Update Profile</span>
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                    </button>
-
-                    {/* Bottom Security Note */}
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold mt-4">
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>Your data is safe and secure with us.</span>
-                    </div>
-
-                  </div>
-
+                    </>
+                  )}
                 </motion.div>
               )}
 
@@ -1203,7 +1333,7 @@ export default function CandidateDashboard() {
                 {/* 1. Edit Profile */}
                 <button
                   onClick={() => setIsEditModalOpen(true)}
-                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group"
+                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-[#7C3AED]"><User className="w-4 h-4" /></span>
@@ -1213,23 +1343,27 @@ export default function CandidateDashboard() {
                 </button>
 
                 {/* 2. LinkedIn Link */}
-                <a
-                  href={formData.linkedin_url || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group"
+                <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-[#0A66C2]"><LinkedInIcon className="w-4 h-4 fill-[#0A66C2]" /></span>
-                    <span className="truncate max-w-[180px]">Add LinkedIn Profile URL</span>
+                    <span className="truncate max-w-[180px]">
+                      {formData.linkedin_url ? "LinkedIn Profile Added" : "Add LinkedIn Profile URL"}
+                    </span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-                </a>
+                  {formData.linkedin_url ? (
+                    <Check className="w-4 h-4 text-emerald-500" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  )}
+                </button>
 
                 {/* 3. GitHub Link */}
                 <button
                   onClick={() => setIsEditModalOpen(true)}
-                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group"
+                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-slate-800"><GitHubIcon className="w-4 h-4 fill-slate-800" /></span>
@@ -1237,13 +1371,17 @@ export default function CandidateDashboard() {
                       {formData.github_url ? "GitHub Profile Added" : "Add GitHub Profile URL"}
                     </span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  {formData.github_url ? (
+                    <Check className="w-4 h-4 text-emerald-500" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  )}
                 </button>
 
                 {/* 4. Portfolio Link */}
                 <button
                   onClick={() => setIsEditModalOpen(true)}
-                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group"
+                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-emerald-500"><Globe className="w-4 h-4" /></span>
@@ -1251,21 +1389,29 @@ export default function CandidateDashboard() {
                       {formData.portfolio_url ? "Portfolio Added" : "Add Portfolio URL"}
                     </span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  {formData.portfolio_url ? (
+                    <Check className="w-4 h-4 text-emerald-500" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  )}
                 </button>
 
                 {/* 5. Upload Resume Button */}
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group"
+                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-purple-600"><FileText className="w-4 h-4" /></span>
                     <span className="truncate max-w-[180px]">
-                      {resumeUrl ? "Upload New Resume" : "Add Resume"}
+                      {resumeUrl ? "Resume Uploaded" : "Add Resume"}
                     </span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  {resumeUrl ? (
+                    <Check className="w-4 h-4 text-emerald-500" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  )}
                 </button>
               </div>
 
@@ -1352,120 +1498,507 @@ export default function CandidateDashboard() {
 
       </div>
 
-      {/* 5. EDIT PROFILE FORM MODAL */}
+      {/* SUCCESS MESSAGE TOAST */}
+      <AnimatePresence>
+        {showSuccessMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-100 flex items-center gap-3 bg-white/90 backdrop-blur-xl border border-emerald-100 shadow-[0_12px_32px_-8px_rgba(16,185,129,0.3)] px-5 py-3.5 rounded-2xl"
+          >
+            <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center">
+              <Check className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-sm font-extrabold text-slate-800 tracking-tight">Profile Saved Successfully!</p>
+              <p className="text-[11px] text-slate-500 font-medium">Your matchmaking metrics have been updated.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 5. PREMIUM EDIT PROFILE MODAL */}
       <AnimatePresence>
         {isEditModalOpen && (
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            onClick={() => setIsEditModalOpen(false)}
+          >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white rounded-3xl border border-slate-100 shadow-2xl p-6 lg:p-8 max-w-lg w-full flex flex-col gap-6"
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white/95 backdrop-blur-xl rounded-[24px] border border-white/60 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden relative"
             >
-              
-              {/* Modal Header */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800">Edit Your Profile</h3>
-                  <p className="text-xs text-slate-400">Provide details for AI scoring and outreach matchmaking.</p>
+              {/* Decorative gradient orbs */}
+              <div className="absolute top-0 left-0 w-32 h-32 bg-purple-200/30 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-40 h-40 bg-indigo-100/30 rounded-full blur-3xl pointer-events-none" />
+
+              {/* Modal Header - Sticky */}
+              <div className="flex items-center justify-between px-6 lg:px-8 py-5 border-b border-slate-100/80 bg-white/80 backdrop-blur-md shrink-0 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-linear-to-br from-[#7C3AED] to-[#4F46E5] flex items-center justify-center shadow-lg shadow-purple-500/20">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-extrabold text-slate-800 tracking-tight">Edit My Profile</h3>
+                    <p className="text-[11px] text-slate-400 font-medium">Complete your profile for AI scoring & job matching</p>
+                  </div>
                 </div>
                 <button 
                   onClick={() => setIsEditModalOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 text-slate-400 hover:text-slate-600 transition-all cursor-pointer"
+                  className="p-2 rounded-xl hover:bg-slate-100 border border-transparent hover:border-slate-200 text-slate-400 hover:text-slate-600 transition-all duration-200 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Form body */}
-              <form onSubmit={handleSaveProfile} className="space-y-4">
+              {/* Scrollable Form Body */}
+              <form id="edit-profile-form" onSubmit={handleSaveProfile} className="flex-1 overflow-y-auto px-6 lg:px-8 py-6 space-y-7 custom-scrollbar">
                 
-                {/* 1. Name */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200/80 focus:border-[#7C3AED] rounded-xl px-3.5 py-2 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all"
-                    placeholder="e.g. Arjun Kumar"
-                  />
+                {/* ══════════ SECTION 1: Personal Information ══════════ */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
+                      <span className="text-sm">👤</span>
+                    </div>
+                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Personal Information</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Full Name */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <User className="w-3 h-3 text-purple-400" />
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        id="edit-full-name"
+                        value={formData.full_name}
+                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. Arjun Kumar"
+                      />
+                    </div>
+
+                    {/* Date of Birth */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3 text-purple-400" />
+                        Date of Birth
+                      </label>
+                      <input
+                        type="date"
+                        id="edit-dob"
+                        value={formData.date_of_birth}
+                        onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                      />
+                    </div>
+
+                    {/* Gender */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Users className="w-3 h-3 text-purple-400" />
+                        Gender
+                      </label>
+                      <select
+                        id="edit-gender"
+                        value={formData.gender}
+                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none transition-all duration-200 appearance-none cursor-pointer"
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Non-binary">Non-binary</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                      </select>
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Mail className="w-3 h-3 text-purple-400" />
+                        Email ID
+                      </label>
+                      <input
+                        type="email"
+                        id="edit-email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. arjun@gmail.com"
+                      />
+                    </div>
+
+                    {/* Mobile Number */}
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Phone className="w-3 h-3 text-purple-400" />
+                        Mobile Number
+                      </label>
+                      <input
+                        type="tel"
+                        id="edit-mobile"
+                        value={formData.mobile_number}
+                        onChange={(e) => setFormData({ ...formData, mobile_number: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. +91 98765 43210"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* 2. Headline */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Headline / Job Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.headline}
-                    onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200/80 focus:border-[#7C3AED] rounded-xl px-3.5 py-2 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all"
-                    placeholder="e.g. Software Engineer"
-                  />
+                {/* Divider */}
+                <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+
+                {/* ══════════ SECTION 2: Location ══════════ */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                      <span className="text-sm">📍</span>
+                    </div>
+                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Location</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* State */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3 text-emerald-400" />
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-state"
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. Tamil Nadu"
+                      />
+                    </div>
+
+                    {/* District */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Map className="w-3 h-3 text-emerald-400" />
+                        District
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-district"
+                        value={formData.district}
+                        onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. Chennai"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* 3. LinkedIn Link */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">LinkedIn Profile URL</label>
-                  <input
-                    type="url"
-                    required
-                    value={formData.linkedin_url}
-                    onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200/80 focus:border-[#7C3AED] rounded-xl px-3.5 py-2 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all"
-                    placeholder="https://linkedin.com/in/username"
-                  />
+                {/* Divider */}
+                <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+
+                {/* ══════════ SECTION 3: Education ══════════ */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center">
+                      <span className="text-sm">🎓</span>
+                    </div>
+                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Education</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Institution Name */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <GraduationCap className="w-3 h-3 text-amber-500" />
+                        Institution Name
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-institution"
+                        value={formData.institution_name}
+                        onChange={(e) => setFormData({ ...formData, institution_name: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. Anna University"
+                      />
+                    </div>
+
+                    {/* Institution District */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Building className="w-3 h-3 text-amber-500" />
+                        Institution District
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-institution-district"
+                        value={formData.institution_district}
+                        onChange={(e) => setFormData({ ...formData, institution_district: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. Chennai"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* 4. GitHub Link */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">GitHub URL (Optional)</label>
-                  <input
-                    type="url"
-                    value={formData.github_url}
-                    onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200/80 focus:border-[#7C3AED] rounded-xl px-3.5 py-2 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all"
-                    placeholder="https://github.com/username"
-                  />
+                {/* Divider */}
+                <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+
+                {/* ══════════ SECTION 4: Career Preferences ══════════ */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                      <span className="text-sm">💼</span>
+                    </div>
+                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Career Preferences</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Headline / Job Title */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Briefcase className="w-3 h-3 text-indigo-400" />
+                        Headline / Job Title
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-headline"
+                        value={formData.headline}
+                        onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. Software Engineer"
+                      />
+                    </div>
+
+                    {/* Interested Domain */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Briefcase className="w-3 h-3 text-indigo-400" />
+                        Interested Domain
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-domain"
+                        value={formData.interested_domain}
+                        onChange={(e) => setFormData({ ...formData, interested_domain: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. Full Stack Development"
+                      />
+                    </div>
+
+                    {/* Target Job Role */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Target className="w-3 h-3 text-indigo-400" />
+                        Target Job Role
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-target-role"
+                        value={formData.target_job_role}
+                        onChange={(e) => setFormData({ ...formData, target_job_role: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. Software Engineer"
+                      />
+                    </div>
+
+                    {/* Experience */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 text-indigo-400" />
+                        Experience
+                      </label>
+                      <select
+                        id="edit-experience"
+                        value={formData.experience}
+                        onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none transition-all duration-200 appearance-none cursor-pointer"
+                      >
+                        <option value="">Select Experience</option>
+                        <option value="Fresher">Fresher</option>
+                        <option value="0-1 years">0-1 years</option>
+                        <option value="1-2 years">1-2 years</option>
+                        <option value="2-3 years">2-3 years</option>
+                        <option value="3-5 years">3-5 years</option>
+                        <option value="5+ years">5+ years</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
 
-                {/* 5. Portfolio Link */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Portfolio Website URL (Optional)</label>
-                  <input
-                    type="url"
-                    value={formData.portfolio_url}
-                    onChange={(e) => setFormData({ ...formData, portfolio_url: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200/80 focus:border-[#7C3AED] rounded-xl px-3.5 py-2 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all"
-                    placeholder="https://yourwebsite.com"
-                  />
+                {/* Divider */}
+                <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+
+                {/* ══════════ SECTION 5: Technical Skills ══════════ */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center">
+                      <span className="text-sm">🛠</span>
+                    </div>
+                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Technical Skills</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Skills */}
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Code className="w-3 h-3 text-purple-400" />
+                        Skills
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-skills"
+                        value={formData.skills}
+                        onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. React, TypeScript, Node.js, Python (comma separated)"
+                      />
+                    </div>
+
+                    {/* Language Proficiency */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Hash className="w-3 h-3 text-purple-400" />
+                        Language Proficiency
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-languages"
+                        value={formData.language_proficiency}
+                        onChange={(e) => setFormData({ ...formData, language_proficiency: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. English, Tamil, Hindi"
+                      />
+                    </div>
+
+                    {/* Certifications */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Award className="w-3 h-3 text-purple-400" />
+                        Certifications
+                      </label>
+                      <input
+                        type="text"
+                        id="edit-certifications"
+                        value={formData.certifications}
+                        onChange={(e) => setFormData({ ...formData, certifications: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="e.g. AWS Cloud Practitioner"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* Footer action buttons */}
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-6">
+                {/* Divider */}
+                <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+
+                {/* ══════════ SECTION 6: Social & Portfolio Links ══════════ */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-cyan-50 border border-cyan-100 flex items-center justify-center">
+                      <span className="text-sm">🔗</span>
+                    </div>
+                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Social & Portfolio Links</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* LinkedIn URL */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <LinkedInIcon className="w-3 h-3 fill-[#0A66C2]" />
+                        LinkedIn Profile URL
+                      </label>
+                      <input
+                        type="url"
+                        id="edit-linkedin"
+                        value={formData.linkedin_url}
+                        onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="https://linkedin.com/in/username"
+                      />
+                    </div>
+
+                    {/* GitHub URL */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <GitHubIcon className="w-3 h-3 fill-slate-600" />
+                        GitHub Profile URL
+                      </label>
+                      <input
+                        type="url"
+                        id="edit-github"
+                        value={formData.github_url}
+                        onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="https://github.com/username"
+                      />
+                    </div>
+
+                    {/* Portfolio URL */}
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Globe className="w-3 h-3 text-emerald-500" />
+                        Portfolio Website URL
+                      </label>
+                      <input
+                        type="url"
+                        id="edit-portfolio"
+                        value={formData.portfolio_url}
+                        onChange={(e) => setFormData({ ...formData, portfolio_url: e.target.value })}
+                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                        placeholder="https://yourwebsite.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom spacer for sticky footer */}
+                <div className="h-2" />
+
+              </form>
+
+              {/* Sticky Footer - Save/Cancel */}
+              <div className="flex items-center justify-between gap-3 px-6 lg:px-8 py-4 border-t border-slate-100/80 bg-white/90 backdrop-blur-md shrink-0 relative z-10">
+                <div className="flex items-center gap-1.5">
+                  <Lock className="w-3 h-3 text-slate-400" />
+                  <span className="text-[10px] text-slate-400 font-semibold">Your data is encrypted & secure</span>
+                </div>
+                <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-500 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                    className="px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-500 text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
+                    form="edit-profile-form"
                     disabled={isSavingProfile}
-                    className="px-5 py-2 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white text-xs font-bold rounded-xl shadow-md hover:shadow-indigo-500/10 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-6 py-2.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white text-xs font-bold rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     {isSavingProfile && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>Save Changes</span>
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Save Profile</span>
                   </button>
                 </div>
-
-              </form>
+              </div>
 
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 

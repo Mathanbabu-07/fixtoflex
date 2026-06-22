@@ -17,6 +17,20 @@ class UserProfileUpdate(BaseModel):
     github_url: Optional[str] = None
     portfolio_url: Optional[str] = None
     resume_url: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
+    email: Optional[str] = None
+    mobile_number: Optional[str] = None
+    state: Optional[str] = None
+    district: Optional[str] = None
+    institution_name: Optional[str] = None
+    institution_district: Optional[str] = None
+    interested_domain: Optional[str] = None
+    target_job_role: Optional[str] = None
+    experience: Optional[str] = None
+    skills: Optional[str] = None
+    language_proficiency: Optional[str] = None
+    certifications: Optional[str] = None
 
 @router.get("/me", status_code=status.HTTP_200_OK)
 async def get_my_profile(current_user: dict = Depends(get_current_user)):

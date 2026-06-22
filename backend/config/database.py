@@ -32,9 +32,17 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # LinkedIn credentials
-    LINKEDIN_CLIENT_ID: str
-    LINKEDIN_CLIENT_SECRET: str
+    LINKEDIN_CLIENT_ID: str = ""
+    LINKEDIN_CLIENT_SECRET: str = ""
     LINKEDIN_REDIRECT_URI: str = "http://localhost:3001/auth/linkedin/callback"
+
+    # Scrape.do settings
+    SCRAPEDO_API_KEY: str = ""
+    SCRAPEDO_BASE_URL: str = "http://api.scrape.do"
+
+    # Gemini settings
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-3.1-flash-lite"
 
 # Find and load the appropriate .env file depending on working directory
 env_path = ".env"
@@ -63,6 +71,10 @@ except Exception as e:
         LINKEDIN_CLIENT_ID = os.environ.get("LINKEDIN_CLIENT_ID", "")
         LINKEDIN_CLIENT_SECRET = os.environ.get("LINKEDIN_CLIENT_SECRET", "")
         LINKEDIN_REDIRECT_URI = os.environ.get("LINKEDIN_REDIRECT_URI", "http://localhost:3001/auth/linkedin/callback")
+        SCRAPEDO_API_KEY = os.environ.get("SCRAPEDO_API_KEY", "")
+        SCRAPEDO_BASE_URL = os.environ.get("SCRAPEDO_BASE_URL", "http://api.scrape.do")
+        GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+        GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
     settings = FallbackSettings()
 
 # Singleton reference for the Supabase Client
