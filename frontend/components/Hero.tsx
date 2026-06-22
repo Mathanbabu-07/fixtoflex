@@ -5,9 +5,13 @@ import { motion } from "framer-motion";
 import { Play, ArrowRight, Sparkles, Zap, Send, Briefcase } from "lucide-react";
 import DashboardMockup from "./DashboardMockup";
 
-export default function Hero() {
+interface HeroProps {
+  onGetStartedClick?: () => void;
+}
+
+export default function Hero({ onGetStartedClick }: HeroProps) {
   return (
-    <section className="relative min-h-screen pt-[120px] pb-16 flex items-center justify-center overflow-hidden bg-linear-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff]">
+    <section className="relative min-h-screen pt-[96px] pb-12 flex items-center justify-center overflow-hidden bg-linear-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff]">
       
       {/* BACKGROUND BLUR ORBS */}
       {/* Blurred purple orb */}
@@ -27,7 +31,7 @@ export default function Hero() {
       <div className="w-full max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-[53%_47%] gap-12 lg:gap-10 items-start z-10 pt-4 lg:pt-12">
         
         {/* Left Content Column */}
-        <div className="flex flex-col items-start text-left space-y-8 max-w-[620px] lg:max-w-none mx-auto lg:mx-0">
+        <div className="flex flex-col items-start text-left space-y-5 max-w-[620px] lg:max-w-none mx-auto lg:mx-0">
           
           {/* Tagline Badge */}
           <motion.div 
@@ -70,7 +74,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="max-w-[560px] text-[18px] sm:text-[24px] leading-[1.7] font-normal text-slate-500"
+            className="max-w-[560px] text-[18px] sm:text-[22px] leading-[1.65] font-bold text-slate-500"
           >
             FixToFlex is an AI-Powered Job Application Platform that analyzes your resume against any job description, closes your skill gaps, and helps you land the offer.
           </motion.p>
@@ -83,15 +87,27 @@ export default function Hero() {
             className="flex flex-row items-center gap-6 w-full xs:w-auto"
           >
             {/* Button 1: Get Started */}
-            <motion.a
-              href="#get-started"
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-8 py-4 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-[16px] sm:text-[18px] font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 flex items-center justify-center gap-2 group flex-1 xs:flex-initial"
-            >
-              Get Started 
-              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </motion.a>
+            {onGetStartedClick ? (
+              <motion.button
+                onClick={onGetStartedClick}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-8 py-4 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-[16px] sm:text-[18px] font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 flex items-center justify-center gap-2 group flex-1 xs:flex-initial cursor-pointer focus:outline-none"
+              >
+                Get Started 
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </motion.button>
+            ) : (
+              <motion.a
+                href="#get-started"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-8 py-4 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-[16px] sm:text-[18px] font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 flex items-center justify-center gap-2 group flex-1 xs:flex-initial"
+              >
+                Get Started 
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </motion.a>
+            )}
 
             {/* Button 2: How It Works */}
             <motion.a
@@ -110,7 +126,7 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="pt-6 grid grid-cols-2 xs:flex xs:items-center gap-x-6 gap-y-3 border-t border-purple-100/60 w-full"
+            className="pt-3 grid grid-cols-2 xs:flex xs:items-center gap-x-6 gap-y-3 border-t border-purple-100/60 w-full"
           >
             {/* 1. Profile Enhancing */}
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">

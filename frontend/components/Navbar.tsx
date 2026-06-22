@@ -15,7 +15,11 @@ interface UserProfile {
   role?: string;
 }
 
-export default function Navbar() {
+interface NavbarProps {
+  onGetStartedClick?: () => void;
+}
+
+export default function Navbar({ onGetStartedClick }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -253,12 +257,21 @@ export default function Navbar() {
             </div>
 
             {/* Small CTA matching the dashboard */}
-            <Link
-              href="#get-started"
-              className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-medium px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-            >
-              Get Started
-            </Link>
+            {onGetStartedClick ? (
+              <button
+                onClick={onGetStartedClick}
+                className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-medium px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer focus:outline-none"
+              >
+                Get Started
+              </button>
+            ) : (
+              <Link
+                href="#get-started"
+                className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-medium px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+              >
+                Get Started
+              </Link>
+            )}
           </>
         ) : (
           /* Logged In User Profile Dropdown */
@@ -428,13 +441,25 @@ export default function Navbar() {
                   )}
                 </AnimatePresence>
               </div>
-              <Link
-                href="#get-started"
-                onClick={() => setIsOpen(false)}
-                className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-center font-medium py-3 rounded-xl shadow-md"
-              >
-                Get Started
-              </Link>
+              {onGetStartedClick ? (
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    onGetStartedClick();
+                  }}
+                  className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-center font-medium py-3 rounded-xl shadow-md cursor-pointer focus:outline-none"
+                >
+                  Get Started
+                </button>
+              ) : (
+                <Link
+                  href="#get-started"
+                  onClick={() => setIsOpen(false)}
+                  className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-center font-medium py-3 rounded-xl shadow-md"
+                >
+                  Get Started
+                </Link>
+              )}
             </>
           ) : (
             <div className="flex flex-col gap-4 pt-2 border-t border-slate-100">
