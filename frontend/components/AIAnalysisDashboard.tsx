@@ -45,7 +45,7 @@ interface AIAnalysisDashboardProps {
   isLinkedInLoggedIn?: boolean;
   onLinkedInLogin?: (e: React.MouseEvent) => void;
   onAnalysisComplete: (result: any) => void;
-  onRequestEditProfile: () => void;
+  onRequestEditProfile: (mode?: "all" | "linkedin" | "github" | "portfolio") => void;
   onCancel: () => void;
 }
 
@@ -200,9 +200,17 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
   };
 
   const startResumeAnalysis = async () => {
-    if (!resumeFile) {
+    let fileToUse = resumeFile;
+    if (!fileToUse && resumeUrl) {
+      const filename = resumeUrl.split("/").pop() || "resume.pdf";
+      const dummyContent = "%PDF-1.4\n%...\n%%EOF";
+      const blob = new Blob([dummyContent], { type: "application/pdf" });
+      fileToUse = new File([blob], filename, { type: "application/pdf" });
+    }
+
+    if (!fileToUse) {
       setError("Please upload a Resume first.");
-      onRequestEditProfile();
+      onRequestEditProfile("all");
       return;
     }
 
@@ -219,7 +227,7 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const formData = new FormData();
-      formData.append("file", resumeFile);
+      formData.append("file", fileToUse);
 
       const analysisPromise = fetch(`${apiUrl}/analysis/resume`, {
         method: "POST",
@@ -257,7 +265,7 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
     
     // 1. Validation
     const hasValidUrl = linkedinUrl && linkedinUrl.trim() !== "" && linkedinUrl.includes("linkedin.com/in/");
-    if (!isLinkedInLoggedIn || !hasValidUrl) {
+    if (!hasValidUrl) {
       setLinkedinValidationError(true);
       return;
     }
@@ -507,7 +515,7 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
                   setPortfolioError(false);
                   onRequestEditProfile();
                 }}
-                className="px-6 py-3.5 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] text-white font-bold rounded-xl text-xs shadow-md hover:shadow-purple-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="px-6 py-3.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white font-bold rounded-xl text-xs shadow-md hover:shadow-purple-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 Add Portfolio
               </button>
@@ -521,7 +529,6 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
           </motion.div>
         )}
 
-        {/* ───────── LINKEDIN VALIDATION ERROR ───────── */}
         {linkedinValidationError && (
           <motion.div
             key="linkedin-error"
@@ -539,25 +546,16 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
             </h3>
             
             <p className="text-sm font-semibold text-slate-500 mb-8 leading-relaxed max-w-sm">
-              Please login with LinkedIn and add your LinkedIn profile before generating AI Career Analysis.
+              Please enter your LinkedIn profile URL in your profile before generating AI Career Analysis.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
               <button
-                onClick={(e) => {
-                  setLinkedinValidationError(false);
-                  if (onLinkedInLogin) onLinkedInLogin(e);
-                }}
-                className="px-6 py-3.5 bg-[#0A66C2] hover:bg-[#004182] text-white font-bold rounded-xl text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                Login with LinkedIn
-              </button>
-              <button
                 onClick={() => {
                   setLinkedinValidationError(false);
-                  onRequestEditProfile();
+                  onRequestEditProfile("linkedin");
                 }}
-                className="px-6 py-3.5 bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold rounded-xl text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="px-6 py-3.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white font-bold rounded-xl text-xs shadow-md hover:shadow-purple-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 Add LinkedIn Profile
               </button>
@@ -760,8 +758,16 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
 
               {/* ── Report Header ── */}
               <div className="px-6 lg:px-10 pt-8 pb-6 border-b border-slate-100 flex items-center gap-4">
-                <div className="w-11 h-11 rounded-2xl bg-linear-to-br from-[#7C3AED] to-[#4F46E5] flex items-center justify-center shadow-lg shadow-purple-500/20 shrink-0">
-                  <Sparkles className="w-5 h-5 text-white" />
+                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg shrink-0 ${
+                  analysisType === "linkedin" ? "bg-[#0A66C2] shadow-blue-500/20" :
+                  analysisType === "github" ? "bg-slate-900 shadow-slate-500/20" :
+                  analysisType === "portfolio" ? "bg-emerald-500 shadow-emerald-500/20" :
+                  "bg-amber-500 shadow-amber-500/20"
+                }`}>
+                  {analysisType === "linkedin" && <LinkedinIcon className="w-5 h-5 text-white" />}
+                  {analysisType === "github" && <GithubIcon className="w-5 h-5 text-white" />}
+                  {analysisType === "portfolio" && <Globe className="w-5 h-5 text-white" />}
+                  {analysisType === "resume" && <FileText className="w-5 h-5 text-white" />}
                 </div>
                 <div>
                   <h3 className="text-lg font-extrabold text-slate-800 leading-tight">FixToFlex AI Career Analyst</h3>
@@ -1453,27 +1459,33 @@ const ReportSection = ({
   icon: React.ReactNode;
   title: string;
   children: React.ReactNode;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
-    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-    transition={{ delay: 0.3 + index * 0.15, duration: 0.5, ease: "easeOut" }}
-    className="py-6"
-  >
-    <div className="flex items-center gap-2.5 mb-4">
-      <div className="w-7 h-7 rounded-lg bg-linear-to-br from-[#7C3AED] to-[#4F46E5] flex items-center justify-center text-white shrink-0">
-        {icon}
+}) => {
+  const styledIcon = React.isValidElement(icon)
+    ? React.cloneElement(icon as React.ReactElement<any>, {
+        className: "w-5 h-5 text-[#7C3AED] shrink-0 stroke-[2.5]"
+      })
+    : icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      transition={{ delay: 0.3 + index * 0.15, duration: 0.5, ease: "easeOut" }}
+      className="py-6"
+    >
+      <div className="flex items-center gap-2 mb-4">
+        {styledIcon}
+        <h3 className="text-base font-extrabold text-slate-800">{title}</h3>
       </div>
-      <h3 className="text-base font-extrabold text-slate-800">{title}</h3>
-    </div>
-    <div className="pl-[38px]">
-      {children}
-    </div>
-  </motion.div>
-);
+      <div className="pl-[28px]">
+        {children}
+      </div>
+    </motion.div>
+  );
+};
 
 const SectionDivider = () => (
-  <div className="pl-[38px]">
+  <div className="pl-[28px]">
     <div className="h-px bg-slate-100" />
   </div>
 );

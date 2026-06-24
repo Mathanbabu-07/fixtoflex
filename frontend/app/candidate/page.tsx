@@ -15,6 +15,7 @@ import {
   UploadCloud, 
   Check, 
   ChevronRight, 
+  ChevronLeft,
   Sparkles, 
   Menu, 
   X, 
@@ -168,6 +169,24 @@ interface UserProfile {
   certifications?: string;
 }
 
+const tabSlugs: Record<string, string> = {
+  "Fix My Profile": "fix-my-profile",
+  "Portfolio Setup": "portfolio-setup",
+  "Job Tracker": "job-tracker",
+  "Internship Opportunity": "internship-opportunity",
+  "My Applications": "my-applications",
+  "Draft Mail": "draft-mail",
+};
+
+const slugToTabs: Record<string, string> = {
+  "fix-my-profile": "Fix My Profile",
+  "portfolio-setup": "Portfolio Setup",
+  "job-tracker": "Job Tracker",
+  "internship-opportunity": "Internship Opportunity",
+  "my-applications": "My Applications",
+  "draft-mail": "Draft Mail",
+};
+
 export default function CandidateDashboard() {
   const router = useRouter();
   
@@ -175,6 +194,68 @@ export default function CandidateDashboard() {
   const [activeTab, setActiveTab] = useState("Fix My Profile");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  
+  // Sidebar Collapse & Viewport State
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    handleResize();
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
+  const updateUrl = (tabName: string, showAnalysis: boolean) => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const slug = tabSlugs[tabName] || "fix-my-profile";
+      params.set("tab", slug);
+      if (showAnalysis && tabName === "Fix My Profile") {
+        params.set("analysis", "true");
+      } else {
+        params.delete("analysis");
+      }
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.pushState({ tab: slug, analysis: showAnalysis ? "true" : "false" }, "", newUrl);
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      const analysisParam = params.get("analysis");
+      
+      if (tabParam && slugToTabs[tabParam]) {
+        setActiveTab(slugToTabs[tabParam]);
+      } else {
+        setActiveTab("Fix My Profile");
+      }
+      
+      setShowAIAnalysis(analysisParam === "true");
+    };
+
+    // Sync on initial load
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get("tab");
+    const analysisParam = params.get("analysis");
+    if (tabParam && slugToTabs[tabParam]) {
+      setActiveTab(slugToTabs[tabParam]);
+    }
+    if (analysisParam === "true") {
+      setShowAIAnalysis(true);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
   
   // Auth & Session State
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -184,6 +265,7 @@ export default function CandidateDashboard() {
 
   // Profile Edit State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editModalMode, setEditModalMode] = useState<"all" | "linkedin" | "github" | "portfolio">("all");
   const [formData, setFormData] = useState({
     full_name: "",
     headline: "",
@@ -208,6 +290,7 @@ export default function CandidateDashboard() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [analysisResetKey, setAnalysisResetKey] = useState(0);
 
   // Resume Upload State
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -644,31 +727,50 @@ export default function CandidateDashboard() {
       <div className="absolute top-[40%] right-[35%] w-24 h-24 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none animate-drift-slowest" />
       
       {/* 1. LEFT SIDEBAR (Dark Indigo Panel) */}
-      <aside className="w-full lg:w-[280px] bg-[#110E34] text-white flex flex-col justify-between p-6 shrink-0 lg:min-h-screen z-30 border-r border-[#1e1b5b]/50 shadow-2xl relative">
+      <motion.aside
+        initial={false}
+        animate={{
+          width: isDesktop ? (isSidebarCollapsed ? 80 : 280) : "100%",
+          paddingLeft: isDesktop ? (isSidebarCollapsed ? 12 : 24) : 24,
+          paddingRight: isDesktop ? (isSidebarCollapsed ? 12 : 24) : 24,
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="w-full lg:w-[280px] bg-[#110E34] text-white flex flex-col justify-between p-6 shrink-0 lg:min-h-screen z-30 border-r border-[#1e1b5b]/50 shadow-2xl relative overflow-hidden"
+      >
         <div className="flex flex-col gap-8">
           
           {/* Brand Logo & Toggle */}
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative h-[48px] w-[48px] overflow-hidden rounded-xl bg-black flex items-center justify-center border border-[#2e2a7e] shadow-md">
+          <div className={`flex ${isSidebarCollapsed && isDesktop ? "flex-col items-center gap-4" : "items-center justify-between"} w-full`}>
+            <Link href="/" className={`flex ${isSidebarCollapsed && isDesktop ? "flex-col justify-center" : "items-center gap-3"} group shrink-0`}>
+              <div className={`relative ${isSidebarCollapsed && isDesktop ? "h-[36px] w-[36px]" : "h-[44px] w-[44px]"} overflow-hidden rounded-xl bg-black flex items-center justify-center border border-[#2e2a7e] shadow-md shrink-0 transition-all duration-300`}>
                 <Image
                   src="/logo.png"
                   alt="FixToFlex Logo"
-                  width={48}
-                  height={48}
-                  className="h-[48px] object-contain transition-transform duration-300 group-hover:scale-105"
+                  width={isSidebarCollapsed && isDesktop ? 36 : 44}
+                  height={isSidebarCollapsed && isDesktop ? 36 : 44}
+                  className="object-contain transition-transform duration-300 group-hover:scale-105"
                   priority
                 />
               </div>
-              <span className="font-extrabold text-[24px] tracking-tight bg-linear-to-r from-[#22C55E] via-[#7C3AED] to-[#4F46E5] bg-clip-text text-transparent">
-                FixToFlex
-              </span>
+              {!isSidebarCollapsed && (
+                <span className="font-extrabold text-[24px] tracking-tight bg-linear-to-r from-[#22C55E] via-[#7C3AED] to-[#4F46E5] bg-clip-text text-transparent truncate select-none">
+                  FixToFlex
+                </span>
+              )}
             </Link>
+
+            {/* Sidebar collapse toggle (desktop only) */}
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="hidden lg:flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-white bg-[#1b174b]/60 border border-[#2e2a7e]/50 hover:bg-[#241e6b] transition-all cursor-pointer shrink-0"
+            >
+              <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${isSidebarCollapsed ? "rotate-180" : ""}`} />
+            </button>
 
             {/* Mobile Hamburger toggle */}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-              className="lg:hidden p-2 text-slate-300 hover:text-white focus:outline-none"
+              className="lg:hidden p-2 text-slate-300 hover:text-white focus:outline-none shrink-0"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -684,13 +786,17 @@ export default function CandidateDashboard() {
                   key={item.name}
                   onClick={() => {
                     setActiveTab(item.name);
+                    setShowAIAnalysis(false);
                     setIsMobileMenuOpen(false);
+                    updateUrl(item.name, false);
                   }}
                   variants={buttonVariants}
                   initial="initial"
                   animate={isActive ? "active" : "initial"}
                   whileHover={isActive ? "hoverActive" : "hover"}
-                  className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-sm font-semibold tracking-wide relative overflow-hidden group cursor-pointer ${
+                  className={`w-full flex items-center ${
+                    isSidebarCollapsed && isDesktop ? "justify-center px-0 py-3.5" : "gap-3.5 px-4 py-3.5"
+                  } rounded-xl text-sm font-semibold tracking-wide relative overflow-hidden group cursor-pointer ${
                     isActive 
                       ? "bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white shadow-lg" 
                       : "text-slate-400 hover:text-white hover:bg-white/5 transition-colors duration-300"
@@ -706,7 +812,9 @@ export default function CandidateDashboard() {
                   >
                     <IconComponent className="w-5 h-5 shrink-0" />
                   </motion.div>
-                  <span className="truncate">{item.name}</span>
+                  {!isSidebarCollapsed && (
+                    <span className="truncate whitespace-nowrap">{item.name}</span>
+                  )}
                 </motion.button>
               );
             })}
@@ -714,31 +822,41 @@ export default function CandidateDashboard() {
         </div>
 
         {/* Sidebar Footer Banner Card */}
-        <div className={`mt-8 ${isMobileMenuOpen ? "block" : "hidden lg:block"}`}>
-          <div className="relative rounded-2xl bg-linear-to-tr from-[#1b174b] to-[#241e6b] border border-[#2e2a7e] p-5 overflow-hidden shadow-lg group">
-            {/* Background elements */}
-            <div className="absolute -top-12 -right-12 w-24 h-24 bg-purple-500/10 rounded-full blur-xl pointer-events-none" />
-            <div className="absolute top-[20%] left-[10%] w-3 h-3 bg-purple-500/30 rounded-full blur-[1px] animate-pulse pointer-events-none" />
-            
-            <div className="flex flex-col gap-3">
-              {/* Rocket & Stars */}
-              <div className="relative flex items-center gap-2">
-                <span className="relative inline-flex text-indigo-400 text-lg">
-                  🚀
-                </span>
-                <span className="absolute top-[-2px] right-[10px] text-xs text-yellow-400 animate-pulse">✦</span>
-                <span className="absolute top-[8px] right-[-4px] text-[10px] text-purple-400 animate-pulse">✦</span>
+        <AnimatePresence>
+          {(isMobileMenuOpen || !isSidebarCollapsed) && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, height: 0 }}
+              animate={{ opacity: 1, scale: 1, height: "auto" }}
+              exit={{ opacity: 0, scale: 0.95, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className={`mt-8 ${isMobileMenuOpen ? "block" : "hidden lg:block"} overflow-hidden`}
+            >
+              <div className="relative rounded-2xl bg-linear-to-tr from-[#1b174b] to-[#241e6b] border border-[#2e2a7e] p-5 overflow-hidden shadow-lg group">
+                {/* Background elements */}
+                <div className="absolute -top-12 -right-12 w-24 h-24 bg-purple-500/10 rounded-full blur-xl pointer-events-none" />
+                <div className="absolute top-[20%] left-[10%] w-3 h-3 bg-purple-500/30 rounded-full blur-[1px] animate-pulse pointer-events-none" />
+                
+                <div className="flex flex-col gap-3">
+                  {/* Rocket & Stars */}
+                  <div className="relative flex items-center gap-2">
+                    <span className="relative inline-flex text-indigo-400 text-lg">
+                      🚀
+                    </span>
+                    <span className="absolute top-[-2px] right-[10px] text-xs text-yellow-400 animate-pulse">✦</span>
+                    <span className="absolute top-[8px] right-[-4px] text-[10px] text-purple-400 animate-pulse">✦</span>
+                  </div>
+                  <h5 className="text-sm font-extrabold text-white leading-tight">
+                    Unlock Your Career Potential
+                  </h5>
+                  <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                    AI tools to build, track and grow your career.
+                  </p>
+                </div>
               </div>
-              <h5 className="text-sm font-extrabold text-white leading-tight">
-                Unlock Your Career Potential
-              </h5>
-              <p className="text-xs text-slate-400 font-medium leading-relaxed">
-                AI tools to build, track and grow your career.
-              </p>
-            </div>
-          </div>
-        </div>
-      </aside>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.aside>
 
       {/* MAIN LAYOUT BODY WRAPPER (Includes Top Navigation and splits into center content + right sidebar) */}
       <div className="flex-1 flex flex-col min-w-0 z-10">
@@ -758,6 +876,8 @@ export default function CandidateDashboard() {
               onClick={() => {
                 setActiveTab("Fix My Profile");
                 setShowAIAnalysis(true);
+                setAnalysisResetKey(prev => prev + 1);
+                updateUrl("Fix My Profile", true);
               }}
               className="ml-4 px-4 py-1.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-xs font-bold rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
             >
@@ -886,6 +1006,7 @@ export default function CandidateDashboard() {
                         <div className="h-px bg-slate-100 w-full" />
                         <button
                           onClick={() => {
+                            setEditModalMode("all");
                             setIsEditModalOpen(true);
                             setShowProfileDropdown(false);
                           }}
@@ -929,6 +1050,7 @@ export default function CandidateDashboard() {
                 >
                   {showAIAnalysis ? (
                     <AIAnalysisDashboard 
+                      key={analysisResetKey}
                       githubUrl={formData.github_url}
                       portfolioUrl={formData.portfolio_url}
                       resumeFile={resumeFile}
@@ -939,8 +1061,14 @@ export default function CandidateDashboard() {
                       onAnalysisComplete={(res) => {
                         console.log("Analysis Complete", res);
                       }}
-                      onRequestEditProfile={() => setIsEditModalOpen(true)}
-                      onCancel={() => setShowAIAnalysis(false)}
+                      onRequestEditProfile={(mode) => {
+                        setEditModalMode(mode || "all");
+                        setIsEditModalOpen(true);
+                      }}
+                      onCancel={() => {
+                        setShowAIAnalysis(false);
+                        updateUrl(activeTab, false);
+                      }}
                     />
                   ) : (
                     <>
@@ -1053,9 +1181,11 @@ export default function CandidateDashboard() {
                           })}
                         </div>
 
-                        {/* Main CTA */}
                         <button 
-                          onClick={() => setIsEditModalOpen(true)}
+                          onClick={() => {
+                            setEditModalMode("all");
+                            setIsEditModalOpen(true);
+                          }}
                           className="px-8 py-3.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-bold rounded-2xl shadow-lg hover:shadow-indigo-500/20 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 group text-sm"
                         >
                           <span>Update Profile</span>
@@ -1343,7 +1473,10 @@ export default function CandidateDashboard() {
                 
                 {/* 1. Edit Profile */}
                 <button
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={() => {
+                    setEditModalMode("all");
+                    setIsEditModalOpen(true);
+                  }}
                   className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
@@ -1355,7 +1488,10 @@ export default function CandidateDashboard() {
 
                 {/* 2. LinkedIn Link */}
                 <button
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={() => {
+                    setEditModalMode("linkedin");
+                    setIsEditModalOpen(true);
+                  }}
                   className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
@@ -1373,7 +1509,10 @@ export default function CandidateDashboard() {
 
                 {/* 3. GitHub Link */}
                 <button
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={() => {
+                    setEditModalMode("github");
+                    setIsEditModalOpen(true);
+                  }}
                   className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
@@ -1391,7 +1530,10 @@ export default function CandidateDashboard() {
 
                 {/* 4. Portfolio Link */}
                 <button
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={() => {
+                    setEditModalMode("portfolio");
+                    setIsEditModalOpen(true);
+                  }}
                   className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
@@ -1557,11 +1699,29 @@ export default function CandidateDashboard() {
               <div className="flex items-center justify-between px-6 lg:px-8 py-5 border-b border-slate-100/80 bg-white/80 backdrop-blur-md shrink-0 relative z-10">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-linear-to-br from-[#7C3AED] to-[#4F46E5] flex items-center justify-center shadow-lg shadow-purple-500/20">
-                    <User className="w-5 h-5 text-white" />
+                    {editModalMode === "linkedin" ? (
+                      <LinkedInIcon className="w-5 h-5 fill-white" />
+                    ) : editModalMode === "github" ? (
+                      <GitHubIcon className="w-5 h-5 fill-white" />
+                    ) : editModalMode === "portfolio" ? (
+                      <Globe className="w-5 h-5 text-white" />
+                    ) : (
+                      <User className="w-5 h-5 text-white" />
+                    )}
                   </div>
                   <div>
-                    <h3 className="text-lg font-extrabold text-slate-800 tracking-tight">Edit My Profile</h3>
-                    <p className="text-[11px] text-slate-400 font-medium">Complete your profile for AI scoring & job matching</p>
+                    <h3 className="text-lg font-extrabold text-slate-800 tracking-tight">
+                      {editModalMode === "linkedin" && "Edit LinkedIn Profile URL"}
+                      {editModalMode === "github" && "Edit GitHub Profile URL"}
+                      {editModalMode === "portfolio" && "Edit Portfolio Website URL"}
+                      {editModalMode === "all" && "Edit My Profile"}
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-medium">
+                      {editModalMode === "linkedin" && "Provide your LinkedIn profile URL for career analysis"}
+                      {editModalMode === "github" && "Provide your GitHub profile URL to check code repositories"}
+                      {editModalMode === "portfolio" && "Provide your portfolio website URL to scan projects"}
+                      {editModalMode === "all" && "Complete your profile for AI scoring & job matching"}
+                    </p>
                   </div>
                 </div>
                 <button 
@@ -1575,346 +1735,350 @@ export default function CandidateDashboard() {
               {/* Scrollable Form Body */}
               <form id="edit-profile-form" onSubmit={handleSaveProfile} className="flex-1 overflow-y-auto px-6 lg:px-8 py-6 space-y-7 custom-scrollbar">
                 
-                {/* ══════════ SECTION 1: Personal Information ══════════ */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
-                      <span className="text-sm">👤</span>
-                    </div>
-                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Personal Information</h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Full Name */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <User className="w-3 h-3 text-purple-400" />
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        id="edit-full-name"
-                        value={formData.full_name}
-                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. Arjun Kumar"
-                      />
+                {editModalMode === "all" && (
+                  <>
+                    {/* ══════════ SECTION 1: Personal Information ══════════ */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
+                          <span className="text-sm">👤</span>
+                        </div>
+                        <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Personal Information</h4>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Full Name */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <User className="w-3 h-3 text-purple-400" />
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            id="edit-full-name"
+                            value={formData.full_name}
+                            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. Arjun Kumar"
+                          />
+                        </div>
+
+                        {/* Date of Birth */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Calendar className="w-3 h-3 text-purple-400" />
+                            Date of Birth
+                          </label>
+                          <input
+                            type="date"
+                            id="edit-dob"
+                            value={formData.date_of_birth}
+                            onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                          />
+                        </div>
+
+                        {/* Gender */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Users className="w-3 h-3 text-purple-400" />
+                            Gender
+                          </label>
+                          <select
+                            id="edit-gender"
+                            value={formData.gender}
+                            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none transition-all duration-200 appearance-none cursor-pointer"
+                          >
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Non-binary">Non-binary</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                          </select>
+                        </div>
+
+                        {/* Email */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Mail className="w-3 h-3 text-purple-400" />
+                            Email ID
+                          </label>
+                          <input
+                            type="email"
+                            id="edit-email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. arjun@gmail.com"
+                          />
+                        </div>
+
+                        {/* Mobile Number */}
+                        <div className="space-y-1.5 md:col-span-2">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Phone className="w-3 h-3 text-purple-400" />
+                            Mobile Number
+                          </label>
+                          <input
+                            type="tel"
+                            id="edit-mobile"
+                            value={formData.mobile_number}
+                            onChange={(e) => setFormData({ ...formData, mobile_number: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. +91 98765 43210"
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Date of Birth */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Calendar className="w-3 h-3 text-purple-400" />
-                        Date of Birth
-                      </label>
-                      <input
-                        type="date"
-                        id="edit-dob"
-                        value={formData.date_of_birth}
-                        onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                      />
+                    {/* Divider */}
+                    <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+
+                    {/* ══════════ SECTION 2: Location ══════════ */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                          <span className="text-sm">📍</span>
+                        </div>
+                        <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Location</h4>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* State */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <MapPin className="w-3 h-3 text-emerald-400" />
+                            State
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-state"
+                            value={formData.state}
+                            onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. Tamil Nadu"
+                          />
+                        </div>
+
+                        {/* District */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Map className="w-3 h-3 text-emerald-400" />
+                            District
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-district"
+                            value={formData.district}
+                            onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. Chennai"
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Gender */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Users className="w-3 h-3 text-purple-400" />
-                        Gender
-                      </label>
-                      <select
-                        id="edit-gender"
-                        value={formData.gender}
-                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none transition-all duration-200 appearance-none cursor-pointer"
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Non-binary">Non-binary</option>
-                        <option value="Prefer not to say">Prefer not to say</option>
-                      </select>
+                    {/* Divider */}
+                    <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+
+                    {/* ══════════ SECTION 3: Education ══════════ */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center">
+                          <span className="text-sm">🎓</span>
+                        </div>
+                        <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Education</h4>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Institution Name */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <GraduationCap className="w-3 h-3 text-amber-500" />
+                            Institution Name
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-institution"
+                            value={formData.institution_name}
+                            onChange={(e) => setFormData({ ...formData, institution_name: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. Anna University"
+                          />
+                        </div>
+
+                        {/* Institution District */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Building className="w-3 h-3 text-amber-500" />
+                            Institution District
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-institution-district"
+                            value={formData.institution_district}
+                            onChange={(e) => setFormData({ ...formData, institution_district: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. Chennai"
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Email */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Mail className="w-3 h-3 text-purple-400" />
-                        Email ID
-                      </label>
-                      <input
-                        type="email"
-                        id="edit-email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. arjun@gmail.com"
-                      />
+                    {/* Divider */}
+                    <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+
+                    {/* ══════════ SECTION 4: Career Preferences ══════════ */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                          <span className="text-sm">💼</span>
+                        </div>
+                        <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Career Preferences</h4>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Headline / Job Title */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Briefcase className="w-3 h-3 text-indigo-400" />
+                            Headline / Job Title
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-headline"
+                            value={formData.headline}
+                            onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. Software Engineer"
+                          />
+                        </div>
+
+                        {/* Interested Domain */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Briefcase className="w-3 h-3 text-indigo-400" />
+                            Interested Domain
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-domain"
+                            value={formData.interested_domain}
+                            onChange={(e) => setFormData({ ...formData, interested_domain: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. Full Stack Development"
+                          />
+                        </div>
+
+                        {/* Target Job Role */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Target className="w-3 h-3 text-indigo-400" />
+                            Target Job Role
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-target-role"
+                            value={formData.target_job_role}
+                            onChange={(e) => setFormData({ ...formData, target_job_role: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. Software Engineer"
+                          />
+                        </div>
+
+                        {/* Experience */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Clock className="w-3 h-3 text-indigo-400" />
+                            Experience
+                          </label>
+                          <select
+                            id="edit-experience"
+                            value={formData.experience}
+                            onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none transition-all duration-200 appearance-none cursor-pointer"
+                          >
+                            <option value="">Select Experience</option>
+                            <option value="Fresher">Fresher</option>
+                            <option value="0-1 years">0-1 years</option>
+                            <option value="1-2 years">1-2 years</option>
+                            <option value="2-3 years">2-3 years</option>
+                            <option value="3-5 years">3-5 years</option>
+                            <option value="5+ years">5+ years</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Mobile Number */}
-                    <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Phone className="w-3 h-3 text-purple-400" />
-                        Mobile Number
-                      </label>
-                      <input
-                        type="tel"
-                        id="edit-mobile"
-                        value={formData.mobile_number}
-                        onChange={(e) => setFormData({ ...formData, mobile_number: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. +91 98765 43210"
-                      />
-                    </div>
-                  </div>
-                </div>
+                    {/* Divider */}
+                    <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
 
-                {/* Divider */}
-                <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+                    {/* ══════════ SECTION 5: Technical Skills ══════════ */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center">
+                          <span className="text-sm">🛠</span>
+                        </div>
+                        <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Technical Skills</h4>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Skills */}
+                        <div className="space-y-1.5 md:col-span-2">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Code className="w-3 h-3 text-purple-400" />
+                            Skills
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-skills"
+                            value={formData.skills}
+                            onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. React, TypeScript, Node.js, Python (comma separated)"
+                          />
+                        </div>
 
-                {/* ══════════ SECTION 2: Location ══════════ */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-                      <span className="text-sm">📍</span>
-                    </div>
-                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Location</h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* State */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <MapPin className="w-3 h-3 text-emerald-400" />
-                        State
-                      </label>
-                      <input
-                        type="text"
-                        id="edit-state"
-                        value={formData.state}
-                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. Tamil Nadu"
-                      />
-                    </div>
+                        {/* Language Proficiency */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Hash className="w-3 h-3 text-purple-400" />
+                            Language Proficiency
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-languages"
+                            value={formData.language_proficiency}
+                            onChange={(e) => setFormData({ ...formData, language_proficiency: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. English, Tamil, Hindi"
+                          />
+                        </div>
 
-                    {/* District */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Map className="w-3 h-3 text-emerald-400" />
-                        District
-                      </label>
-                      <input
-                        type="text"
-                        id="edit-district"
-                        value={formData.district}
-                        onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. Chennai"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
-
-                {/* ══════════ SECTION 3: Education ══════════ */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center">
-                      <span className="text-sm">🎓</span>
-                    </div>
-                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Education</h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Institution Name */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <GraduationCap className="w-3 h-3 text-amber-500" />
-                        Institution Name
-                      </label>
-                      <input
-                        type="text"
-                        id="edit-institution"
-                        value={formData.institution_name}
-                        onChange={(e) => setFormData({ ...formData, institution_name: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. Anna University"
-                      />
+                        {/* Certifications */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Award className="w-3 h-3 text-purple-400" />
+                            Certifications
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-certifications"
+                            value={formData.certifications}
+                            onChange={(e) => setFormData({ ...formData, certifications: e.target.value })}
+                            className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                            placeholder="e.g. AWS Cloud Practitioner"
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Institution District */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Building className="w-3 h-3 text-amber-500" />
-                        Institution District
-                      </label>
-                      <input
-                        type="text"
-                        id="edit-institution-district"
-                        value={formData.institution_district}
-                        onChange={(e) => setFormData({ ...formData, institution_district: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. Chennai"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
-
-                {/* ══════════ SECTION 4: Career Preferences ══════════ */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-                      <span className="text-sm">💼</span>
-                    </div>
-                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Career Preferences</h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Headline / Job Title */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Briefcase className="w-3 h-3 text-indigo-400" />
-                        Headline / Job Title
-                      </label>
-                      <input
-                        type="text"
-                        id="edit-headline"
-                        value={formData.headline}
-                        onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. Software Engineer"
-                      />
-                    </div>
-
-                    {/* Interested Domain */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Briefcase className="w-3 h-3 text-indigo-400" />
-                        Interested Domain
-                      </label>
-                      <input
-                        type="text"
-                        id="edit-domain"
-                        value={formData.interested_domain}
-                        onChange={(e) => setFormData({ ...formData, interested_domain: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. Full Stack Development"
-                      />
-                    </div>
-
-                    {/* Target Job Role */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Target className="w-3 h-3 text-indigo-400" />
-                        Target Job Role
-                      </label>
-                      <input
-                        type="text"
-                        id="edit-target-role"
-                        value={formData.target_job_role}
-                        onChange={(e) => setFormData({ ...formData, target_job_role: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. Software Engineer"
-                      />
-                    </div>
-
-                    {/* Experience */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Clock className="w-3 h-3 text-indigo-400" />
-                        Experience
-                      </label>
-                      <select
-                        id="edit-experience"
-                        value={formData.experience}
-                        onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none transition-all duration-200 appearance-none cursor-pointer"
-                      >
-                        <option value="">Select Experience</option>
-                        <option value="Fresher">Fresher</option>
-                        <option value="0-1 years">0-1 years</option>
-                        <option value="1-2 years">1-2 years</option>
-                        <option value="2-3 years">2-3 years</option>
-                        <option value="3-5 years">3-5 years</option>
-                        <option value="5+ years">5+ years</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
-
-                {/* ══════════ SECTION 5: Technical Skills ══════════ */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center">
-                      <span className="text-sm">🛠</span>
-                    </div>
-                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Technical Skills</h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Skills */}
-                    <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Code className="w-3 h-3 text-purple-400" />
-                        Skills
-                      </label>
-                      <input
-                        type="text"
-                        id="edit-skills"
-                        value={formData.skills}
-                        onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. React, TypeScript, Node.js, Python (comma separated)"
-                      />
-                    </div>
-
-                    {/* Language Proficiency */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Hash className="w-3 h-3 text-purple-400" />
-                        Language Proficiency
-                      </label>
-                      <input
-                        type="text"
-                        id="edit-languages"
-                        value={formData.language_proficiency}
-                        onChange={(e) => setFormData({ ...formData, language_proficiency: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. English, Tamil, Hindi"
-                      />
-                    </div>
-
-                    {/* Certifications */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Award className="w-3 h-3 text-purple-400" />
-                        Certifications
-                      </label>
-                      <input
-                        type="text"
-                        id="edit-certifications"
-                        value={formData.certifications}
-                        onChange={(e) => setFormData({ ...formData, certifications: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="e.g. AWS Cloud Practitioner"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+                    {/* Divider */}
+                    <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
+                  </>
+                )}
 
                 {/* ══════════ SECTION 6: Social & Portfolio Links ══════════ */}
                 <div className="space-y-4">
@@ -1922,57 +2086,65 @@ export default function CandidateDashboard() {
                     <div className="w-7 h-7 rounded-lg bg-cyan-50 border border-cyan-100 flex items-center justify-center">
                       <span className="text-sm">🔗</span>
                     </div>
-                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">Social & Portfolio Links</h4>
+                    <h4 className="text-sm font-extrabold text-slate-700 tracking-tight">
+                      {editModalMode === "all" ? "Social & Portfolio Links" : "Profile Link"}
+                    </h4>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* LinkedIn URL */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <LinkedInIcon className="w-3 h-3 fill-[#0A66C2]" />
-                        LinkedIn Profile URL
-                      </label>
-                      <input
-                        type="url"
-                        id="edit-linkedin"
-                        value={formData.linkedin_url}
-                        onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="https://linkedin.com/in/username"
-                      />
-                    </div>
+                    {(editModalMode === "all" || editModalMode === "linkedin") && (
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                          <LinkedInIcon className="w-3 h-3 fill-[#0A66C2]" />
+                          LinkedIn Profile URL
+                        </label>
+                        <input
+                          type="url"
+                          id="edit-linkedin"
+                          value={formData.linkedin_url}
+                          onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
+                          className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                          placeholder="https://linkedin.com/in/username"
+                        />
+                      </div>
+                    )}
 
                     {/* GitHub URL */}
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <GitHubIcon className="w-3 h-3 fill-slate-600" />
-                        GitHub Profile URL
-                      </label>
-                      <input
-                        type="url"
-                        id="edit-github"
-                        value={formData.github_url}
-                        onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="https://github.com/username"
-                      />
-                    </div>
+                    {(editModalMode === "all" || editModalMode === "github") && (
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                          <GitHubIcon className="w-3 h-3 fill-slate-600" />
+                          GitHub Profile URL
+                        </label>
+                        <input
+                          type="url"
+                          id="edit-github"
+                          value={formData.github_url}
+                          onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
+                          className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                          placeholder="https://github.com/username"
+                        />
+                      </div>
+                    )}
 
                     {/* Portfolio URL */}
-                    <div className="space-y-1.5 md:col-span-2">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Globe className="w-3 h-3 text-emerald-500" />
-                        Portfolio Website URL
-                      </label>
-                      <input
-                        type="url"
-                        id="edit-portfolio"
-                        value={formData.portfolio_url}
-                        onChange={(e) => setFormData({ ...formData, portfolio_url: e.target.value })}
-                        className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
-                        placeholder="https://yourwebsite.com"
-                      />
-                    </div>
+                    {(editModalMode === "all" || editModalMode === "portfolio") && (
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                          <Globe className="w-3 h-3 text-emerald-500" />
+                          Portfolio Website URL
+                        </label>
+                        <input
+                          type="url"
+                          id="edit-portfolio"
+                          value={formData.portfolio_url}
+                          onChange={(e) => setFormData({ ...formData, portfolio_url: e.target.value })}
+                          className="w-full bg-slate-50/80 border border-slate-200/80 focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none transition-all duration-200"
+                          placeholder="https://yourwebsite.com"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
