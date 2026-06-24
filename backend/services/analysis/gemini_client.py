@@ -25,7 +25,6 @@ class GeminiClient:
         
         try:
             # We want a strict JSON response.
-            # Depending on the gemini sdk version, we can pass response_mime_type="application/json"
             response = self.model.generate_content(
                 prompt,
                 generation_config=genai.types.GenerationConfig(
@@ -39,6 +38,59 @@ class GeminiClient:
         except Exception as e:
             logger.error(f"Gemini API error: {e}")
             raise Exception("Failed to generate AI analysis.")
+
+    def _build_prompt(self, normalized_data: Dict[str, Any]) -> str:
+        data_str = json.dumps(normalized_data, indent=2)
+        
+        return f"""
+You are an expert tech recruiter and senior software engineering manager. 
+Analyze the following structured GitHub profile data and provide a comprehensive, highly detailed career intelligence report.
+
+Raw Profile Data:
+{data_str}
+
+IMPORTANT INSTRUCTIONS:
+1. Make your summaries highly detailed and insightful, avoiding generic short responses.
+2. In the `repositories_list` field, you MUST explicitly list ALL project repositories found in the data, detailing the tech stacks used in each project and a short description.
+3. Provide a very detailed and thoughtful overall career summary.
+
+Respond STRICTLY with a valid JSON object matching exactly the following schema. 
+Do not include any markdown formatting, code blocks, or extra text.
+
+JSON Schema:
+{{
+  "summary": {{
+    "professional_profile_summary": "string",
+    "technical_skills_summary": "string",
+    "repositories_list": [
+      {{
+        "name": "string",
+        "tech_stack": ["string"],
+        "description": "string"
+      }}
+    ],
+    "programming_languages": ["string"],
+    "framework_experience": ["string"],
+    "development_domains": ["string"],
+    "major_projects_overview": "string",
+    "open_source_contributions": "string",
+    "development_experience_level": "string",
+    "portfolio_quality": "string",
+    "repository_quality": "string",
+    "technical_strengths": ["string"],
+    "overall_career_summary": "string"
+  }},
+  "scores": {{
+    "github_profile_score": integer (0-100),
+    "project_quality_score": integer (0-100),
+    "repository_organization_score": integer (0-100),
+    "documentation_score": integer (0-100),
+    "technical_skills_score": integer (0-100),
+    "open_source_activity_score": integer (0-100),
+    "overall_career_readiness_score": integer (0-100)
+  }}
+}}
+"""
 
     async def normalize_portfolio(self, markdown_content: str) -> Dict[str, Any]:
         """
@@ -327,6 +379,23 @@ JSON Schema:
                 "career_readiness_score": 86
             }
         }
+    async def analyze_resume(self, normalized_json: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Analyze normalized resume JSON with Gemini.
+        """
+        if not self.model:
+            return self._get_resume_mock_response(normalized_json)
+        
+        prompt = self._build_resume_prompt(normalized_json)
+        try:
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(response_mime_type="application/json")
+            )
+            return self._parse_json_safe(response.text)
+        except Exception as e:
+            logger.error(f"Gemini API error for resume analysis: {e}")
+            raise Exception("Failed to generate Resume AI analysis.")
 
     def _build_resume_prompt(self, normalized_data: Dict[str, Any]) -> str:
         data_str = json.dumps(normalized_data, indent=2)
