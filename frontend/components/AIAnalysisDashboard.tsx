@@ -49,6 +49,36 @@ interface AIAnalysisDashboardProps {
   onCancel: () => void;
 }
 
+const parseBackendError = (errData: any): string => {
+  if (!errData || !errData.detail) {
+    return "Analysis failed. Please try again later.";
+  }
+  const detail = errData.detail;
+  if (typeof detail === "object") {
+    if (detail.message === "Profile incomplete" && Array.isArray(detail.missing_fields)) {
+      const fields = detail.missing_fields.map((f: string) => f.replace(/_/g, " ")).join(", ");
+      return `Profile incomplete. Please edit your profile and fill in: ${fields}`;
+    }
+    return detail.message || JSON.stringify(detail);
+  }
+  if (typeof detail === "string") {
+    if (detail.includes("Profile incomplete")) {
+      try {
+        const match = detail.match(/'missing_fields':\s*\[(.*?)\]/);
+        if (match && match[1]) {
+          const fields = match[1].replace(/['\s]/g, "").split(",").map((f: string) => f.replace(/_/g, " ")).join(", ");
+          return `Profile incomplete. Please edit your profile and fill in: ${fields}`;
+        }
+      } catch {
+        // ignore
+      }
+      return "Profile incomplete. Please edit your profile to add all required fields.";
+    }
+    return detail;
+  }
+  return String(detail);
+};
+
 export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFile, resumeUrl, linkedinUrl, isLinkedInLoggedIn, onLinkedInLogin, onAnalysisComplete, onRequestEditProfile, onCancel }: AIAnalysisDashboardProps) {
   const [stage, setStage] = useState<AnalysisStage>("selecting");
   const [analysisType, setAnalysisType] = useState<"github" | "portfolio" | "resume" | "linkedin" | null>(null);
@@ -172,7 +202,8 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
 
       const response = await analysisPromise;
       if (!response.ok) {
-        throw new Error("Analysis failed. Please try again later.");
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(parseBackendError(errData));
       }
 
       setStage("generating");
@@ -250,7 +281,7 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.detail || "Analysis failed. Please try again later.");
+        throw new Error(parseBackendError(errData));
       }
 
       const data = await response.json();
@@ -312,7 +343,8 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
 
       const response = await analysisPromise;
       if (!response.ok) {
-        throw new Error("Analysis failed. Please try again later.");
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(parseBackendError(errData));
       }
 
       setStage("generating");
@@ -385,7 +417,7 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.detail || "Analysis failed. Please try again later.");
+        throw new Error(parseBackendError(errData));
       }
 
       const data = await response.json();

@@ -225,6 +225,70 @@ export default function CandidateDashboard() {
     }
   };
 
+  
+  // Auth & Session State
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
+
+  // Profile Edit State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editModalMode, setEditModalMode] = useState<"all" | "linkedin" | "github" | "portfolio">("all");
+  const [formData, setFormData] = useState({
+    full_name: "",
+    headline: "",
+    linkedin_url: "",
+    github_url: "",
+    portfolio_url: "",
+    date_of_birth: "",
+    gender: "",
+    email: "",
+    mobile_number: "",
+    state: "",
+    district: "",
+    institution_name: "",
+    institution_district: "",
+    interested_domain: "",
+    target_job_role: "",
+    experience: "",
+    skills: "",
+    language_proficiency: "",
+    certifications: "",
+  });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [analysisResetKey, setAnalysisResetKey] = useState(0);
+
+  // Queue Status & Scheduler State
+  const [queueStatus, setQueueStatus] = useState<any>(null);
+  const [schedulePref, setSchedulePref] = useState("Analyze Now");
+  const [queueProgressPercent, setQueueProgressPercent] = useState(0);
+
+  // Resume Upload State
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Helper to construct API URL
+  const getApiUrl = (path: string): string => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (apiUrl) {
+      const cleanApiUrl = apiUrl.replace(/\/$/, "");
+      return `${cleanApiUrl}${path}`;
+    }
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      if (hostname === "localhost" || hostname === "127.0.0.1") {
+        return `http://localhost:8000${path}`;
+      }
+      return `http://${hostname}:8000${path}`;
+    }
+    return `http://localhost:8000${path}`;
+  };
+
   // Schedule Update Handler
   const handleScheduleUpdate = async (newSchedule: string) => {
     setSchedulePref(newSchedule);
@@ -336,69 +400,7 @@ export default function CandidateDashboard() {
       window.removeEventListener("popstate", handlePopState);
     };
   }, []);
-  
-  // Auth & Session State
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isDemoMode, setIsDemoMode] = useState(false);
 
-  // Profile Edit State
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editModalMode, setEditModalMode] = useState<"all" | "linkedin" | "github" | "portfolio">("all");
-  const [formData, setFormData] = useState({
-    full_name: "",
-    headline: "",
-    linkedin_url: "",
-    github_url: "",
-    portfolio_url: "",
-    date_of_birth: "",
-    gender: "",
-    email: "",
-    mobile_number: "",
-    state: "",
-    district: "",
-    institution_name: "",
-    institution_district: "",
-    interested_domain: "",
-    target_job_role: "",
-    experience: "",
-    skills: "",
-    language_proficiency: "",
-    certifications: "",
-  });
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
-  const [analysisResetKey, setAnalysisResetKey] = useState(0);
-
-  // Queue Status & Scheduler State
-  const [queueStatus, setQueueStatus] = useState<any>(null);
-  const [schedulePref, setSchedulePref] = useState("Analyze Now");
-  const [queueProgressPercent, setQueueProgressPercent] = useState(0);
-
-  // Resume Upload State
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [isUploadingResume, setIsUploadingResume] = useState(false);
-  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Helper to construct API URL
-  const getApiUrl = (path: string): string => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl) {
-      const cleanApiUrl = apiUrl.replace(/\/$/, "");
-      return `${cleanApiUrl}${path}`;
-    }
-    if (typeof window !== "undefined") {
-      const hostname = window.location.hostname;
-      if (hostname === "localhost" || hostname === "127.0.0.1") {
-        return `http://localhost:8000${path}`;
-      }
-      return `http://${hostname}:8000${path}`;
-    }
-    return `http://localhost:8000${path}`;
-  };
 
   // Sync session check
   const fetchSession = async () => {

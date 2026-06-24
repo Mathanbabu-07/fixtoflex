@@ -129,7 +129,8 @@ async def analyze_github_profile(
             
         result = await service.process_github_profile(user_id, request.github_url)
         return {"status": "success", "data": result}
-        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error during GitHub analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -157,7 +158,8 @@ async def analyze_portfolio(
             
         result = await service.process_portfolio(user_id, request.portfolio_url)
         return {"status": "success", "data": result}
-        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error during Portfolio analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -185,7 +187,8 @@ async def analyze_linkedin_profile(
             
         result = await service.process_linkedin(user_id, request.linkedin_url, current_user)
         return {"status": "success", "data": result}
-        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error during LinkedIn analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -216,7 +219,8 @@ async def analyze_resume(
             
         result = await service.process_resume(user_id, file_bytes, file.filename)
         return {"status": "success", "data": result}
-        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error during Resume analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
