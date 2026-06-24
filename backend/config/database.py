@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     PORT: int = 8000
     HOST: str = "127.0.0.1"
     FRONTEND_URL: str = "http://localhost:3001"
+    APP_ENV: str = "development"
+    COOKIE_SECURE: bool = False
+    COOKIE_SAMESITE: str = "lax"
 
     # Supabase configuration
     SUPABASE_URL: str
@@ -43,6 +46,9 @@ class Settings(BaseSettings):
     # Gemini settings
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.1-flash-lite"
+
+    # Jina Reader settings
+    JINA_API_KEY: str = ""
 
 # Find and load the appropriate .env file depending on working directory
 env_path = ".env"
@@ -75,6 +81,7 @@ except Exception as e:
         SCRAPEDO_BASE_URL = os.environ.get("SCRAPEDO_BASE_URL", "http://api.scrape.do")
         GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
         GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
+        JINA_API_KEY = os.environ.get("JINA_API_KEY", "")
     settings = FallbackSettings()
 
 # Singleton reference for the Supabase Client

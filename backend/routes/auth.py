@@ -73,14 +73,19 @@ async def linkedin_callback(payload: CallbackRequest, response: Response):
         # 2. Exchange code, query profile, and setup user profile / session
         token, user = await auth_service.process_linkedin_oauth_callback(payload.code)
         
-        # 3. Set the JWT token in an HttpOnly cookie
-        # Reference: Step 9: Session Handling
+        # Enforce SameSite=None and Secure=True in production, otherwise read from settings
+        cookie_secure = settings.COOKIE_SECURE
+        cookie_samesite = settings.COOKIE_SAMESITE
+        if settings.APP_ENV == "production":
+            cookie_secure = True
+            cookie_samesite = "none"
+
         response.set_cookie(
             key="access_token",
             value=token,
             httponly=True,
-            secure=False,  # False for development, True in production (HTTPS required)
-            samesite="lax",
+            secure=cookie_secure,
+            samesite=cookie_samesite,
             max_age=7 * 24 * 60 * 60,  # 7 days in seconds
             path="/"
         )
@@ -131,12 +136,19 @@ async def mock_login(payload: MockLoginRequest, response: Response):
             role=user.get("role", "candidate")
         )
         
+        # Enforce SameSite=None and Secure=True in production, otherwise read from settings
+        cookie_secure = settings.COOKIE_SECURE
+        cookie_samesite = settings.COOKIE_SAMESITE
+        if settings.APP_ENV == "production":
+            cookie_secure = True
+            cookie_samesite = "none"
+
         response.set_cookie(
             key="access_token",
             value=token,
             httponly=True,
-            secure=False,
-            samesite="lax",
+            secure=cookie_secure,
+            samesite=cookie_samesite,
             max_age=7 * 24 * 60 * 60,
             path="/"
         )

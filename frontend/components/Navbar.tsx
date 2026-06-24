@@ -29,6 +29,11 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
   const [user, setUser] = useState<UserProfile | null>(null);
 
   const getApiUrl = (path: string): string => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (apiUrl) {
+      const cleanApiUrl = apiUrl.replace(/\/$/, "");
+      return `${cleanApiUrl}${path}`;
+    }
     if (typeof window !== "undefined") {
       const hostname = window.location.hostname;
       if (hostname === "localhost" || hostname === "127.0.0.1") {

@@ -1,5 +1,6 @@
 import logging
 import sys
+import os
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,8 +24,9 @@ app = FastAPI(
 
 # CORS Middleware Configuration
 # Configures backend server to accept requests from the Next.js frontend (default: localhost:3001)
+frontend_url = settings.FRONTEND_URL.strip() if settings.FRONTEND_URL else ""
 origins = [
-    settings.FRONTEND_URL,
+    frontend_url,
     "http://localhost:3001",
     "http://127.0.0.1:3001",
     "http://localhost:3000",
@@ -34,6 +36,15 @@ origins = [
     "http://192.168.19.80:3000",
     "http://192.168.193.80:3000"
 ]
+
+# Allow adding additional CORS origins dynamically from environment variables
+additional_origins_env = os.environ.get("ADDITIONAL_CORS_ORIGINS", "")
+if additional_origins_env:
+    extra_origins = [o.strip() for o in additional_origins_env.split(",") if o.strip()]
+    origins.extend(extra_origins)
+
+# Filter out duplicate and empty entries
+origins = list(set(o for o in origins if o))
 
 app.add_middleware(
     CORSMiddleware,
