@@ -17,6 +17,34 @@ class AnalysisService:
         self.extractor = GitHubExtractor()
         self.gemini_client = GeminiClient()
         
+    async def validate_candidate_profile(self, user_id: str) -> Dict[str, Any]:
+        """
+        Phase 1.1 Candidate Validation Engine
+        Validates that all required profile fields are present before analysis can start.
+        """
+        from services.user_service import user_service
+        user = user_service.get_user_by_id(user_id)
+        if not user:
+            raise ValueError(f"User with ID {user_id} not found.")
+
+        required_fields = [
+            "full_name", "mobile_number", "state", "district",
+            "institution_name", "institution_district", "interested_domain",
+            "target_job_role", "experience", "skills",
+            "linkedin_url", "github_url", "portfolio_url", "resume_url"
+        ]
+
+        missing_fields = []
+        for field in required_fields:
+            value = user.get(field)
+            if not value or str(value).strip() == "":
+                missing_fields.append(field)
+
+        return {
+            "status": "ready" if len(missing_fields) == 0 else "incomplete",
+            "missing_fields": missing_fields
+        }
+
     async def process_github_profile(self, user_id: str, github_url: str) -> Dict[str, Any]:
         """
         End-to-end pipeline for GitHub profile analysis.

@@ -34,7 +34,7 @@ const LinkedinIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-type AnalysisStage = "idle" | "selecting" | "initializing" | "connecting" | "extracting" | "normalizing" | "analyzing" | "generating" | "complete";
+type AnalysisStage = "idle" | "selecting" | "initializing" | "connecting" | "extracting" | "normalizing" | "analyzing" | "generating" | "complete" | "validating" | "incomplete_profile" | "queue_running";
 
 interface AIAnalysisDashboardProps {
   githubUrl: string;
@@ -58,6 +58,75 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
   const [portfolioError, setPortfolioError] = useState(false);
   const [linkedinValidationError, setLinkedinValidationError] = useState(false);
   const [currentLoadingStepIndex, setCurrentLoadingStepIndex] = useState(0);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [queueStatus, setQueueStatus] = useState<any>(null);
+
+  const startQueue = async () => {
+    setStage("queue_running");
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      await fetch(`${apiUrl}/analysis/start-queue`, {
+        method: "POST",
+        credentials: "include"
+      });
+    } catch (err) {
+      console.error("Failed to start queue", err);
+    }
+  };
+
+  useEffect(() => {
+    let interval: any;
+    if (stage === "queue_running") {
+      const fetchStatus = async () => {
+        try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+          const response = await fetch(`${apiUrl}/analysis/status`, {
+            credentials: "include"
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setQueueStatus(data.data);
+            if (data.data?.overall_status === "Completed" || data.data?.overall_status === "Failed") {
+              // Optionally stop polling here, or transition stage
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch queue status", err);
+        }
+      };
+      
+      fetchStatus();
+      interval = setInterval(fetchStatus, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [stage]);
+
+  useEffect(() => {
+    const validateProfile = async () => {
+      setStage("validating");
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const response = await fetch(`${apiUrl}/analysis/validate`, {
+          credentials: "include"
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.data?.status === "incomplete") {
+            setMissingFields(data.data.missing_fields || []);
+            setStage("incomplete_profile");
+          } else {
+            startQueue();
+          }
+        } else {
+          startQueue(); // fallback
+        }
+      } catch (err) {
+        console.error("Failed to validate profile", err);
+        setStage("selecting");
+      }
+    };
+    validateProfile();
+  }, []);
 
   const startGithubAnalysis = async () => {
     if (!githubUrl) {
@@ -569,16 +638,130 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
           </motion.div>
         )}
 
-        {/* ───────── SELECTING ───────── */}
-        {stage === "selecting" && !portfolioError && !linkedinValidationError && (
+        {/* ───────── VALIDATING ───────── */}
+        {stage === "validating" && (
           <motion.div
-            key="selecting"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6"
+            key="validating"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex flex-col items-center justify-center py-20"
           >
-            {/* GitHub Card (Active) */}
+            <div className="relative mb-8">
+              <div className="absolute inset-0 bg-[#7C3AED]/20 blur-xl rounded-full" />
+              <div className="w-20 h-20 bg-white border border-slate-100 rounded-3xl shadow-xl flex items-center justify-center relative">
+                <Loader2 className="w-8 h-8 text-[#7C3AED] animate-spin" />
+              </div>
+            </div>
+            <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight mb-2">
+              Verifying Profile
+            </h2>
+            <p className="text-sm text-slate-500 font-medium">
+              Checking candidate information requirements...
+            </p>
+          </motion.div>
+        )}
+
+        {/* ───────── INCOMPLETE PROFILE ───────── */}
+        {stage === "incomplete_profile" && (
+          <motion.div
+            key="incomplete"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex flex-col items-center justify-center bg-white/80 backdrop-blur-xl border border-rose-100 rounded-3xl p-8 lg:p-12 shadow-xl max-w-2xl mx-auto text-center"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 mb-6 shadow-xs">
+              <AlertTriangle className="w-8 h-8" />
+            </div>
+            
+            <h3 className="text-2xl font-extrabold text-slate-800 mb-3">
+              Profile Incomplete
+            </h3>
+            
+            <p className="text-sm font-semibold text-slate-500 mb-6 leading-relaxed max-w-md">
+              Before starting the AI Career Analysis, please complete the following required profile information.
+            </p>
+            
+            <div className="w-full bg-slate-50 rounded-2xl border border-slate-100 p-6 mb-8 text-left">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Missing Fields</h4>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {missingFields.map((field) => (
+                  <li key={field} className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0" />
+                    {field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+              <button
+                onClick={() => {
+                  onRequestEditProfile("all");
+                }}
+                className="px-8 py-3.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white font-bold rounded-xl text-sm shadow-md hover:shadow-purple-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                Complete Profile
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={onCancel}
+                className="px-8 py-3.5 bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold rounded-xl text-sm active:scale-95 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ───────── SELECTING / QUEUE RUNNING ───────── */}
+        {(stage === "selecting" || stage === "queue_running") && !portfolioError && !linkedinValidationError && (
+          <div className="flex flex-col gap-6">
+            {stage === "queue_running" && queueStatus && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white/80 backdrop-blur-xl border border-purple-100 rounded-2xl p-6 shadow-sm mb-2"
+              >
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-extrabold text-slate-800 flex items-center gap-2">
+                    <Loader2 className={`w-5 h-5 text-[#7C3AED] ${queueStatus.overall_status === 'Running' ? 'animate-spin' : ''}`} />
+                    Overall Background Analysis
+                  </h3>
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                    queueStatus.overall_status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                    queueStatus.overall_status === 'Running' ? 'bg-amber-50 text-amber-600' :
+                    'bg-slate-50 text-slate-500'
+                  }`}>
+                    {queueStatus.overall_status}
+                  </span>
+                </div>
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-linear-to-r from-[#7C3AED] to-[#4F46E5]"
+                    initial={{ width: '0%' }}
+                    animate={{ 
+                      width: queueStatus.overall_status === 'Completed' ? '100%' : 
+                             queueStatus.resume_status === 'Running' ? '80%' :
+                             queueStatus.portfolio_status === 'Running' ? '60%' :
+                             queueStatus.github_status === 'Running' ? '40%' :
+                             queueStatus.linkedin_status === 'Running' ? '20%' : '10%'
+                    }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+              </motion.div>
+            )}
+            
+            <motion.div
+              key="selecting"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6"
+            >
+              {/* GitHub Card (Active) */}
             <div
               onClick={startGithubAnalysis}
               className="group bg-white/80 backdrop-blur-xl border-2 border-purple-100 hover:border-[#7C3AED] rounded-3xl p-6 lg:p-8 shadow-sm hover:shadow-xl hover:shadow-purple-500/10 cursor-pointer transition-all duration-300 relative overflow-hidden"
@@ -588,9 +771,26 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
                 <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <GithubIcon className="w-6 h-6 text-white" />
                 </div>
-                <div className="px-3 py-1 bg-purple-50 rounded-full text-xs font-bold text-[#7C3AED] flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> AI Ready
-                </div>
+                
+                {stage === "queue_running" && queueStatus ? (
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                    queueStatus.github_status === 'Running' ? 'bg-amber-50 text-amber-600' :
+                    queueStatus.github_status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                    queueStatus.github_status === 'Failed' ? 'bg-rose-50 text-rose-600' :
+                    queueStatus.github_status === 'Skipped' ? 'bg-slate-50 text-slate-500' :
+                    'bg-slate-50 text-slate-500'
+                  }`}>
+                    {queueStatus.github_status === 'Running' && <Loader2 className="w-3 h-3 animate-spin" />}
+                    {queueStatus.github_status === 'Completed' && <CheckCircle2 className="w-3 h-3" />}
+                    {queueStatus.github_status === 'Failed' && <AlertTriangle className="w-3 h-3" />}
+                    {queueStatus.github_status === 'Pending' && <span className="w-2 h-2 rounded-full bg-slate-300" />}
+                    {queueStatus.github_status}
+                  </div>
+                ) : (
+                  <div className="px-3 py-1 bg-purple-50 rounded-full text-xs font-bold text-[#7C3AED] flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> AI Ready
+                  </div>
+                )}
               </div>
               <h3 className="text-xl font-extrabold text-slate-800 mb-2">Summarize My GitHub</h3>
               <p className="text-sm font-semibold text-slate-500">
@@ -608,9 +808,26 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
                 <div className="w-12 h-12 rounded-2xl bg-[#0A66C2] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <Network className="w-6 h-6 text-white" />
                 </div>
-                <div className="px-3 py-1 bg-purple-50 rounded-full text-xs font-bold text-[#7C3AED] flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> AI Ready
-                </div>
+                
+                {stage === "queue_running" && queueStatus ? (
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                    queueStatus.linkedin_status === 'Running' ? 'bg-amber-50 text-amber-600' :
+                    queueStatus.linkedin_status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                    queueStatus.linkedin_status === 'Failed' ? 'bg-rose-50 text-rose-600' :
+                    queueStatus.linkedin_status === 'Skipped' ? 'bg-slate-50 text-slate-500' :
+                    'bg-slate-50 text-slate-500'
+                  }`}>
+                    {queueStatus.linkedin_status === 'Running' && <Loader2 className="w-3 h-3 animate-spin" />}
+                    {queueStatus.linkedin_status === 'Completed' && <CheckCircle2 className="w-3 h-3" />}
+                    {queueStatus.linkedin_status === 'Failed' && <AlertTriangle className="w-3 h-3" />}
+                    {queueStatus.linkedin_status === 'Pending' && <span className="w-2 h-2 rounded-full bg-slate-300" />}
+                    {queueStatus.linkedin_status}
+                  </div>
+                ) : (
+                  <div className="px-3 py-1 bg-purple-50 rounded-full text-xs font-bold text-[#7C3AED] flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> AI Ready
+                  </div>
+                )}
               </div>
               <h3 className="text-xl font-extrabold text-slate-800 mb-2">Summarize My LinkedIn</h3>
               <p className="text-sm font-semibold text-slate-500">
@@ -630,9 +847,26 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
                 <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <Globe className="w-6 h-6 text-white" />
                 </div>
-                <div className="px-3 py-1 bg-purple-50 rounded-full text-xs font-bold text-[#7C3AED] flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> AI Ready
-                </div>
+                
+                {stage === "queue_running" && queueStatus ? (
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                    queueStatus.portfolio_status === 'Running' ? 'bg-amber-50 text-amber-600' :
+                    queueStatus.portfolio_status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                    queueStatus.portfolio_status === 'Failed' ? 'bg-rose-50 text-rose-600' :
+                    queueStatus.portfolio_status === 'Skipped' ? 'bg-slate-50 text-slate-500' :
+                    'bg-slate-50 text-slate-500'
+                  }`}>
+                    {queueStatus.portfolio_status === 'Running' && <Loader2 className="w-3 h-3 animate-spin" />}
+                    {queueStatus.portfolio_status === 'Completed' && <CheckCircle2 className="w-3 h-3" />}
+                    {queueStatus.portfolio_status === 'Failed' && <AlertTriangle className="w-3 h-3" />}
+                    {queueStatus.portfolio_status === 'Pending' && <span className="w-2 h-2 rounded-full bg-slate-300" />}
+                    {queueStatus.portfolio_status}
+                  </div>
+                ) : (
+                  <div className="px-3 py-1 bg-purple-50 rounded-full text-xs font-bold text-[#7C3AED] flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> AI Ready
+                  </div>
+                )}
               </div>
               <h3 className="text-xl font-extrabold text-slate-800 mb-2">Summarize My Portfolio</h3>
               <p className="text-sm font-semibold text-slate-500">
@@ -650,9 +884,26 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
                 <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
-                <div className="px-3 py-1 bg-purple-50 rounded-full text-xs font-bold text-[#7C3AED] flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> AI Ready
-                </div>
+                
+                {stage === "queue_running" && queueStatus ? (
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                    queueStatus.resume_status === 'Running' ? 'bg-amber-50 text-amber-600' :
+                    queueStatus.resume_status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                    queueStatus.resume_status === 'Failed' ? 'bg-rose-50 text-rose-600' :
+                    queueStatus.resume_status === 'Skipped' ? 'bg-slate-50 text-slate-500' :
+                    'bg-slate-50 text-slate-500'
+                  }`}>
+                    {queueStatus.resume_status === 'Running' && <Loader2 className="w-3 h-3 animate-spin" />}
+                    {queueStatus.resume_status === 'Completed' && <CheckCircle2 className="w-3 h-3" />}
+                    {queueStatus.resume_status === 'Failed' && <AlertTriangle className="w-3 h-3" />}
+                    {queueStatus.resume_status === 'Pending' && <span className="w-2 h-2 rounded-full bg-slate-300" />}
+                    {queueStatus.resume_status}
+                  </div>
+                ) : (
+                  <div className="px-3 py-1 bg-purple-50 rounded-full text-xs font-bold text-[#7C3AED] flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> AI Ready
+                  </div>
+                )}
               </div>
               <h3 className="text-xl font-extrabold text-slate-800 mb-2">Summarize My Resume</h3>
               <p className="text-sm font-semibold text-slate-500">
@@ -660,10 +911,11 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
               </p>
             </div>
           </motion.div>
+          </div>
         )}
 
         {/* ───────── LOADING ───────── */}
-        {stage !== "selecting" && stage !== "complete" && (
+        {stage !== "selecting" && stage !== "queue_running" && stage !== "validating" && stage !== "incomplete_profile" && stage !== "complete" && (
           <motion.div
             key="loading"
             initial={{ opacity: 0, scale: 0.95 }}

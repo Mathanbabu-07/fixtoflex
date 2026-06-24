@@ -225,6 +225,86 @@ export default function CandidateDashboard() {
     }
   };
 
+  // Schedule Update Handler
+  const handleScheduleUpdate = async (newSchedule: string) => {
+    setSchedulePref(newSchedule);
+    try {
+      const apiEndpoint = getApiUrl("/analysis/schedule");
+      await fetch(apiEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ schedule_preference: newSchedule })
+      });
+    } catch (e) {
+      console.error("Failed to update schedule:", e);
+    }
+  };
+
+  // Auto Queue Trigger
+  useEffect(() => {
+    if (activeTab === "Fix My Profile" && user && !isDemoMode) {
+      const initQueue = async () => {
+        try {
+          const statusEndpoint = getApiUrl("/analysis/status");
+          const statusRes = await fetch(statusEndpoint, { credentials: "include" });
+          if (statusRes.ok) {
+            const data = await statusRes.json();
+            const sq = data.data;
+            setQueueStatus(sq);
+            if (sq?.schedule_preference) {
+              setSchedulePref(sq.schedule_preference);
+            }
+            // Trigger start-queue to let backend handle cache expiration check automatically
+            if (sq?.overall_status !== "Running") {
+              const startEndpoint = getApiUrl("/analysis/start-queue");
+              await fetch(startEndpoint, { method: "POST", credentials: "include" });
+            }
+          }
+        } catch (err) {
+          console.error("Failed to init queue", err);
+        }
+      };
+      initQueue();
+    }
+  }, [activeTab, user, isDemoMode]);
+
+  // Polling Queue Status
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeTab === "Fix My Profile" && queueStatus && queueStatus.overall_status === "Running") {
+      interval = setInterval(async () => {
+        try {
+          const statusEndpoint = getApiUrl("/analysis/status");
+          const res = await fetch(statusEndpoint, { credentials: "include" });
+          if (res.ok) {
+            const data = await res.json();
+            setQueueStatus(data.data);
+          }
+        } catch (e) {
+          console.error("Polling error", e);
+        }
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [activeTab, queueStatus?.overall_status]);
+
+  // Calculate Progress Percent
+  useEffect(() => {
+    if (queueStatus) {
+      let completedCount = 0;
+      const total = 4; // linkedin, github, portfolio, resume
+      if (queueStatus.linkedin_status === "Completed" || queueStatus.linkedin_status === "Failed" || queueStatus.linkedin_status === "Skipped") completedCount++;
+      if (queueStatus.github_status === "Completed" || queueStatus.github_status === "Failed" || queueStatus.github_status === "Skipped") completedCount++;
+      if (queueStatus.portfolio_status === "Completed" || queueStatus.portfolio_status === "Failed" || queueStatus.portfolio_status === "Skipped") completedCount++;
+      if (queueStatus.resume_status === "Completed" || queueStatus.resume_status === "Failed" || queueStatus.resume_status === "Skipped") completedCount++;
+      
+      let percent = (completedCount / total) * 100;
+      if (queueStatus.overall_status === "Running" && percent === 0) percent = 10;
+      setQueueProgressPercent(percent);
+    }
+  }, [queueStatus]);
+
   useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
@@ -291,6 +371,11 @@ export default function CandidateDashboard() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [analysisResetKey, setAnalysisResetKey] = useState(0);
+
+  // Queue Status & Scheduler State
+  const [queueStatus, setQueueStatus] = useState<any>(null);
+  const [schedulePref, setSchedulePref] = useState("Analyze Now");
+  const [queueProgressPercent, setQueueProgressPercent] = useState(0);
 
   // Resume Upload State
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -1079,6 +1164,22 @@ export default function CandidateDashboard() {
                         <div className="absolute top-[-40px] left-[10%] w-24 h-24 bg-purple-100 rounded-full blur-2xl opacity-60 pointer-events-none" />
                         <div className="absolute bottom-[-40px] right-[10%] w-32 h-32 bg-indigo-50 rounded-full blur-3xl opacity-60 pointer-events-none" />
 
+                        {/* Scheduler Dropdown at Top-Left */}
+                        <div className="absolute top-4 left-6 z-10 flex flex-col items-start gap-1">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">Auto Analysis</span>
+                          <select
+                            value={schedulePref}
+                            onChange={(e) => handleScheduleUpdate(e.target.value)}
+                            className="bg-white/90 border border-slate-200 text-slate-600 text-xs font-bold rounded-lg px-2 py-1.5 shadow-xs outline-hidden focus:ring-2 focus:ring-purple-500/50 cursor-pointer"
+                          >
+                            <option value="Analyze Now">Analyze Now</option>
+                            <option value="Every 6 Hours">Every 6 Hours</option>
+                            <option value="Daily">Daily</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Monthly">Monthly</option>
+                          </select>
+                        </div>
+
                         {/* Middle Circular User Icon decoration */}
                         <div className="w-14 h-14 bg-purple-50 border border-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-6 shadow-sm">
                           <User className="w-6 h-6" />
@@ -1181,16 +1282,53 @@ export default function CandidateDashboard() {
                           })}
                         </div>
 
-                        <button 
-                          onClick={() => {
-                            setEditModalMode("all");
-                            setIsEditModalOpen(true);
-                          }}
-                          className="px-8 py-3.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white font-bold rounded-2xl shadow-lg hover:shadow-indigo-500/20 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 group text-sm"
-                        >
-                          <span>Update Profile</span>
-                          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                        </button>
+                        <div className="w-full max-w-sm mt-4">
+                          <button 
+                            onClick={() => {
+                              setShowAIAnalysis(true);
+                              updateUrl(activeTab, true);
+                            }}
+                            disabled={queueProgressPercent < 100}
+                            className={`relative w-full h-14 rounded-2xl font-bold flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 ${
+                              queueProgressPercent >= 100 
+                                ? "bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.02] cursor-pointer group" 
+                                : "bg-slate-100 text-slate-500 cursor-not-allowed"
+                            }`}
+                          >
+                            {/* Animated Background Fill */}
+                            {queueProgressPercent < 100 && (
+                              <div 
+                                className="absolute top-0 left-0 h-full bg-linear-to-r from-purple-200 to-indigo-200 transition-all duration-1000 ease-in-out"
+                                style={{ width: `${queueProgressPercent}%` }}
+                              />
+                            )}
+                            
+                            {/* Subtle Glow Animation when 100% */}
+                            {queueProgressPercent >= 100 && (
+                              <div className="absolute inset-0 bg-white/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            )}
+
+                            {/* Button Text & Icon */}
+                            <div className="relative z-10 flex items-center gap-2">
+                              {queueProgressPercent === 0 && queueStatus?.overall_status !== "Running" ? (
+                                <>Idle</>
+                              ) : queueProgressPercent < 25 ? (
+                                <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Initializing...</>
+                              ) : queueProgressPercent < 50 ? (
+                                <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Analyzing...</>
+                              ) : queueProgressPercent < 75 ? (
+                                <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Processing...</>
+                              ) : queueProgressPercent < 100 ? (
+                                <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Finalizing...</>
+                              ) : (
+                                <>
+                                  <Sparkles className="w-4 h-4" /> Ready for AI Insight
+                                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                </>
+                              )}
+                            </div>
+                          </button>
+                        </div>
 
                         {/* Bottom Security Note */}
                         <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold mt-4">
