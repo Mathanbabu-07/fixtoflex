@@ -266,19 +266,10 @@ class AnalysisService:
             # 7. Step 4: Data Cleaning & Normalization via Gemini
             logger.info("Normalizing extracted LinkedIn data using Gemini...")
             
-            linkedin_details = None
-            if current_user and current_user.get("linkedin_id") and not current_user.get("linkedin_id").startswith("mock_li_"):
-                linkedin_details = {
-                    "full_name": current_user.get("full_name"),
-                    "email": current_user.get("email"),
-                    "profile_picture": current_user.get("profile_picture")
-                }
-                
             try:
                 normalized_json = await self.gemini_client.normalize_linkedin(
                     jina_markdown=raw_markdown or "",
-                    scrapedo_html=raw_html,
-                    linkedin_details=linkedin_details
+                    scrapedo_html=raw_html
                 )
             except Exception as norm_err:
                 logger.error(f"Gemini LinkedIn normalization failed: {norm_err}")

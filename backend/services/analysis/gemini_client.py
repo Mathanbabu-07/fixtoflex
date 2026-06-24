@@ -471,12 +471,7 @@ Respond STRICTLY with a valid JSON object matching exactly the following schema.
             logger.warning(f"Failed to clean HTML content with BeautifulSoup: {e}. Returning raw content slice.")
             return html_content[:20000]
 
-    async def normalize_linkedin(
-        self,
-        jina_markdown: str,
-        scrapedo_html: Optional[str] = None,
-        linkedin_details: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    async def normalize_linkedin(self, jina_markdown: str, scrapedo_html: Optional[str] = None) -> Dict[str, Any]:
         """
         Step 4: Converts primary Jina markdown and secondary Scrape.do HTML into a structured JSON CandidateProfile.
         Merges datasets, removes duplicates, footers, navigation, and empty fields.
@@ -485,15 +480,6 @@ Respond STRICTLY with a valid JSON object matching exactly the following schema.
             return self._get_linkedin_normalization_mock()
 
         cleaned_html = self._clean_html(scrapedo_html) if scrapedo_html else None
-
-        auth_details_section = ""
-        if linkedin_details:
-            auth_details_section = f"""
----
-Authenticated LinkedIn User Profile:
-{json.dumps(linkedin_details, indent=2)}
-Use these details to enrich or verify the name, email, profile picture, or headline if they are missing or incomplete in the scraped sources.
-"""
 
         prompt = f"""
 You are a precise data engineering system. Parse the following webpage content extracted from a candidate's LinkedIn profile.
@@ -598,7 +584,6 @@ Primary Jina Markdown:
 ---
 Secondary Scrape.do Text:
 {cleaned_html or "Not Provided"}
-{auth_details_section}
 """
         try:
             response = self.model.generate_content(

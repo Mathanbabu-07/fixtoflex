@@ -265,7 +265,7 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
     
     // 1. Validation
     const hasValidUrl = linkedinUrl && linkedinUrl.trim() !== "" && linkedinUrl.includes("linkedin.com/in/");
-    if (!hasValidUrl) {
+    if (!isLinkedInLoggedIn || !hasValidUrl) {
       setLinkedinValidationError(true);
       return;
     }
@@ -542,28 +542,31 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
             </div>
             
             <h3 className="text-xl font-extrabold text-slate-800 mb-3">
-              LinkedIn Profile Required
+              LinkedIn Login Required
             </h3>
             
             <p className="text-sm font-semibold text-slate-500 mb-8 leading-relaxed max-w-sm">
-              Please enter your LinkedIn profile URL in your profile before generating AI Career Analysis.
+              Please login with LinkedIn and add your LinkedIn profile before generating AI Career Analysis.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
               <button
-                onClick={() => {
+                onClick={(e) => {
                   setLinkedinValidationError(false);
-                  onRequestEditProfile("linkedin");
+                  if (onLinkedInLogin) onLinkedInLogin(e);
                 }}
-                className="px-6 py-3.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white font-bold rounded-xl text-xs shadow-md hover:shadow-purple-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="px-6 py-3.5 bg-[#0A66C2] hover:bg-[#004182] text-white font-bold rounded-xl text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                Add LinkedIn Profile
+                Login with LinkedIn
               </button>
               <button
-                onClick={() => setLinkedinValidationError(false)}
-                className="px-6 py-3.5 bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100 font-bold rounded-xl text-xs active:scale-95 transition-all"
+                onClick={() => {
+                  setLinkedinValidationError(false);
+                  onRequestEditProfile();
+                }}
+                className="px-6 py-3.5 bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold rounded-xl text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                Back
+                Add LinkedIn Profile
               </button>
             </div>
           </motion.div>
