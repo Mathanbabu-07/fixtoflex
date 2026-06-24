@@ -28,8 +28,8 @@ $RECYCLE.BIN/
 *~
 *.bak
 *.tmp
-*.sql
-*.sqlite
+# *.sql
+# *.sqlite
 
 # ==========================================
 # 3. Node & Frontend Specific Ignores
