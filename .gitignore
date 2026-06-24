@@ -1,55 +1,172 @@
-# Dependency directories
+# ==========================================
+# 1. System Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ==========================================
+# 2. Editor & IDE Specific Ignores
+# ==========================================
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+*.bak
+*.tmp
+*.sql
+*.sqlite
+
+# ==========================================
+# 3. Node & Frontend Specific Ignores
+# ==========================================
 node_modules/
 jspm_packages/
 web_modules/
+.npm/
+.eslintcache
+.stylelintcache
+.tsbuildinfo
+next-env.d.ts
 
 # Next.js build output
 .next/
 out/
-frontend/.next/
-frontend/out/
-
-# Production build output
 build/
 dist/
+
+# Subdirectory specific ignores
+frontend/.next/
+frontend/out/
 frontend/build/
 frontend/dist/
 
-# Debug logs
+# Test / Coverage outputs
+coverage/
+frontend/coverage/
+.nyc_output/
+
+# Package manager logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Environmental variables (sensitive)
-.env*.local
-.env
-frontend/.env*.local
-frontend/.env
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDEs and editors
-.idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Python and FastAPI specific ignores
-**/__pycache__/
+# ==========================================
+# 4. Python Specific Ignores
+# ==========================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
 *.py[cod]
 *$py.class
-backend/.env
+
+# C extensions
+*.so
+
+# Distribution / packaging
+bin/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so content is dynamic.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / Coverage reports
+htmlcov/
+.tox/
+.nosenv/
 .pytest_cache/
 .mypy_cache/
-venv/
-.venv/
-env/
+.ruff_cache/
+.hypothesis/
+.poetry/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
 *.log
 
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Sphinx documentation
+docs/_build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ==========================================
+# 5. Environment & Secret Exclusions
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.sample
+!.env.example
+
+# Subdirectory environments
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+backend/.env
+backend/.env.local
