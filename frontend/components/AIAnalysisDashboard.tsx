@@ -46,6 +46,7 @@ interface AIAnalysisDashboardProps {
   onLinkedInLogin?: (e: React.MouseEvent) => void;
   onAnalysisComplete: (result: any) => void;
   onRequestEditProfile: (mode?: "all" | "linkedin" | "github" | "portfolio") => void;
+  onNavigateToCareerIntelligence?: () => void;
   onCancel: () => void;
 }
 
@@ -79,7 +80,7 @@ const parseBackendError = (errData: any): string => {
   return String(detail);
 };
 
-export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFile, resumeUrl, linkedinUrl, isLinkedInLoggedIn, onLinkedInLogin, onAnalysisComplete, onRequestEditProfile, onCancel }: AIAnalysisDashboardProps) {
+export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFile, resumeUrl, linkedinUrl, isLinkedInLoggedIn, onLinkedInLogin, onAnalysisComplete, onRequestEditProfile, onNavigateToCareerIntelligence, onCancel }: AIAnalysisDashboardProps) {
   const [stage, setStage] = useState<AnalysisStage>("selecting");
   const [analysisType, setAnalysisType] = useState<"github" | "portfolio" | "resume" | "linkedin" | null>(null);
   const [result, setResult] = useState<any>(null);
@@ -943,6 +944,23 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
               </p>
             </div>
           </motion.div>
+
+          {queueStatus?.overall_status === "Completed" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 flex justify-center w-full"
+            >
+              <button
+                onClick={onNavigateToCareerIntelligence}
+                className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white px-8 py-4 rounded-2xl font-extrabold shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.02] transition-all duration-300 flex items-center gap-3 text-lg w-full md:w-auto justify-center group"
+              >
+                <Sparkles className="w-6 h-6" /> Fix My Profile & View AI Suggestions
+                <ArrowRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
+              </button>
+            </motion.div>
+          )}
+
           </div>
         )}
 

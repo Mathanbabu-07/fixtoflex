@@ -1153,6 +1153,10 @@ export default function CandidateDashboard() {
                       onAnalysisComplete={(res) => {
                         console.log("Analysis Complete", res);
                       }}
+                      onNavigateToCareerIntelligence={() => {
+                        setActiveTab("Career Intelligence");
+                        setShowAIAnalysis(false);
+                      }}
                       onRequestEditProfile={(mode) => {
                         setEditModalMode(mode || "all");
                         setIsEditModalOpen(true);
@@ -1289,53 +1293,54 @@ export default function CandidateDashboard() {
                           })}
                         </div>
 
-                        <div className="w-full max-w-sm mt-4">
-                          <button 
-                            onClick={() => {
-                              setShowAIAnalysis(true);
-                              updateUrl(activeTab, true);
-                            }}
-                            disabled={queueProgressPercent < 100}
-                            className={`relative w-full h-14 rounded-2xl font-bold flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 ${
-                              queueProgressPercent >= 100 
-                                ? "bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.02] cursor-pointer group" 
-                                : "bg-slate-100 text-slate-500 cursor-not-allowed"
-                            }`}
-                          >
-                            {/* Animated Background Fill */}
-                            {queueProgressPercent < 100 && (
-                              <div 
-                                className="absolute top-0 left-0 h-full bg-linear-to-r from-purple-200 to-indigo-200 transition-all duration-1000 ease-in-out"
-                                style={{ width: `${queueProgressPercent}%` }}
-                              />
-                            )}
-                            
-                            {/* Subtle Glow Animation when 100% */}
-                            {queueProgressPercent >= 100 && (
-                              <div className="absolute inset-0 bg-white/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            )}
-
-                            {/* Button Text & Icon */}
-                            <div className="relative z-10 flex items-center gap-2">
-                              {queueProgressPercent === 0 && queueStatus?.overall_status !== "Running" ? (
-                                <>Idle</>
-                              ) : queueProgressPercent < 25 ? (
-                                <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Initializing...</>
-                              ) : queueProgressPercent < 50 ? (
-                                <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Analyzing...</>
-                              ) : queueProgressPercent < 75 ? (
-                                <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Processing...</>
-                              ) : queueProgressPercent < 100 ? (
-                                <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Finalizing...</>
-                              ) : (
-                                <>
-                                  <Sparkles className="w-4 h-4" /> Ready for AI Insight
-                                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                                </>
+                        {/* Only show progress button if it's running or completed */}
+                        {(queueProgressPercent > 0 || queueStatus?.overall_status === "Running" || queueStatus?.overall_status === "Completed") && (
+                          <div className="w-full max-w-sm mt-4">
+                            <button 
+                              onClick={() => {
+                                setShowAIAnalysis(true);
+                                updateUrl(activeTab, true);
+                              }}
+                              disabled={queueProgressPercent < 100}
+                              className={`relative w-full h-14 rounded-2xl font-bold flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 ${
+                                queueProgressPercent >= 100 
+                                  ? "bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.02] cursor-pointer group" 
+                                  : "bg-slate-100 text-slate-500 cursor-not-allowed"
+                              }`}
+                            >
+                              {/* Animated Background Fill */}
+                              {queueProgressPercent < 100 && (
+                                <div 
+                                  className="absolute top-0 left-0 h-full bg-linear-to-r from-purple-200 to-indigo-200 transition-all duration-1000 ease-in-out"
+                                  style={{ width: `${queueProgressPercent}%` }}
+                                />
                               )}
-                            </div>
-                          </button>
-                        </div>
+                              
+                              {/* Subtle Glow Animation when 100% */}
+                              {queueProgressPercent >= 100 && (
+                                <div className="absolute inset-0 bg-white/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                              )}
+
+                              {/* Button Text & Icon */}
+                              <div className="relative z-10 flex items-center gap-2">
+                                {queueProgressPercent < 25 ? (
+                                  <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Initializing...</>
+                                ) : queueProgressPercent < 50 ? (
+                                  <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Analyzing...</>
+                                ) : queueProgressPercent < 75 ? (
+                                  <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Processing...</>
+                                ) : queueProgressPercent < 100 ? (
+                                  <><Loader2 className="w-4 h-4 animate-spin text-purple-600" /> Finalizing...</>
+                                ) : (
+                                  <>
+                                    <Sparkles className="w-4 h-4" /> Ready for AI Insight
+                                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                  </>
+                                )}
+                              </div>
+                            </button>
+                          </div>
+                        )}
 
                         {/* Bottom Security Note */}
                         <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold mt-4">
