@@ -48,17 +48,6 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
     const fetchSession = async () => {
       try {
         console.log("[SESSION CHECK] Attempting to check active session...");
-        const localSession = localStorage.getItem("user_session");
-        if (localSession) {
-          try {
-            const parsed = JSON.parse(localSession);
-            console.log("[SESSION CHECK] Found cached session in localStorage:", parsed);
-            setUser(parsed);
-          } catch (e) {
-            console.error("[SESSION CHECK ERROR] Failed to parse local user session:", e);
-          }
-        }
-
         const apiEndpoint = getApiUrl("/users/me");
         console.log("[SESSION CHECK] Fetching user profile from backend:", apiEndpoint);
         const response = await fetch(apiEndpoint, {
@@ -86,15 +75,31 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
         } else {
           console.log("[SESSION CHECK] Backend session is inactive/expired. Cleaning local credentials.");
           setUser(null);
-          localStorage.removeItem("user_session");
+          localStorage.clear();
+          sessionStorage.clear();
         }
       } catch (error) {
         console.warn("[SESSION CHECK ERROR] Error fetching active session from backend (offline or server error):", error);
+        setUser(null);
+        localStorage.clear();
+        sessionStorage.clear();
       }
     };
 
     fetchSession();
   }, []);
+
+  // Listen for global auth changes (login/logout) to update UI instantly without refresh
+  useEffect(() => {
+    const handleAuthChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      console.log("[NAVBAR AUTH CHANGE] Received auth-change event:", customEvent.detail);
+      setUser(customEvent.detail);
+    };
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => window.removeEventListener("auth-change", handleAuthChange);
+  }, []);
+
 
   const handleLinkedInLogin = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -150,32 +155,42 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
       });
 
       console.log("[LOGOUT] Received response status from backend:", response.status);
-      if (response.ok) {
-        console.log("[LOGOUT] Session cleared successfully on backend. Cleaning local state...");
-        localStorage.removeItem("user_session");
-        setUser(null);
-        setShowProfileDropdown(false);
-      } else {
-        const errText = await response.text();
-        console.warn("[LOGOUT WARNING] Backend logout returned non-OK status. Details:", errText);
-        // Fallback local cleanup even if backend reports failure
-        localStorage.removeItem("user_session");
-        setUser(null);
-        setShowProfileDropdown(false);
-        alert("Logout completed with local state cleanup (backend reported an error).");
+      
+      // Perform complete client side cleanup
+      localStorage.clear();
+      sessionStorage.clear();
+      document.cookie = "access_token=; Max-Age=0; path=/;";
+      
+      // Dispatch custom event to notify all components
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth-change", { detail: null }));
       }
+      
+      setUser(null);
+      setShowProfileDropdown(false);
+      
+      // Redirect to home page
+      window.location.href = "/";
+      
     } catch (err: unknown) {
       const error = err as Error;
       console.error("[LOGOUT ERROR] Exception caught during session logout:", error);
-      // Ensure local state cleanup so the user is never stuck in logged-in state
-      localStorage.removeItem("user_session");
+      
+      // Fallback complete clear
+      localStorage.clear();
+      sessionStorage.clear();
+      document.cookie = "access_token=; Max-Age=0; path=/;";
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth-change", { detail: null }));
+      }
       setUser(null);
       setShowProfileDropdown(false);
-      alert(`Logout completed with local state cleanup (connection error: ${error.message || error}).`);
+      window.location.href = "/";
     } finally {
       setIsLoggingOut(false);
     }
   };
+
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-[80px] bg-white/70 backdrop-blur-md border-b border-purple-100/30 flex items-center justify-between px-6 md:px-12 transition-all">

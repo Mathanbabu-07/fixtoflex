@@ -67,6 +67,11 @@ function LinkedInCallbackContent() {
           setStatusMsg("Welcome! Redirecting to home page...");
           localStorage.setItem("user_session", JSON.stringify(data.user));
           
+          // Notify Navbar and other layouts instantly
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("auth-change", { detail: data.user }));
+          }
+          
           console.log("[STEP 9] Redirecting to home");
           setTimeout(() => {
             router.push("/");

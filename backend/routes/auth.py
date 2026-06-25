@@ -174,5 +174,17 @@ async def logout(response: Response):
     """
     Clears the HttpOnly authentication session cookie.
     """
-    response.delete_cookie(key="access_token", path="/")
+    cookie_secure = settings.COOKIE_SECURE
+    cookie_samesite = settings.COOKIE_SAMESITE
+    if settings.APP_ENV == "production":
+        cookie_secure = True
+        cookie_samesite = "none"
+
+    response.delete_cookie(
+        key="access_token", 
+        path="/",
+        secure=cookie_secure,
+        samesite=cookie_samesite
+    )
     return {"success": True, "detail": "Logged out successfully."}
+

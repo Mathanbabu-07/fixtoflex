@@ -282,7 +282,7 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
                   return (
                     <div key={period} className="relative">
                       {/* Timeline Dot */}
-                      <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-[#7C3AED] shadow-sm" />
+                      <div className="absolute left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-[#7C3AED] shadow-sm" />
                       
                       <div className="bg-slate-50/50 hover:bg-slate-50 p-4 rounded-2xl border border-slate-100 transition-colors">
                         <h4 className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider mb-2 flex items-center gap-1.5">

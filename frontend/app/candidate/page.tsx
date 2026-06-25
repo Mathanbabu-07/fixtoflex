@@ -235,6 +235,7 @@ export default function CandidateDashboard() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [sessionLoading, setSessionLoading] = useState(true);
 
   // Profile Edit State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -409,40 +410,7 @@ export default function CandidateDashboard() {
   // Sync session check
   const fetchSession = async () => {
     try {
-      const localSession = localStorage.getItem("user_session");
-      if (localSession) {
-        try {
-          const parsed = JSON.parse(localSession);
-          setUser(parsed);
-          setFormData({
-            full_name: parsed.full_name || parsed.name || "",
-            headline: parsed.headline || "Software Engineer",
-            linkedin_url: parsed.linkedin_url || `https://linkedin.com/in/${(parsed.full_name || parsed.name || "arjun-kumar").toLowerCase().replace(/\s+/g, "-")}`,
-            github_url: parsed.github_url || "",
-            portfolio_url: parsed.portfolio_url || "",
-            date_of_birth: parsed.date_of_birth || "",
-            gender: parsed.gender || "",
-            email: parsed.email || "",
-            mobile_number: parsed.mobile_number || "",
-            state: parsed.state || "",
-            district: parsed.district || "",
-            institution_name: parsed.institution_name || "",
-            institution_district: parsed.institution_district || "",
-            interested_domain: parsed.interested_domain || "",
-            target_job_role: parsed.target_job_role || "",
-            experience: parsed.experience || "",
-            skills: parsed.skills || "",
-            language_proficiency: parsed.language_proficiency || "",
-            certifications: parsed.certifications || "",
-          });
-          if (parsed.resume_url) {
-            setResumeUrl(parsed.resume_url);
-          }
-        } catch (e) {
-          console.error("Failed to parse cached user session:", e);
-        }
-      }
-
+      console.log("[SESSION CHECK] Checking session with backend...");
       const apiEndpoint = getApiUrl("/users/me");
       const response = await fetch(apiEndpoint, {
         method: "GET",
@@ -454,6 +422,7 @@ export default function CandidateDashboard() {
 
       if (response.ok) {
         const userData = await response.json();
+        console.log("[SESSION CHECK] Session is valid:", userData);
         const normalizedUser: UserProfile = {
           id: userData.id,
           email: userData.email,
@@ -509,17 +478,22 @@ export default function CandidateDashboard() {
           setResumeUrl(userData.resume_url);
         }
         setIsDemoMode(false);
+        setSessionLoading(false);
       } else {
-        // Not authenticated, set demo mode
-        setIsDemoMode(true);
-        if (!localSession) {
-          setupDemoUser();
-        }
+        console.log("[SESSION CHECK] Session invalid, clearing cache and redirecting to home...");
+        localStorage.clear();
+        sessionStorage.clear();
+        document.cookie = "access_token=; Max-Age=0; path=/;";
+        setUser(null);
+        router.push("/");
       }
     } catch (error) {
-      console.warn("Error checking session, switching to demo mode:", error);
-      setIsDemoMode(true);
-      setupDemoUser();
+      console.warn("[SESSION CHECK ERROR] Exception caught, clearing cache and redirecting to home:", error);
+      localStorage.clear();
+      sessionStorage.clear();
+      document.cookie = "access_token=; Max-Age=0; path=/;";
+      setUser(null);
+      router.push("/");
     }
   };
 
@@ -579,6 +553,21 @@ export default function CandidateDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Listen for global auth changes (login/logout) to update UI instantly without refresh
+  useEffect(() => {
+    const handleAuthChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const newUser = customEvent.detail;
+      console.log("[CANDIDATE AUTH CHANGE] Received auth-change event:", newUser);
+      setUser(newUser);
+      if (!newUser) {
+        router.push("/");
+      }
+    };
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => window.removeEventListener("auth-change", handleAuthChange);
+  }, [router]);
+
   const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
 
   useEffect(() => {
@@ -624,22 +613,31 @@ export default function CandidateDashboard() {
         credentials: "include",
       });
       
-      // Cleanup local state
-      localStorage.removeItem("user_session");
+      // Perform complete local clear
+      localStorage.clear();
+      sessionStorage.clear();
+      document.cookie = "access_token=; Max-Age=0; path=/;";
+      
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth-change", { detail: null }));
+      }
+      
       setUser(null);
       setShowProfileDropdown(false);
       
-      // Setup demo user or redirect
-      setupDemoUser();
-      setIsDemoMode(true);
       router.push("/");
     } catch (err: unknown) {
       const error = err as Error;
       console.error("Logout error:", error);
-      localStorage.removeItem("user_session");
+      
+      // Fallback complete clear
+      localStorage.clear();
+      sessionStorage.clear();
+      document.cookie = "access_token=; Max-Age=0; path=/;";
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth-change", { detail: null }));
+      }
       setUser(null);
-      setupDemoUser();
-      setIsDemoMode(true);
       router.push("/");
     } finally {
       setIsLoggingOut(false);
@@ -833,6 +831,17 @@ export default function CandidateDashboard() {
   };
 
   const currentStrength = getProfileStrength();
+
+  if (sessionLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff]">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="w-10 h-10 text-[#7C3AED] animate-spin" />
+          <p className="text-sm font-semibold text-slate-500">Verifying session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-slate-50/50 flex flex-col lg:flex-row overflow-hidden font-sans">
