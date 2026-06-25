@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, TrendingUp, Code, BookOpen, User, CheckCircle2, AlertTriangle, ArrowRight, Loader2 } from "lucide-react";
+import { Sparkles, TrendingUp, Code, BookOpen, User, CheckCircle2, AlertTriangle, ArrowRight, Loader2, FileText, Globe } from "lucide-react";
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -115,49 +115,101 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
         </p>
         
         {progress_estimation && (
-          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 relative z-10">
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center">
-              <p className="text-xs uppercase tracking-wider text-white/70 mb-1">Current Strength</p>
-              <p className="text-3xl font-black">{progress_estimation.current_profile_strength}<span className="text-lg text-white/50">/100</span></p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 relative z-10">
+            {/* Profile Strength Card */}
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs uppercase tracking-wider text-white/80 font-bold">Profile Strength</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-black text-white">{progress_estimation.current_profile_strength}</span>
+                  <ArrowRight className="w-4 h-4 text-white/60" />
+                  <span className="text-2xl font-black text-emerald-300">{progress_estimation.expected_profile_strength}</span>
+                  <span className="text-xs text-white/50">/100</span>
+                </div>
+              </div>
+              <div className="w-full bg-white/25 h-3 rounded-full overflow-hidden relative">
+                {/* Expected Fill */}
+                <div 
+                  className="absolute left-0 top-0 h-full bg-emerald-400 rounded-full" 
+                  style={{ width: `${progress_estimation.expected_profile_strength}%` }}
+                />
+                {/* Current Fill */}
+                <div 
+                  className="absolute left-0 top-0 h-full bg-white rounded-full z-10" 
+                  style={{ width: `${progress_estimation.current_profile_strength}%` }}
+                />
+              </div>
+              <div className="flex justify-between items-center mt-2 text-[10px] text-white/60">
+                <span>Current Status</span>
+                <span className="text-emerald-300 font-bold">+{progress_estimation.expected_profile_strength - progress_estimation.current_profile_strength} pts increase</span>
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center">
-              <p className="text-xs uppercase tracking-wider text-emerald-300 mb-1">Expected Strength</p>
-              <p className="text-3xl font-black text-emerald-100">{progress_estimation.expected_profile_strength}<span className="text-lg text-emerald-400/50">/100</span></p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center">
-              <p className="text-xs uppercase tracking-wider text-white/70 mb-1">Current ATS</p>
-              <p className="text-3xl font-black">{progress_estimation.current_ats_readiness}<span className="text-lg text-white/50">/100</span></p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center">
-              <p className="text-xs uppercase tracking-wider text-emerald-300 mb-1">Expected ATS</p>
-              <p className="text-3xl font-black text-emerald-100">{progress_estimation.expected_ats_readiness}<span className="text-lg text-emerald-400/50">/100</span></p>
+
+            {/* ATS Readiness Card */}
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs uppercase tracking-wider text-white/80 font-bold">ATS Match Rate</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-black text-white">{progress_estimation.current_ats_readiness}</span>
+                  <ArrowRight className="w-4 h-4 text-white/60" />
+                  <span className="text-2xl font-black text-emerald-300">{progress_estimation.expected_ats_readiness}</span>
+                  <span className="text-xs text-white/50">/100</span>
+                </div>
+              </div>
+              <div className="w-full bg-white/25 h-3 rounded-full overflow-hidden relative">
+                {/* Expected Fill */}
+                <div 
+                  className="absolute left-0 top-0 h-full bg-emerald-400 rounded-full" 
+                  style={{ width: `${progress_estimation.expected_ats_readiness}%` }}
+                />
+                {/* Current Fill */}
+                <div 
+                  className="absolute left-0 top-0 h-full bg-white rounded-full z-10" 
+                  style={{ width: `${progress_estimation.current_ats_readiness}%` }}
+                />
+              </div>
+              <div className="flex justify-between items-center mt-2 text-[10px] text-white/60">
+                <span>Current Status</span>
+                <span className="text-emerald-300 font-bold">+{progress_estimation.expected_ats_readiness - progress_estimation.current_ats_readiness} pts increase</span>
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Left Col */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
           
           {/* Skill Roadmap */}
           {skill_improvement_roadmap && skill_improvement_roadmap.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
-              <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2 mb-4">
-                <Code className="w-5 h-5 text-purple-600" /> Skill Improvement Roadmap
-              </h3>
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+              <div className="border-b border-slate-100 pb-3 mb-6">
+                <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                  <Code className="w-5 h-5 text-[#7C3AED]" /> Skill Improvement Roadmap
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">Key conceptual and framework enhancements required for target roles.</p>
+              </div>
               <div className="space-y-4">
                 {skill_improvement_roadmap.map((skill: any, i: number) => (
-                  <div key={i} className="flex flex-col gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <span className="text-xs font-bold text-slate-400 uppercase">{skill.category}</span>
-                        <h4 className="text-sm font-bold text-slate-800 mt-1">{skill.recommendation}</h4>
+                  <div key={i} className="group p-5 bg-slate-50/50 hover:bg-slate-50 border border-slate-100 rounded-2xl transition-all duration-200">
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-purple-600 tracking-wider uppercase bg-purple-50 px-2 py-0.5 rounded-md">
+                          {skill.category}
+                        </span>
+                        <h4 className="text-sm font-bold text-slate-800 pt-1 leading-snug">
+                          {skill.recommendation}
+                        </h4>
                       </div>
-                      <PriorityBadge priority={skill.priority} />
+                      <div className="shrink-0 self-start">
+                        <PriorityBadge priority={skill.priority} />
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-600">{skill.why_important}</p>
+                    <p className="text-xs text-slate-500 mt-2.5 leading-relaxed">
+                      {skill.why_important}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -166,23 +218,41 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
 
           {/* Project Roadmap */}
           {project_roadmap && project_roadmap.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
-              <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2 mb-4">
-                <BookOpen className="w-5 h-5 text-purple-600" /> Project Roadmap
-              </h3>
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+              <div className="border-b border-slate-100 pb-3 mb-6">
+                <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-[#7C3AED]" /> Project Roadmap
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">Recommended projects to build out and prove competency.</p>
+              </div>
               <div className="space-y-4">
                 {project_roadmap.map((proj: any, i: number) => (
-                  <div key={i} className="flex flex-col gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div className="flex justify-between items-start">
-                      <h4 className="text-sm font-bold text-slate-800">{proj.title}</h4>
-                      <PriorityBadge priority={proj.priority} />
+                  <div key={i} className="group p-5 bg-slate-50/50 hover:bg-slate-50 border border-slate-100 rounded-2xl transition-all duration-200">
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-indigo-600 tracking-wider uppercase bg-indigo-50 px-2 py-0.5 rounded-md">
+                          Project Recommendation
+                        </span>
+                        <h4 className="text-sm font-bold text-slate-800 pt-1 leading-snug">
+                          {proj.title}
+                        </h4>
+                      </div>
+                      <div className="shrink-0 self-start">
+                        <PriorityBadge priority={proj.priority} />
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-600"><strong>Outcomes:</strong> {proj.learning_outcomes}</p>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {proj.technologies.map((tech: string, j: number) => (
-                        <span key={j} className="px-2 py-1 bg-white border border-slate-200 rounded-md text-[10px] font-bold text-slate-600">{tech}</span>
-                      ))}
-                    </div>
+                    <p className="text-xs text-slate-600 mt-3 leading-relaxed">
+                      <strong className="text-slate-800 font-semibold">Learning Outcomes:</strong> {proj.learning_outcomes}
+                    </p>
+                    {proj.technologies && proj.technologies.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {proj.technologies.map((tech: string, j: number) => (
+                          <span key={j} className="px-2 py-0.5 bg-white border border-slate-200 text-slate-500 rounded-md text-[10px] font-semibold">
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -192,76 +262,139 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
         </div>
 
         {/* Right Col */}
-        <div className="lg:col-span-1 flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
           
           {/* Action Plan */}
           {timeline_roadmap && (
-            <div className="bg-purple-50 border border-purple-100 rounded-3xl p-6">
-              <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2 mb-4">
-                <TrendingUp className="w-5 h-5 text-purple-600" /> Action Plan
-              </h3>
-              <div className="space-y-4 relative before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-purple-200">
-                {Object.entries(timeline_roadmap).map(([period, items]: [string, any], index) => (
-                  <div key={period} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full border border-white bg-purple-200 shadow shrink-0 z-10" />
-                    <div className="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] p-3 bg-white border border-slate-100 rounded-xl shadow-xs">
-                      <h4 className="text-xs font-bold text-slate-800 uppercase mb-2">{period.replace(/_/g, " ")}</h4>
-                      <ul className="space-y-1">
-                        {items.map((item: string, i: number) => (
-                          <li key={i} className="text-[10px] text-slate-600 flex items-start gap-1">
-                            <span className="text-purple-500 mt-0.5">•</span> {item}
-                          </li>
-                        ))}
-                      </ul>
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+              <div className="border-b border-slate-100 pb-3 mb-6">
+                <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-[#7C3AED]" /> Action Plan
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">Your step-by-step timeline execution roadmap.</p>
+              </div>
+              <div className="relative pl-6 border-l-2 border-purple-100 ml-2 space-y-6">
+                {Object.entries(timeline_roadmap).map(([period, items]: [string, any], index) => {
+                  const periodLabel = period
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, l => l.toUpperCase());
+
+                  return (
+                    <div key={period} className="relative">
+                      {/* Timeline Dot */}
+                      <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-[#7C3AED] shadow-sm" />
+                      
+                      <div className="bg-slate-50/50 hover:bg-slate-50 p-4 rounded-2xl border border-slate-100 transition-colors">
+                        <h4 className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          {periodLabel}
+                        </h4>
+                        <ul className="space-y-2">
+                          {items.map((item: string, i: number) => (
+                            <li key={i} className="text-xs text-slate-600 flex items-start gap-2 leading-relaxed">
+                              <span className="text-[#7C3AED] shrink-0 mt-1">✦</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* Profile Improvements */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs flex flex-col gap-4">
-            <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-purple-600" /> Profile Fixes
-            </h3>
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col gap-6">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-[#7C3AED]" /> Profile Fixes
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">Actionable tweaks to stand out to recruiters and pass ATS filters.</p>
+            </div>
             
-            {resume_improvement && (
-              <div className="flex flex-col gap-2">
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1"><BookOpen className="w-3 h-3"/> Resume</h4>
-                {resume_improvement.map((item: any, i: number) => (
-                  <div key={i} className="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100 flex justify-between gap-2">
-                    <span>{item.suggestion}</span> <PriorityBadge priority={item.priority} />
+            <div className="space-y-6">
+              {/* Resume Fixes */}
+              {resume_improvement && resume_improvement.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-purple-500" /> Resume Improvements
+                  </h4>
+                  <div className="space-y-2.5">
+                    {resume_improvement.map((item: any, i: number) => (
+                      <div key={i} className="text-xs text-slate-700 bg-slate-50/50 hover:bg-slate-55 p-3 rounded-xl border border-slate-100 flex items-start justify-between gap-4 transition-colors">
+                        <span className="leading-relaxed">{item.suggestion}</span>
+                        <div className="shrink-0 self-start">
+                          <PriorityBadge priority={item.priority} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-            
-            {linkedin_improvement && (
-              <div className="flex flex-col gap-2 mt-2">
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1"><LinkedinIcon className="w-3 h-3"/> LinkedIn</h4>
-                {linkedin_improvement.map((item: any, i: number) => (
-                  <div key={i} className="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100 flex justify-between gap-2">
-                    <span>{item.suggestion}</span> <PriorityBadge priority={item.priority} />
-                  </div>
-                ))}
-              </div>
-            )}
+                </div>
+              )}
 
-            {github_improvement && (
-              <div className="flex flex-col gap-2 mt-2">
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1"><GithubIcon className="w-3 h-3"/> GitHub</h4>
-                {github_improvement.map((item: any, i: number) => (
-                  <div key={i} className="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100 flex justify-between gap-2">
-                    <span>{item.suggestion}</span> <PriorityBadge priority={item.priority} />
+              {/* LinkedIn Fixes */}
+              {linkedin_improvement && linkedin_improvement.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <LinkedinIcon className="w-3.5 h-3.5 text-blue-600" /> LinkedIn Improvements
+                  </h4>
+                  <div className="space-y-2.5">
+                    {linkedin_improvement.map((item: any, i: number) => (
+                      <div key={i} className="text-xs text-slate-700 bg-slate-50/50 hover:bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-start justify-between gap-4 transition-colors">
+                        <span className="leading-relaxed">{item.suggestion}</span>
+                        <div className="shrink-0 self-start">
+                          <PriorityBadge priority={item.priority} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              )}
+
+              {/* GitHub Fixes */}
+              {github_improvement && github_improvement.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <GithubIcon className="w-3.5 h-3.5 text-slate-700" /> GitHub Improvements
+                  </h4>
+                  <div className="space-y-2.5">
+                    {github_improvement.map((item: any, i: number) => (
+                      <div key={i} className="text-xs text-slate-700 bg-slate-50/50 hover:bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-start justify-between gap-4 transition-colors">
+                        <span className="leading-relaxed">{item.suggestion}</span>
+                        <div className="shrink-0 self-start">
+                          <PriorityBadge priority={item.priority} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Portfolio Fixes */}
+              {portfolio_improvement && portfolio_improvement.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-emerald-600" /> Portfolio Improvements
+                  </h4>
+                  <div className="space-y-2.5">
+                    {portfolio_improvement.map((item: any, i: number) => (
+                      <div key={i} className="text-xs text-slate-700 bg-slate-50/50 hover:bg-slate-55 p-3 rounded-xl border border-slate-100 flex items-start justify-between gap-4 transition-colors">
+                        <span className="leading-relaxed">{item.suggestion}</span>
+                        <div className="shrink-0 self-start">
+                          <PriorityBadge priority={item.priority} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
         </div>
       </div>
     </div>
   );
+
 }
