@@ -36,10 +36,12 @@ import {
   Clock,
   Code,
   Hash,
-  Users
+  Users,
+  BrainCircuit
 } from "lucide-react";
 
 import AIAnalysisDashboard from "@/components/AIAnalysisDashboard";
+import CareerIntelligenceReport from "@/components/CareerIntelligenceReport";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 // Custom inline SVG icons because brand icons are missing from this lucide-react version
@@ -171,6 +173,7 @@ interface UserProfile {
 
 const tabSlugs: Record<string, string> = {
   "Fix My Profile": "fix-my-profile",
+  "Career Intelligence": "career-intelligence",
   "Portfolio Setup": "portfolio-setup",
   "Job Tracker": "job-tracker",
   "Internship Opportunity": "internship-opportunity",
@@ -180,6 +183,7 @@ const tabSlugs: Record<string, string> = {
 
 const slugToTabs: Record<string, string> = {
   "fix-my-profile": "Fix My Profile",
+  "career-intelligence": "Career Intelligence",
   "portfolio-setup": "Portfolio Setup",
   "job-tracker": "Job Tracker",
   "internship-opportunity": "Internship Opportunity",
@@ -783,6 +787,7 @@ export default function CandidateDashboard() {
   // Sidebar Tabs Config
   const sidebarItems = [
     { name: "Fix My Profile", icon: User },
+    { name: "Career Intelligence", icon: BrainCircuit },
     { name: "Portfolio Setup", icon: Globe },
     { name: "Job Tracker", icon: Briefcase },
     { name: "Internship Opportunity", icon: Award },
@@ -1341,6 +1346,18 @@ export default function CandidateDashboard() {
                       </div>
                     </>
                   )}
+                </motion.div>
+              )}
+
+              {activeTab === "Career Intelligence" && (
+                <motion.div
+                  key="career-intelligence"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CareerIntelligenceReport userId={user?.id || "00000000-0000-0000-0000-000000000000"} />
                 </motion.div>
               )}
 

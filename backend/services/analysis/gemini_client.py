@@ -793,4 +793,141 @@ JSON Schema:
             }
         }
 
+    async def generate_career_intelligence(self, unified_context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Phase 2: Generate personalized career intelligence roadmap using Gemini 3.1 Flash Lite.
+        """
+        if not self.model:
+            return self._get_career_intelligence_mock()
+
+        prompt = f"""
+You are an expert AI Career Coach, Technical Recruiter, and Engineering Manager.
+Analyze the following Unified Career Intelligence Context (which contains personal preferences and cached analysis results from LinkedIn, GitHub, Portfolio, and Resume).
+
+Unified Career Intelligence Context:
+{json.dumps(unified_context, indent=2)}
+
+Strict Instructions:
+1. Provide a highly personalized career improvement roadmap based ONLY on the provided context.
+2. Remove any duplicate or conflicting information internally.
+3. Every recommendation MUST include:
+   - Priority level: "Critical", "Important", "Optional", or "Future"
+   - Clear justification
+4. Do NOT output markdown outside the JSON structure.
+5. Provide detailed progress estimation (current vs. expected scores after improvements).
+
+Respond STRICTLY with a valid JSON object matching exactly the following schema:
+{{
+  "skill_improvement_roadmap": [
+    {{
+      "category": "string (e.g., Frameworks, AI Tools, Soft Skills)",
+      "recommendation": "string",
+      "why_important": "string",
+      "priority": "string",
+      "learning_difficulty": "string"
+    }}
+  ],
+  "project_roadmap": [
+    {{
+      "title": "string",
+      "difficulty": "string",
+      "technologies": ["string"],
+      "learning_outcomes": "string",
+      "priority": "string"
+    }}
+  ],
+  "resume_improvement": [
+    {{
+      "suggestion": "string",
+      "priority": "string"
+    }}
+  ],
+  "portfolio_improvement": [
+    {{
+      "suggestion": "string",
+      "priority": "string"
+    }}
+  ],
+  "linkedin_improvement": [
+    {{
+      "suggestion": "string",
+      "priority": "string"
+    }}
+  ],
+  "github_improvement": [
+    {{
+      "suggestion": "string",
+      "priority": "string"
+    }}
+  ],
+  "timeline_roadmap": {{
+    "next_7_days": ["string"],
+    "next_month": ["string"],
+    "next_3_months": ["string"],
+    "next_6_months": ["string"]
+  }},
+  "progress_estimation": {{
+    "current_profile_strength": integer (0-100),
+    "expected_profile_strength": integer (0-100),
+    "current_ats_readiness": integer (0-100),
+    "expected_ats_readiness": integer (0-100)
+  }}
+}}
+"""
+        try:
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(response_mime_type="application/json")
+            )
+            return self._parse_json_safe(response.text)
+        except Exception as e:
+            logger.error(f"Gemini API error during Career Intelligence Generation: {e}")
+            raise Exception("Failed to generate AI Career Intelligence Report.")
+
+    def _get_career_intelligence_mock(self) -> Dict[str, Any]:
+        return {
+            "skill_improvement_roadmap": [
+                {
+                    "category": "Frameworks",
+                    "recommendation": "Learn Next.js App Router in-depth",
+                    "why_important": "Highly demanded for modern React applications.",
+                    "priority": "Critical",
+                    "learning_difficulty": "Medium"
+                }
+            ],
+            "project_roadmap": [
+                {
+                    "title": "Fullstack E-commerce with Stripe",
+                    "difficulty": "Advanced",
+                    "technologies": ["Next.js", "Stripe", "Supabase", "Tailwind"],
+                    "learning_outcomes": "Master payments, auth, and database architecture.",
+                    "priority": "Important"
+                }
+            ],
+            "resume_improvement": [
+                {"suggestion": "Quantify achievements with metrics (e.g., 'improved by 20%').", "priority": "Critical"}
+            ],
+            "portfolio_improvement": [
+                {"suggestion": "Add a dedicated case study section for your best project.", "priority": "Important"}
+            ],
+            "linkedin_improvement": [
+                {"suggestion": "Write a more engaging 'About' section focusing on impact.", "priority": "Important"}
+            ],
+            "github_improvement": [
+                {"suggestion": "Add detailed READMEs with screenshots to pinned repos.", "priority": "Critical"}
+            ],
+            "timeline_roadmap": {
+                "next_7_days": ["Update GitHub READMEs", "Revamp Resume bullets"],
+                "next_month": ["Complete a new Next.js project", "Earn an AWS certification"],
+                "next_3_months": ["Contribute to open source", "Start applying for Senior roles"],
+                "next_6_months": ["Achieve Senior Developer status", "Mentor juniors"]
+            },
+            "progress_estimation": {
+                "current_profile_strength": 65,
+                "expected_profile_strength": 85,
+                "current_ats_readiness": 70,
+                "expected_ats_readiness": 90
+            }
+        }
+
 
