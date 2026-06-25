@@ -19,7 +19,8 @@ import {
   Zap,
   Star,
   ArrowRight,
-  BookOpen
+  BookOpen,
+  CheckCheck
 } from "lucide-react";
 
 const GithubIcon = ({ className }: { className?: string }) => (
@@ -117,8 +118,11 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
           if (response.ok) {
             const data = await response.json();
             setQueueStatus(data.data);
-            if (data.data?.overall_status === "Completed" || data.data?.overall_status === "Failed") {
-              // Optionally stop polling here, or transition stage
+            if (data.data?.overall_status === "Completed") {
+              // Auto-navigate after a brief delay so the user sees the Double Tick visual completion state
+              setTimeout(() => {
+                onNavigateToCareerIntelligence?.();
+              }, 2500);
             }
           }
         } catch (err) {
@@ -130,7 +134,7 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
       interval = setInterval(fetchStatus, 3000);
     }
     return () => clearInterval(interval);
-  }, [stage]);
+  }, [stage, onNavigateToCareerIntelligence]);
 
   useEffect(() => {
     const validateProfile = async () => {
@@ -808,13 +812,14 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
                 {stage === "queue_running" && queueStatus ? (
                   <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
                     queueStatus.github_status === 'Running' ? 'bg-amber-50 text-amber-600' :
-                    queueStatus.github_status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                    (queueStatus.github_status === 'Completed' || queueStatus.github_status === 'Double Tick') ? 'bg-emerald-50 text-emerald-600' :
                     queueStatus.github_status === 'Failed' ? 'bg-rose-50 text-rose-600' :
                     queueStatus.github_status === 'Skipped' ? 'bg-slate-50 text-slate-500' :
                     'bg-slate-50 text-slate-500'
                   }`}>
                     {queueStatus.github_status === 'Running' && <Loader2 className="w-3 h-3 animate-spin" />}
                     {queueStatus.github_status === 'Completed' && <CheckCircle2 className="w-3 h-3" />}
+                    {queueStatus.github_status === 'Double Tick' && <CheckCheck className="w-4 h-4 text-emerald-600" />}
                     {queueStatus.github_status === 'Failed' && <AlertTriangle className="w-3 h-3" />}
                     {queueStatus.github_status === 'Pending' && <span className="w-2 h-2 rounded-full bg-slate-300" />}
                     {queueStatus.github_status}
@@ -845,13 +850,14 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
                 {stage === "queue_running" && queueStatus ? (
                   <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
                     queueStatus.linkedin_status === 'Running' ? 'bg-amber-50 text-amber-600' :
-                    queueStatus.linkedin_status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                    (queueStatus.linkedin_status === 'Completed' || queueStatus.linkedin_status === 'Double Tick') ? 'bg-emerald-50 text-emerald-600' :
                     queueStatus.linkedin_status === 'Failed' ? 'bg-rose-50 text-rose-600' :
                     queueStatus.linkedin_status === 'Skipped' ? 'bg-slate-50 text-slate-500' :
                     'bg-slate-50 text-slate-500'
                   }`}>
                     {queueStatus.linkedin_status === 'Running' && <Loader2 className="w-3 h-3 animate-spin" />}
                     {queueStatus.linkedin_status === 'Completed' && <CheckCircle2 className="w-3 h-3" />}
+                    {queueStatus.linkedin_status === 'Double Tick' && <CheckCheck className="w-4 h-4 text-emerald-600" />}
                     {queueStatus.linkedin_status === 'Failed' && <AlertTriangle className="w-3 h-3" />}
                     {queueStatus.linkedin_status === 'Pending' && <span className="w-2 h-2 rounded-full bg-slate-300" />}
                     {queueStatus.linkedin_status}
@@ -884,13 +890,14 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
                 {stage === "queue_running" && queueStatus ? (
                   <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
                     queueStatus.portfolio_status === 'Running' ? 'bg-amber-50 text-amber-600' :
-                    queueStatus.portfolio_status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                    (queueStatus.portfolio_status === 'Completed' || queueStatus.portfolio_status === 'Double Tick') ? 'bg-emerald-50 text-emerald-600' :
                     queueStatus.portfolio_status === 'Failed' ? 'bg-rose-50 text-rose-600' :
                     queueStatus.portfolio_status === 'Skipped' ? 'bg-slate-50 text-slate-500' :
                     'bg-slate-50 text-slate-500'
                   }`}>
                     {queueStatus.portfolio_status === 'Running' && <Loader2 className="w-3 h-3 animate-spin" />}
                     {queueStatus.portfolio_status === 'Completed' && <CheckCircle2 className="w-3 h-3" />}
+                    {queueStatus.portfolio_status === 'Double Tick' && <CheckCheck className="w-4 h-4 text-emerald-600" />}
                     {queueStatus.portfolio_status === 'Failed' && <AlertTriangle className="w-3 h-3" />}
                     {queueStatus.portfolio_status === 'Pending' && <span className="w-2 h-2 rounded-full bg-slate-300" />}
                     {queueStatus.portfolio_status}
@@ -921,13 +928,14 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
                 {stage === "queue_running" && queueStatus ? (
                   <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
                     queueStatus.resume_status === 'Running' ? 'bg-amber-50 text-amber-600' :
-                    queueStatus.resume_status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                    (queueStatus.resume_status === 'Completed' || queueStatus.resume_status === 'Double Tick') ? 'bg-emerald-50 text-emerald-600' :
                     queueStatus.resume_status === 'Failed' ? 'bg-rose-50 text-rose-600' :
                     queueStatus.resume_status === 'Skipped' ? 'bg-slate-50 text-slate-500' :
                     'bg-slate-50 text-slate-500'
                   }`}>
                     {queueStatus.resume_status === 'Running' && <Loader2 className="w-3 h-3 animate-spin" />}
                     {queueStatus.resume_status === 'Completed' && <CheckCircle2 className="w-3 h-3" />}
+                    {queueStatus.resume_status === 'Double Tick' && <CheckCheck className="w-4 h-4 text-emerald-600" />}
                     {queueStatus.resume_status === 'Failed' && <AlertTriangle className="w-3 h-3" />}
                     {queueStatus.resume_status === 'Pending' && <span className="w-2 h-2 rounded-full bg-slate-300" />}
                     {queueStatus.resume_status}

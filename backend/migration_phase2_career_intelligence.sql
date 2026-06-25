@@ -23,3 +23,8 @@ CREATE TABLE IF NOT EXISTS career_intelligence_history (
 );
 
 CREATE INDEX IF NOT EXISTS idx_career_intel_history_user ON career_intelligence_history(user_id);
+
+-- Workflow Refinement Updates
+ALTER TABLE analysis_queue_jobs ALTER COLUMN schedule_preference SET DEFAULT 'Weekly';
+ALTER TABLE analysis_queue_jobs ADD COLUMN IF NOT EXISTS personal_details_hash TEXT;
+

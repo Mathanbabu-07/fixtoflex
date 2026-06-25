@@ -102,10 +102,12 @@ async def get_analysis_status(
     try:
         user_id = current_user.get("id", "00000000-0000-0000-0000-000000000000")
         status = queue_service.get_status(user_id)
+        status["cache_valid"] = queue_service.is_queue_cache_valid(user_id)
         return {"status": "success", "data": status}
     except Exception as e:
         logger.error(f"Error fetching queue status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/github")
 async def analyze_github_profile(

@@ -20,30 +20,48 @@ class AnalysisService:
     async def validate_candidate_profile(self, user_id: str) -> Dict[str, Any]:
         """
         Phase 1.1 Candidate Validation Engine
-        Validates that all required profile fields are present before analysis can start.
+        Validates that all required personal profile fields are present
+        and at least 2 of the 4 profile sources (LinkedIn, GitHub, Portfolio, Resume) are added.
         """
         from services.user_service import user_service
         user = user_service.get_user_by_id(user_id)
         if not user:
             raise ValueError(f"User with ID {user_id} not found.")
 
-        required_fields = [
+        personal_fields = [
             "full_name", "mobile_number", "state", "district",
             "institution_name", "institution_district", "interested_domain",
-            "target_job_role", "experience", "skills",
+            "target_job_role", "experience", "skills"
+        ]
+
+        source_fields = [
             "linkedin_url", "github_url", "portfolio_url", "resume_url"
         ]
 
         missing_fields = []
-        for field in required_fields:
+        for field in personal_fields:
             value = user.get(field)
             if not value or str(value).strip() == "":
                 missing_fields.append(field)
 
+        available_sources_count = 0
+        missing_sources = []
+        for field in source_fields:
+            value = user.get(field)
+            if value and str(value).strip() != "":
+                available_sources_count += 1
+            else:
+                missing_sources.append(field)
+
+        # If less than 2 sources are added, we treat the missing ones as required fields to display
+        if available_sources_count < 2:
+            missing_fields.extend(missing_sources)
+
         return {
-            "status": "ready" if len(missing_fields) == 0 else "incomplete",
+            "status": "ready" if (len(missing_fields) == 0 and available_sources_count >= 2) else "incomplete",
             "missing_fields": missing_fields
         }
+
 
     async def process_github_profile(self, user_id: str, github_url: str) -> Dict[str, Any]:
         """
@@ -70,6 +88,10 @@ class AnalysisService:
             }).execute()
             
             raw_id = raw_insert.data[0]["id"] if raw_insert.data else None
+            
+            # Normalization complete -> update status to Completed
+            from services.analysis.queue_service import queue_service
+            queue_service._update_status(user_id, {"github_status": "Completed"})
         except Exception as e:
             logger.error(f"Failed to store raw analysis data: {e}")
             raw_id = None
@@ -90,10 +112,15 @@ class AnalysisService:
                     "gemini_summary": gemini_summary,
                     "scores": scores
                 }).execute()
+                
+            # AI Analysis complete -> update status to Double Tick
+            from services.analysis.queue_service import queue_service
+            queue_service._update_status(user_id, {"github_status": "Double Tick"})
         except Exception as e:
             logger.error(f"Failed to store analysis results: {e}")
             
         logger.info("GitHub analysis pipeline completed successfully.")
+
         
         return {
             "github_url": github_url,
@@ -149,6 +176,10 @@ class AnalysisService:
             
             try:
                 normalized_json = await self.gemini_client.normalize_portfolio(cleaned_markdown)
+                
+                # Normalization complete -> update status to Completed
+                from services.analysis.queue_service import queue_service
+                queue_service._update_status(user_id, {"portfolio_status": "Completed"})
             except Exception as norm_err:
                 logger.error(f"Gemini normalization failed: {norm_err}")
                 raise Exception(f"Failed to normalize portfolio data into structured profile: {str(norm_err)}")
@@ -231,6 +262,13 @@ class AnalysisService:
                 logger.info(f"Successfully saved portfolio data for user {user_id} with history version {next_version}")
             except Exception as db_err:
                 logger.error(f"Failed to store portfolio analysis results in Supabase: {db_err}")
+                
+            # AI Analysis & Storage complete -> update status to Double Tick
+            try:
+                from services.analysis.queue_service import queue_service
+                queue_service._update_status(user_id, {"portfolio_status": "Double Tick"})
+            except Exception:
+                pass
 
             logger.info("Portfolio analysis pipeline completed successfully.")
             return {
@@ -308,6 +346,10 @@ class AnalysisService:
                     scrapedo_html=raw_html,
                     linkedin_details=linkedin_details
                 )
+                
+                # Normalization complete -> update status to Completed
+                from services.analysis.queue_service import queue_service
+                queue_service._update_status(user_id, {"linkedin_status": "Completed"})
             except Exception as norm_err:
                 logger.error(f"Gemini LinkedIn normalization failed: {norm_err}")
                 raise Exception(f"Failed to normalize LinkedIn profile data: {str(norm_err)}")
@@ -414,6 +456,13 @@ class AnalysisService:
             except Exception as db_err:
                 logger.error(f"Failed to store LinkedIn analysis results in Supabase: {db_err}")
 
+            # AI Analysis & Storage complete -> update status to Double Tick
+            try:
+                from services.analysis.queue_service import queue_service
+                queue_service._update_status(user_id, {"linkedin_status": "Double Tick"})
+            except Exception:
+                pass
+
             return {
                 "linkedin_url": linkedin_url,
                 "normalized_data": normalized_json,
@@ -444,6 +493,10 @@ class AnalysisService:
             }).execute()
             
             raw_id = raw_insert.data[0]["id"] if raw_insert.data else None
+            
+            # Normalization complete -> update status to Completed
+            from services.analysis.queue_service import queue_service
+            queue_service._update_status(user_id, {"resume_status": "Completed"})
         except Exception as e:
             logger.error(f"Failed to store raw resume data: {e}")
             raw_id = None
@@ -464,6 +517,10 @@ class AnalysisService:
                     "gemini_summary": gemini_summary,
                     "scores": scores
                 }).execute()
+                
+            # AI Analysis complete -> update status to Double Tick
+            from services.analysis.queue_service import queue_service
+            queue_service._update_status(user_id, {"resume_status": "Double Tick"})
         except Exception as e:
             logger.error(f"Failed to store resume analysis results: {e}")
             

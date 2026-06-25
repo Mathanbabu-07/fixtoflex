@@ -267,7 +267,7 @@ export default function CandidateDashboard() {
 
   // Queue Status & Scheduler State
   const [queueStatus, setQueueStatus] = useState<any>(null);
-  const [schedulePref, setSchedulePref] = useState("Analyze Now");
+  const [schedulePref, setSchedulePref] = useState("Weekly");
   const [queueProgressPercent, setQueueProgressPercent] = useState(0);
 
   // Resume Upload State
@@ -579,6 +579,17 @@ export default function CandidateDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
+
+  useEffect(() => {
+    if (user && !isDemoMode) {
+      const isBlank = !user.mobile_number && !user.skills && !user.linkedin_url && !user.github_url && !user.portfolio_url && !user.resume_url;
+      if (isBlank) {
+        setShowFirstTimeModal(true);
+      }
+    }
+  }, [user, isDemoMode]);
+
   // Login handler
   const handleLinkedInLogin = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -694,8 +705,22 @@ export default function CandidateDashboard() {
         localStorage.setItem("user_session", JSON.stringify(merged));
       }
 
+      // Detect available sources and auto-start background analysis if at least 2 sources are added
+      const availableSources = [];
+      if (updates.linkedin_url && updates.linkedin_url.trim() !== "") availableSources.push("linkedin");
+      if (updates.github_url && updates.github_url.trim() !== "") availableSources.push("github");
+      if (updates.portfolio_url && updates.portfolio_url.trim() !== "") availableSources.push("portfolio");
+      if (resumeUrl && resumeUrl.trim() !== "") availableSources.push("resume");
+
       setIsEditModalOpen(false);
       setShowSuccessMessage(true);
+
+      if (availableSources.length >= 2) {
+        setAnalysisResetKey(prev => prev + 1);
+        setShowAIAnalysis(true);
+        updateUrl("Fix My Profile", true);
+      }
+      
       setTimeout(() => setShowSuccessMessage(false), 3500);
     } catch (err) {
       console.error("Error saving profile details:", err);
@@ -787,7 +812,6 @@ export default function CandidateDashboard() {
   // Sidebar Tabs Config
   const sidebarItems = [
     { name: "Fix My Profile", icon: User },
-    { name: "Career Intelligence", icon: BrainCircuit },
     { name: "Portfolio Setup", icon: Globe },
     { name: "Job Tracker", icon: Briefcase },
     { name: "Internship Opportunity", icon: Award },
@@ -1186,7 +1210,7 @@ export default function CandidateDashboard() {
                             <option value="Analyze Now">Analyze Now</option>
                             <option value="Every 6 Hours">Every 6 Hours</option>
                             <option value="Daily">Daily</option>
-                            <option value="Weekly">Weekly</option>
+                            <option value="Weekly">Weekly (Default)</option>
                             <option value="Monthly">Monthly</option>
                           </select>
                         </div>
@@ -1298,8 +1322,14 @@ export default function CandidateDashboard() {
                           <div className="w-full max-w-sm mt-4">
                             <button 
                               onClick={() => {
-                                setShowAIAnalysis(true);
-                                updateUrl(activeTab, true);
+                                if (queueStatus?.cache_valid) {
+                                  setActiveTab("Career Intelligence");
+                                  setShowAIAnalysis(false);
+                                  updateUrl("Career Intelligence", false);
+                                } else {
+                                  setShowAIAnalysis(true);
+                                  updateUrl(activeTab, true);
+                                }
                               }}
                               disabled={queueProgressPercent < 100}
                               className={`relative w-full h-14 rounded-2xl font-bold flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 ${
@@ -2346,6 +2376,39 @@ export default function CandidateDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* First-Time User Onboarding Modal */}
+      {showFirstTimeModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-100 p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white/95 backdrop-blur-xl border border-slate-100/80 rounded-3xl p-6 lg:p-8 max-w-md w-full shadow-2xl flex flex-col items-center text-center gap-6 relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5]" />
+            <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 shadow-xs border border-purple-100">
+              <Sparkles className="w-6 h-6 animate-pulse" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-extrabold text-slate-800 leading-tight">Welcome to FixToFlex</h3>
+              <p className="text-sm text-slate-500 font-semibold leading-relaxed">
+                Complete your profile and add your public profiles to receive personalized AI career guidance.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setShowFirstTimeModal(false);
+                setActiveTab("Fix My Profile");
+                setEditModalMode("all");
+                setIsEditModalOpen(true);
+              }}
+              className="w-full py-3 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-sm font-bold rounded-2xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/35 hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
+            >
+              Complete Profile
+            </button>
+          </motion.div>
+        </div>
+      )}
 
     </div>
   );
