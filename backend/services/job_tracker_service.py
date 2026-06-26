@@ -1,6 +1,7 @@
 import json
 import logging
 import urllib.parse
+import asyncio
 from typing import Dict, Any, List
 import httpx
 from bs4 import BeautifulSoup
@@ -53,8 +54,18 @@ class JobTrackerService:
             role = user.get("target_job_role") or user.get("headline") or "Software Engineer"
             location = user.get("state") or user.get("district") or "India"
             
-            # 4. Scrape Indeed
-            raw_jobs = await self._scrape_indeed(role, location)
+            # 4. Scrape Both Sources Concurrently
+            indeed_task = self._scrape_indeed(role, location)
+            internshala_task = self._scrape_internshala(role, location)
+            
+            results = await asyncio.gather(indeed_task, internshala_task, return_exceptions=True)
+            
+            raw_jobs = []
+            for result in results:
+                if isinstance(result, Exception):
+                    logger.error(f"Scraping error: {result}")
+                elif isinstance(result, list):
+                    raw_jobs.extend(result)
             
             if not raw_jobs:
                 return {"status": "error", "message": "No jobs found or scraping failed. Please try again."}
@@ -124,6 +135,7 @@ class JobTrackerService:
                             "Company": company,
                             "Location": loc_text,
                             "job_url": job_url,
+                            "source": "Indeed",
                             "Raw HTML": str(card)[:500] # Pass a snippet to Gemini for extraction of salary/skills if available
                         })
                     except Exception as e:
@@ -141,6 +153,63 @@ class JobTrackerService:
             logger.error(f"Scrape.do request failed: {e}")
             return []
 
+    async def _scrape_internshala(self, role: str, location: str) -> List[Dict[str, Any]]:
+        # Internshala URL is typically formatted with hyphens
+        query = urllib.parse.quote(role.replace(" ", "-").lower())
+        target_url = f"https://internshala.com/jobs/{query}-jobs/"
+        
+        if not self.scrape_do_key:
+            return []
+            
+        api_url = f"{self.scrape_do_url}?token={self.scrape_do_key}&url={urllib.parse.quote(target_url)}"
+        
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(api_url)
+                response.raise_for_status()
+                html = response.text
+                
+                soup = BeautifulSoup(html, "html.parser")
+                jobs = []
+                
+                cards = soup.select(".individual_internship")
+                for card in cards[:15]:
+                    try:
+                        title_el = card.select_one(".job-title-href")
+                        title = title_el.text.strip() if title_el else "Unknown Title"
+                        
+                        company_el = card.select_one(".company_name")
+                        company = company_el.text.strip() if company_el else "Unknown Company"
+                        
+                        # Just getting raw html to let Gemini extract location, salary, experience
+                        job_url = ""
+                        if title_el and "href" in title_el.attrs:
+                            href = title_el["href"]
+                            if href.startswith("/"):
+                                job_url = "https://internshala.com" + href
+                            else:
+                                job_url = href
+                        
+                        jobs.append({
+                            "Job Title": title,
+                            "Company": company,
+                            "job_url": job_url,
+                            "source": "Internshala",
+                            "Raw HTML": str(card)[:500]
+                        })
+                    except Exception as e:
+                        logger.warning(f"Error parsing Internshala card: {e}")
+                        continue
+                
+                if not jobs:
+                    logger.warning("No jobs parsed from Internshala HTML.")
+                    
+                return jobs
+                
+        except Exception as e:
+            logger.error(f"Internshala Scrape.do request failed: {e}")
+            return []
+
     async def _rank_jobs_with_gemini(self, raw_jobs: List[Dict[str, Any]], user_profile: Dict[str, Any]) -> List[Dict[str, Any]]:
         prompt = f"""
         You are an expert technical recruiter and AI.
@@ -150,7 +219,7 @@ class JobTrackerService:
         Experience: {user_profile.get('experience')}
         Skills: {user_profile.get('skills')}
         
-        EXTRACTED JOB DATA (from Indeed):
+        EXTRACTED JOB DATA:
         {json.dumps(raw_jobs, indent=2)}
         
         TASK:
@@ -160,8 +229,9 @@ class JobTrackerService:
         4. Calculate a Match % (0-100) based on skills and experience.
         5. Highlight matching skills and identify missing skills for each job.
         6. Generate a short (1-2 sentences) "Why this job matches you" summary.
-        7. Ensure each job has these exact keys: "Job Title", "Company", "Location", "Salary", "Work Mode", "Posted Date", "Match %", "Skill Tags", "Missing Skills", "Short Description", "apply_url", "job_url", "Company Logo", "Rating".
-        8. If information like Salary, Rating, or Logo is missing, provide a reasonable default (e.g., "Not Disclosed", "N/A", or a default logo URL). Do NOT generate fake jobs.
+        7. Ensure each job has these exact keys: "source", "Job Title", "Company", "Location", "Salary", "Work Mode", "Posted Date", "Match %", "Skill Tags", "Missing Skills", "Short Description", "apply_url", "job_url", "Company Logo", "Rating".
+        8. Maintain the exact "source" value provided in the extracted data ("Indeed" or "Internshala"). Do not change or hallucinate it.
+        9. If information like Salary, Rating, or Logo is missing, provide a reasonable default (e.g., "Not Disclosed", "N/A", or a default logo URL). Do NOT generate fake jobs.
         
         RETURN ONLY A VALID JSON ARRAY OF JOB OBJECTS. No markdown formatting, no code blocks, just the JSON array.
         """
@@ -216,6 +286,7 @@ class JobTrackerService:
                 "Short Description": "Strong match for your frontend skills and location preference.",
                 "apply_url": "",
                 "job_url": "https://in.indeed.com",
+                "source": "Indeed",
                 "Company Logo": "",
                 "Rating": "4.2"
             }
