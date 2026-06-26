@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Dict, Any, Optional
 import logging
 
-from middleware.auth import get_current_user
+from middleware.auth_middleware import get_current_user
 from services.job_tracker_service import JobTrackerService
 
 logger = logging.getLogger("backend.routes.job_tracker")
