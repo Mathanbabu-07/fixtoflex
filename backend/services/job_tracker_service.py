@@ -109,17 +109,21 @@ class JobTrackerService:
                         location_el = card.select_one("[data-testid='text-location']")
                         loc_text = location_el.text.strip() if location_el else "Unknown Location"
                         
-                        # Apply URL
+                        # Job URL
                         link_el = card.select_one("h2.jobTitle a")
-                        apply_url = ""
+                        job_url = ""
                         if link_el and "href" in link_el.attrs:
-                            apply_url = "https://in.indeed.com" + link_el["href"]
+                            href = link_el["href"]
+                            if href.startswith("/"):
+                                job_url = "https://in.indeed.com" + href
+                            else:
+                                job_url = href
                         
                         jobs.append({
                             "Job Title": title,
                             "Company": company,
                             "Location": loc_text,
-                            "Apply URL": apply_url,
+                            "job_url": job_url,
                             "Raw HTML": str(card)[:500] # Pass a snippet to Gemini for extraction of salary/skills if available
                         })
                     except Exception as e:
@@ -156,7 +160,7 @@ class JobTrackerService:
         4. Calculate a Match % (0-100) based on skills and experience.
         5. Highlight matching skills and identify missing skills for each job.
         6. Generate a short (1-2 sentences) "Why this job matches you" summary.
-        7. Ensure each job has these exact keys: "Job Title", "Company", "Location", "Salary", "Work Mode", "Posted Date", "Match %", "Skill Tags", "Missing Skills", "Short Description", "Apply URL", "Company Logo", "Rating".
+        7. Ensure each job has these exact keys: "Job Title", "Company", "Location", "Salary", "Work Mode", "Posted Date", "Match %", "Skill Tags", "Missing Skills", "Short Description", "apply_url", "job_url", "Company Logo", "Rating".
         8. If information like Salary, Rating, or Logo is missing, provide a reasonable default (e.g., "Not Disclosed", "N/A", or a default logo URL). Do NOT generate fake jobs.
         
         RETURN ONLY A VALID JSON ARRAY OF JOB OBJECTS. No markdown formatting, no code blocks, just the JSON array.
@@ -210,7 +214,8 @@ class JobTrackerService:
                 "Skill Tags": ["React", "TypeScript", "Tailwind CSS"],
                 "Missing Skills": ["Next.js"],
                 "Short Description": "Strong match for your frontend skills and location preference.",
-                "Apply URL": "https://in.indeed.com",
+                "apply_url": "",
+                "job_url": "https://in.indeed.com",
                 "Company Logo": "",
                 "Rating": "4.2"
             }

@@ -1,163 +1,94 @@
-FixToFlex – Job Tracker (Indeed Integration) Development Prompt
+FixToFlex – Indeed Apply URL Fix (Development Prompt)
 Objective
 
-Implement the Job Tracker feature inside the existing Job Tracker section (UI already available). Reuse the existing backend architecture, database, workflow, and job pipeline. Only introduce new API keys for optimized API usage; do not modify any existing AI analysis or profile workflows.
+Fix the Apply on Indeed redirection. The current implementation redirects to /N/A, causing a 404 page. Instead, scrape and store the real Indeed application URL for every job and always redirect users to the original Indeed apply page.
 
-1. API Configuration
+Problem
+Do not generate or guess the apply URL.
+Do not use placeholder values like N/A, #, or empty strings.
+The frontend must never construct the URL manually.
+Backend Changes
+1. Extract the Real Apply URL
 
-Add new environment variables only for the Job Tracker module.
+During the existing Indeed scraping pipeline, also scrape:
 
-SCRAPEDO1_API_KEY=
-GEMINI_API1_KEY=
-Keep all existing Scrape.do and Gemini API keys unchanged.
-Use SCRAPEDO1_API_KEY only for job extraction.
-Use GEMINI_API1_KEY only for job ranking and personalization.
-2. Existing Workflow (Do Not Change)
+apply_url (actual application link)
+job_url (Indeed job page URL)
 
-Reuse the existing:
+The scraper must extract the same destination used by the Apply button on Indeed.
 
-Backend project structure
-FastAPI architecture
-Authentication
-Supabase connection
-Existing API service layer
-Existing database models
-Existing caching logic
-Existing frontend architecture
-Existing loading animations
-Existing error handling
+Example response:
 
-Only add the Job Tracker functionality.
+{
+  "title": "...",
+  "company": "...",
+  "location": "...",
+  "job_url": "https://in.indeed.com/viewjob?jk=...",
+  "apply_url": "https://smartapply.indeed.com/... or the actual external apply URL"
+}
+2. Validate URLs
 
-3. Candidate Context
+Before returning data:
 
-Build the search automatically from the already stored candidate data.
+Ensure apply_url is a valid HTTPS URL.
+If unavailable, fall back to job_url.
+Never return "N/A", null, or empty strings.
 
-Use:
+Priority:
 
-Target Job Role
-Interested Domain
-Skills
-Experience
-Preferred Location
-Target Companies (if available)
-Target Salary (if available)
+apply_url
+      ↓
+job_url
+      ↓
+Skip Apply button
+3. Database
 
-No additional user input should be required.
+Store both:
 
-4. Job Extraction
+apply_url
+job_url
 
-Use Scrape.do (API 1) to scrape live jobs from:
+Reuse cached URLs on refresh instead of re-scraping unnecessarily.
 
-https://in.indeed.com
+Frontend Changes
 
-Extract:
+The Apply on Indeed button should:
 
-Job Title
-Company
-Company Logo
-Rating
-Location
-Salary
-Employment Type
-Experience
-Work Mode
-Posted Date
-Job Description
-Required Skills
-Apply URL
-Company URL
+if (apply_url exists)
+    open apply_url
 
-Return a clean normalized JSON.
+else if (job_url exists)
+    open job_url
 
-5. Gemini Personalization
+else
+    disable button
+    show "Application link unavailable"
 
-Send the extracted jobs together with the candidate profile to Gemini API 1.
+Open in a new browser tab.
 
-Gemini should:
+Never redirect to:
 
-Rank jobs by relevance
-Remove duplicates
-Calculate Match %
-Highlight matching skills
-Identify missing skills
-Generate a short "Why this job matches you" summary
+/N/A
+#
+javascript:void(0)
 
-Never generate fake jobs.
+or any locally generated route.
 
-Only analyze extracted Indeed data.
+Error Handling
 
-6. Job Tracker UI
+If Indeed does not expose an application URL:
 
-Use the existing Job Tracker page with track my jobs button.
+Open the original Indeed job page (job_url).
+Let the user click the official Apply button there.
 
-give job lists data with live results after clicking the button.
+Do not fabricate links.
 
-Design should closely follow the Indeed experience.
+Testing
 
-Each job card should display:
+Verify:
 
-Company Logo
-Job Title
-Company
-Rating
-Location
-Salary
-Work Mode
-Posted Date
-Match %
-Skill Tags
-Short Description
-Apply button
-
-Selecting a job displays the complete job details on the right panel.
-
-7. Apply Button
-
-The Apply button must open the original Indeed application URL extracted during scraping.
-
-Do not proxy or recreate the application page.
-
-Always redirect to the real Indeed apply page.
-
-8. Cache & Refresh
-
-Reuse the existing caching mechanism.
-
-Only re-fetch jobs when:
-
-Candidate profile changes
-Career preferences change
-User manually refreshes jobs
-Cache expires
-
-Avoid unnecessary API calls.
-
-9. Performance
-Fast loading
-Pagination / Infinite scroll
-Lazy loading
-Background fetching
-Optimized API usage
-No duplicate requests
-Smooth SaaS loading animations
-10. Error Handling
-
-Handle:
-
-No jobs found
-API failures
-Scraping failures
-Rate limits
-Invalid responses
-Network issues
-
-Show clean retry messages without breaking the UI.
-
-Deliverables
-Integrate the feature into the existing Job Tracker page.
-Preserve all existing backend workflows and architecture.
-Use only the new API keys (SCRAPEDO1_API_KEY and GEMINI_API1_KEY) for this module.
-Display real Indeed jobs with personalized ranking.
-Redirect users to the original Indeed application page.
-Maintain a fast, scalable, production-ready implementation with minimal changes to the existing codebase.
+Every listed job has a valid Apply destination.
+Clicking Apply on Indeed opens the correct Indeed application page (or the original job page if direct application is unavailable).
+No /N/A redirects.
+No 404 pages.
+Existing Job Tracker workflow, Gemini ranking, caching, and UI remain unchanged.

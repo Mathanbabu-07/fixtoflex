@@ -15,7 +15,8 @@ interface Job {
   "Skill Tags"?: string[];
   "Missing Skills"?: string[];
   "Short Description"?: string;
-  "Apply URL"?: string;
+  apply_url?: string;
+  job_url?: string;
   "Company Logo"?: string;
   Rating?: string;
 }
@@ -257,14 +258,17 @@ export default function JobTrackerPanel({ getApiUrl }: JobTrackerPanelProps) {
                       <div className="mt-6 flex gap-3">
                         <button 
                           onClick={() => {
-                            if (selectedJob["Apply URL"]) {
-                              window.open(selectedJob["Apply URL"], "_blank", "noopener,noreferrer");
+                            const url = (selectedJob.apply_url && selectedJob.apply_url !== "N/A" && selectedJob.apply_url !== "") 
+                              ? selectedJob.apply_url 
+                              : ((selectedJob.job_url && selectedJob.job_url !== "N/A" && selectedJob.job_url !== "") ? selectedJob.job_url : null);
+                            if (url) {
+                              window.open(url, "_blank", "noopener,noreferrer");
                             }
                           }}
-                          disabled={!selectedJob["Apply URL"]}
+                          disabled={!(selectedJob.apply_url && selectedJob.apply_url !== "N/A" && selectedJob.apply_url !== "") && !(selectedJob.job_url && selectedJob.job_url !== "N/A" && selectedJob.job_url !== "")}
                           className="flex-1 py-3 bg-[#7C3AED] hover:bg-purple-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <span>Apply on Indeed</span>
+                          <span>{!(selectedJob.apply_url && selectedJob.apply_url !== "N/A" && selectedJob.apply_url !== "") && !(selectedJob.job_url && selectedJob.job_url !== "N/A" && selectedJob.job_url !== "") ? "Application link unavailable" : "Apply on Indeed"}</span>
                           <ExternalLink className="w-4 h-4" />
                         </button>
                       </div>
