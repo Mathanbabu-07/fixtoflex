@@ -3,7 +3,7 @@ import logging
 import urllib.parse
 import asyncio
 import hashlib
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import httpx
 from bs4 import BeautifulSoup
 import google.generativeai as genai

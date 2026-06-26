@@ -230,7 +230,7 @@ export default function MyTargetModal({ isOpen, onClose, onFetchResults }: MyTar
             <button
               onClick={handleSubmit}
               disabled={!isFormValid}
-              className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-md disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-linear-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-md disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2"
             >
               <Target className="w-5 h-5" />
               Fetch Results
