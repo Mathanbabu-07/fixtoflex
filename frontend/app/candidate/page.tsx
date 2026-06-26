@@ -42,6 +42,7 @@ import {
 
 import AIAnalysisDashboard from "@/components/AIAnalysisDashboard";
 import CareerIntelligenceReport from "@/components/CareerIntelligenceReport";
+import JobTrackerPanel from "@/components/JobTrackerPanel";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 // Custom inline SVG icons because brand icons are missing from this lucide-react version
@@ -1436,65 +1437,7 @@ export default function CandidateDashboard() {
               )}
 
               {activeTab === "Job Tracker" && (
-                <motion.div
-                  key="job-tracker"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col gap-6"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#7C3AED] flex items-center justify-center">
-                      <Briefcase className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-slate-800">Job Application Tracker</h2>
-                      <p className="text-xs text-slate-400">Organize and monitor all active job submissions.</p>
-                    </div>
-                  </div>
-
-                  {/* Stats Row */}
-                  <div className="grid grid-cols-4 gap-3">
-                    {[
-                      { name: "Applied", val: 12, color: "border-blue-100 text-blue-600 bg-blue-50/30" },
-                      { name: "Interview", val: 3, color: "border-indigo-100 text-indigo-600 bg-indigo-50/30" },
-                      { name: "Shortlisted", val: 2, color: "border-amber-100 text-amber-600 bg-amber-50/30" },
-                      { name: "Offer", val: 1, color: "border-emerald-100 text-emerald-600 bg-emerald-50/30" },
-                    ].map((stat, idx) => (
-                      <div key={idx} className={`p-3 rounded-2xl border text-center ${stat.color}`}>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{stat.name}</span>
-                        <span className="text-xl font-extrabold block mt-1">{stat.val}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Mock Jobs Table */}
-                  <div className="border border-slate-100 rounded-2xl overflow-hidden mt-2">
-                    <div className="bg-slate-50 border-b border-slate-100 p-3 grid grid-cols-[1.5fr_1fr_1fr] text-[10px] font-bold text-slate-400 uppercase">
-                      <span>Company / Role</span>
-                      <span>Date Applied</span>
-                      <span>Status</span>
-                    </div>
-                    <div className="divide-y divide-slate-50">
-                      {[
-                        { company: "Google", role: "Software Engineer", date: "June 12, 2026", status: "Interview", tag: "bg-indigo-50 text-indigo-600 border-indigo-100" },
-                        { company: "Microsoft", role: "SDE Intern", date: "June 08, 2026", status: "Shortlisted", tag: "bg-amber-50 text-amber-600 border-amber-100" },
-                        { company: "Swiggy", role: "Backend Developer", date: "June 04, 2026", status: "Applied", tag: "bg-blue-50 text-blue-600 border-blue-100" },
-                      ].map((job, idx) => (
-                        <div key={idx} className="p-3 grid grid-cols-[1.5fr_1fr_1fr] items-center text-xs font-semibold text-slate-600">
-                          <div>
-                            <span className="font-bold text-slate-800 block">{job.role}</span>
-                            <span className="text-[10px] text-slate-400">{job.company}</span>
-                          </div>
-                          <span>{job.date}</span>
-                          <span className={`px-2 py-0.5 rounded-full border text-[9px] font-bold self-start text-center max-w-[90px] ${job.tag}`}>
-                            {job.status}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
+                <JobTrackerPanel getApiUrl={getApiUrl} />
               )}
 
               {activeTab === "Internship Opportunity" && (

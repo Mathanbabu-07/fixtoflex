@@ -533,7 +533,7 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
               return (
                 <div key={period} className="relative">
                   {/* Timeline Dot */}
-                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-[#7C3AED] shadow-xs" />
+                  <div className="absolute left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-[#7C3AED] shadow-xs" />
                   
                   <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 shadow-xs">
                     <h4 className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -656,7 +656,7 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
                 >
                   {/* Timeline circular indicator */}
                   <div 
-                    className={`absolute -left-[48px] top-1 w-8 h-8 rounded-full border shadow-sm flex items-center justify-center transition-all duration-300 ${
+                    className={`absolute left-[48px] top-1 w-8 h-8 rounded-full border shadow-sm flex items-center justify-center transition-all duration-300 ${
                       isActive 
                         ? "bg-purple-50 border-purple-400 text-[#7C3AED] animate-pulse" 
                         : "bg-white border-slate-100 text-indigo-600"
