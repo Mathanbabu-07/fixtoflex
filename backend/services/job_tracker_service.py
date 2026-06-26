@@ -100,7 +100,7 @@ class JobTrackerService:
                 cards = soup.select(".job_seen_beacon")
                 for card in cards[:15]: # Limit to top 15 jobs to save processing
                     try:
-                        title_el = card.select_one("h2.jobTitle span[title]") or card.select_one("h2.jobTitle")
+                        title_el = card.select_one(".jobTitle span[title]") or card.select_one(".jobTitle")
                         title = title_el.text.strip() if title_el else "Unknown Title"
                         
                         company_el = card.select_one("[data-testid='company-name']")
@@ -110,7 +110,7 @@ class JobTrackerService:
                         loc_text = location_el.text.strip() if location_el else "Unknown Location"
                         
                         # Job URL
-                        link_el = card.select_one("h2.jobTitle a")
+                        link_el = card.select_one(".jobTitle a") or card.select_one("a.jcs-JobTitle")
                         job_url = ""
                         if link_el and "href" in link_el.attrs:
                             href = link_el["href"]
