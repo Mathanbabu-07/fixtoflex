@@ -184,7 +184,7 @@ export default function MyTargetModal({ isOpen, onClose, onFetchResults }: MyTar
             <div>
               <label className="flex items-center text-sm font-bold text-slate-700 mb-2">
                 <MapPin className="w-4 h-4 mr-2 text-indigo-500" />
-                Preferred Locations <span className="text-xs font-normal text-slate-400 ml-2">(Max 3)</span>
+                Preferred Locations <span className="text-xs font-normal text-slate-400 ml-2">(Optional, Max 3)</span>
               </label>
               
               <div className="flex flex-wrap gap-2 mb-2">

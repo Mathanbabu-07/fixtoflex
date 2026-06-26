@@ -114,14 +114,20 @@ class JobTrackerService:
             locations = payload.get("locations", [])
             
             role_str = " ".join(roles) if roles else ""
-            company_str = " ".join(companies) if companies else ""
-            combined_role = f"{company_str} {role_str}".strip() or "Software Engineer"
             
-            location_str = " ".join(locations) if locations else "India"
+            if companies:
+                company_or = " OR ".join(f'"{c}"' for c in companies)
+                indeed_query = f"({company_or}) {role_str}".strip()
+                internshala_query = f"{' '.join(companies)} {role_str}".strip()
+            else:
+                indeed_query = role_str or "Software Engineer"
+                internshala_query = role_str or "Software Engineer"
+            
+            location_str = " ".join(locations) if locations else ""
             
             # 4. Scrape Both Sources Concurrently
-            indeed_task = self._scrape_indeed(combined_role, location_str)
-            internshala_task = self._scrape_internshala(combined_role, location_str)
+            indeed_task = self._scrape_indeed(indeed_query, location_str)
+            internshala_task = self._scrape_internshala(internshala_query, location_str)
             
             results = await asyncio.gather(indeed_task, internshala_task, return_exceptions=True)
             
@@ -233,9 +239,9 @@ class JobTrackerService:
             return []
 
     async def _scrape_internshala(self, role: str, location: str) -> List[Dict[str, Any]]:
-        # Internshala URL is typically formatted with hyphens
-        query = urllib.parse.quote(role.replace(" ", "-").lower())
-        target_url = f"https://internshala.com/jobs/{query}-jobs/"
+        # Internshala URL with keywords supports companies and roles better than hyphenated strict paths
+        query = urllib.parse.quote(role.strip())
+        target_url = f"https://internshala.com/jobs/keywords-{query}/"
         
         if not self.scrape_do_key:
             return []
@@ -316,7 +322,7 @@ class JobTrackerService:
         
         TASK:
         1. Extract the actual jobs from the provided data.
-        2. Rank jobs by relevance to the candidate profile.
+        2. Rank jobs by relevance to the candidate profile or target preferences. If target companies are specified, strictly prioritize jobs from those exact companies first, then include other highly related results.
         3. Remove any duplicate jobs.
         4. Calculate a Match % (0-100) based on skills and experience.
         5. Highlight matching skills and identify missing skills for each job.
