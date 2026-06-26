@@ -41,10 +41,12 @@ class Settings(BaseSettings):
 
     # Scrape.do settings
     SCRAPEDO_API_KEY: str = ""
+    SCRAPEDO1_API_KEY: str = ""
     SCRAPEDO_BASE_URL: str = "http://api.scrape.do"
 
     # Gemini settings
     GEMINI_API_KEY: str = ""
+    GEMINI_API1_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.1-flash-lite"
 
     # Jina Reader settings
@@ -78,8 +80,10 @@ except Exception as e:
         LINKEDIN_CLIENT_SECRET = os.environ.get("LINKEDIN_CLIENT_SECRET", "")
         LINKEDIN_REDIRECT_URI = os.environ.get("LINKEDIN_REDIRECT_URI", "http://localhost:3001/auth/linkedin/callback")
         SCRAPEDO_API_KEY = os.environ.get("SCRAPEDO_API_KEY", "")
+        SCRAPEDO1_API_KEY = os.environ.get("SCRAPEDO1_API_KEY", "")
         SCRAPEDO_BASE_URL = os.environ.get("SCRAPEDO_BASE_URL", "http://api.scrape.do")
         GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+        GEMINI_API1_KEY = os.environ.get("GEMINI_API1_KEY", "")
         GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
         JINA_API_KEY = os.environ.get("JINA_API_KEY", "")
     settings = FallbackSettings()

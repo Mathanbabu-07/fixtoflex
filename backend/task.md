@@ -1,63 +1,163 @@
-# Career Intelligence UI Redesign (Unified AI Report)
+FixToFlex – Job Tracker (Indeed Integration) Development Prompt
+Objective
 
-## Objective
+Implement the Job Tracker feature inside the existing Job Tracker section (UI already available). Reuse the existing backend architecture, database, workflow, and job pipeline. Only introduce new API keys for optimized API usage; do not modify any existing AI analysis or profile workflows.
 
-Redesign the **Career Intelligence** page to use a **single, continuous AI report layout** similar to ChatGPT/Claude/Perplexity instead of multiple independent cards or boxes. Keep the existing backend workflow, Gemini prompts, and APIs unchanged—only redesign the presentation layer.
+1. API Configuration
 
-### Layout
+Add new environment variables only for the Job Tracker module.
 
-* Replace separate suggestion cards with **one unified scrollable AI report**.
-* Present the report as a continuous document with clear headings, spacing, icons, and dividers.
-* Use a premium SaaS style with soft shadows, rounded sections, and consistent typography.
-* No repeated cards for every recommendation.
+SCRAPEDO1_API_KEY=
+GEMINI_API1_KEY=
+Keep all existing Scrape.do and Gemini API keys unchanged.
+Use SCRAPEDO1_API_KEY only for job extraction.
+Use GEMINI_API1_KEY only for job ranking and personalization.
+2. Existing Workflow (Do Not Change)
 
-### AI Report Structure
+Reuse the existing:
 
-Generate and display in this order:
+Backend project structure
+FastAPI architecture
+Authentication
+Supabase connection
+Existing API service layer
+Existing database models
+Existing caching logic
+Existing frontend architecture
+Existing loading animations
+Existing error handling
 
-1. Executive Career Summary
-2. Overall Career Readiness
-3. Profile Strength Analysis
-4. Skill Gap Analysis
+Only add the Job Tracker functionality.
 
-   * Group by **Critical**, **Important**, **Optional**, **Future**
-   * Each recommendation contains:
+3. Candidate Context
 
-     * Skill title
-     * Why it matters
-     * Action to complete
-     * Related technologies (tag chips)
-5. Project Roadmap
-6. Resume Improvements
-7. LinkedIn Improvements
-8. GitHub Improvements
-9. Portfolio Improvements
-10. Learning Roadmap (Week → Month → 3 Months → 6 Months)
-11. Target Role Readiness
-12. Final AI Observation
+Build the search automatically from the already stored candidate data.
 
-### Content Style
+Use:
 
-* Generate concise, personalized recommendations.
-* Avoid duplicate information across sections.
-* Recommendations must directly reference the user's existing profile analysis.
-* Merge similar suggestions instead of repeating them.
-* Use professional recruiter-style language.
+Target Job Role
+Interested Domain
+Skills
+Experience
+Preferred Location
+Target Companies (if available)
+Target Salary (if available)
 
-### Animations
+No additional user input should be required.
 
-* Stream the report section-by-section like ChatGPT/Claude.
-* Show typing animation while Gemini generates.
-* Fade in each completed section smoothly.
-* Keep the existing loading screen until generation finishes.
+4. Job Extraction
 
-### Backend
+Use Scrape.do (API 1) to scrape live jobs from:
 
-* Reuse the existing Career Intelligence pipeline.
-* Do **not** regenerate profile analysis.
-* Use cached analysis from Plan 1.
-* Only change the response rendering layer.
+https://in.indeed.com
 
-### Expected Result
+Extract:
 
-The Career Intelligence page should feel like an **AI-generated career consultation report**, with one premium, unified document rather than many disconnected boxes, while preserving the current workflow and backend logic.
+Job Title
+Company
+Company Logo
+Rating
+Location
+Salary
+Employment Type
+Experience
+Work Mode
+Posted Date
+Job Description
+Required Skills
+Apply URL
+Company URL
+
+Return a clean normalized JSON.
+
+5. Gemini Personalization
+
+Send the extracted jobs together with the candidate profile to Gemini API 1.
+
+Gemini should:
+
+Rank jobs by relevance
+Remove duplicates
+Calculate Match %
+Highlight matching skills
+Identify missing skills
+Generate a short "Why this job matches you" summary
+
+Never generate fake jobs.
+
+Only analyze extracted Indeed data.
+
+6. Job Tracker UI
+
+Use the existing Job Tracker page with track my jobs button.
+
+give job lists data with live results after clicking the button.
+
+Design should closely follow the Indeed experience.
+
+Each job card should display:
+
+Company Logo
+Job Title
+Company
+Rating
+Location
+Salary
+Work Mode
+Posted Date
+Match %
+Skill Tags
+Short Description
+Apply button
+
+Selecting a job displays the complete job details on the right panel.
+
+7. Apply Button
+
+The Apply button must open the original Indeed application URL extracted during scraping.
+
+Do not proxy or recreate the application page.
+
+Always redirect to the real Indeed apply page.
+
+8. Cache & Refresh
+
+Reuse the existing caching mechanism.
+
+Only re-fetch jobs when:
+
+Candidate profile changes
+Career preferences change
+User manually refreshes jobs
+Cache expires
+
+Avoid unnecessary API calls.
+
+9. Performance
+Fast loading
+Pagination / Infinite scroll
+Lazy loading
+Background fetching
+Optimized API usage
+No duplicate requests
+Smooth SaaS loading animations
+10. Error Handling
+
+Handle:
+
+No jobs found
+API failures
+Scraping failures
+Rate limits
+Invalid responses
+Network issues
+
+Show clean retry messages without breaking the UI.
+
+Deliverables
+Integrate the feature into the existing Job Tracker page.
+Preserve all existing backend workflows and architecture.
+Use only the new API keys (SCRAPEDO1_API_KEY and GEMINI_API1_KEY) for this module.
+Display real Indeed jobs with personalized ranking.
+Redirect users to the original Indeed application page.
+Maintain a fast, scalable, production-ready implementation with minimal changes to the existing codebase.
