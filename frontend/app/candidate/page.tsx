@@ -480,70 +480,72 @@ export default function CandidateDashboard() {
         setIsDemoMode(false);
         setSessionLoading(false);
       } else {
-        console.log("[SESSION CHECK] Session invalid, clearing cache and redirecting to home...");
+        console.log("[SESSION CHECK] Session invalid, switching to guest mode...");
         localStorage.clear();
         sessionStorage.clear();
         document.cookie = "access_token=; Max-Age=0; path=/;";
-        setUser(null);
-        router.push("/");
+        setIsDemoMode(true);
+        setupGuestUser();
+        setSessionLoading(false);
       }
     } catch (error) {
-      console.warn("[SESSION CHECK ERROR] Exception caught, clearing cache and redirecting to home:", error);
+      console.warn("[SESSION CHECK ERROR] Exception caught, switching to guest mode:", error);
       localStorage.clear();
       sessionStorage.clear();
       document.cookie = "access_token=; Max-Age=0; path=/;";
-      setUser(null);
-      router.push("/");
+      setIsDemoMode(true);
+      setupGuestUser();
+      setSessionLoading(false);
     }
   };
 
-  const setupDemoUser = () => {
-    const demoUser: UserProfile = {
-      id: "demo-user-id",
-      email: "arjun.kumar@gmail.com",
-      full_name: "Arjun Kumar",
-      name: "Arjun Kumar",
-      profile_picture: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&h=150&q=80",
+  const setupGuestUser = () => {
+    const guestUser: UserProfile = {
+      id: "guest-user-id",
+      email: "",
+      full_name: "Guest User",
+      name: "Guest User",
+      profile_picture: undefined,
       role: "candidate",
       headline: "Software Engineer",
-      linkedin_url: "https://linkedin.com/in/arjun-kumar",
-      github_url: "https://github.com/arjun-kumar",
-      portfolio_url: "https://arjunkumar.dev",
-      date_of_birth: "2002-05-15",
-      gender: "Male",
-      mobile_number: "+91 98765 43210",
-      state: "Tamil Nadu",
-      district: "Chennai",
-      institution_name: "Anna University",
-      institution_district: "Chennai",
-      interested_domain: "Full Stack Development",
-      target_job_role: "Software Engineer",
-      experience: "Fresher",
-      skills: "React, TypeScript, Node.js, Python",
-      language_proficiency: "English, Tamil, Hindi",
-      certifications: "AWS Cloud Practitioner",
+      linkedin_url: "",
+      github_url: "",
+      portfolio_url: "",
+      date_of_birth: "",
+      gender: "",
+      mobile_number: "",
+      state: "",
+      district: "",
+      institution_name: "",
+      institution_district: "",
+      interested_domain: "",
+      target_job_role: "",
+      experience: "",
+      skills: "",
+      language_proficiency: "",
+      certifications: "",
     };
-    setUser(demoUser);
+    setUser(guestUser);
     setFormData({
-      full_name: demoUser.full_name || "",
-      headline: demoUser.headline || "",
-      linkedin_url: demoUser.linkedin_url || "",
-      github_url: demoUser.github_url || "",
-      portfolio_url: demoUser.portfolio_url || "",
-      date_of_birth: demoUser.date_of_birth || "",
-      gender: demoUser.gender || "",
-      email: demoUser.email || "",
-      mobile_number: demoUser.mobile_number || "",
-      state: demoUser.state || "",
-      district: demoUser.district || "",
-      institution_name: demoUser.institution_name || "",
-      institution_district: demoUser.institution_district || "",
-      interested_domain: demoUser.interested_domain || "",
-      target_job_role: demoUser.target_job_role || "",
-      experience: demoUser.experience || "",
-      skills: demoUser.skills || "",
-      language_proficiency: demoUser.language_proficiency || "",
-      certifications: demoUser.certifications || "",
+      full_name: "Guest User",
+      headline: "Software Engineer",
+      linkedin_url: "",
+      github_url: "",
+      portfolio_url: "",
+      date_of_birth: "",
+      gender: "",
+      email: "",
+      mobile_number: "",
+      state: "",
+      district: "",
+      institution_name: "",
+      institution_district: "",
+      interested_domain: "",
+      target_job_role: "",
+      experience: "",
+      skills: "",
+      language_proficiency: "",
+      certifications: "",
     });
   };
 
@@ -559,14 +561,17 @@ export default function CandidateDashboard() {
       const customEvent = e as CustomEvent;
       const newUser = customEvent.detail;
       console.log("[CANDIDATE AUTH CHANGE] Received auth-change event:", newUser);
-      setUser(newUser);
-      if (!newUser) {
-        router.push("/");
+      if (newUser) {
+        setUser(newUser);
+        setIsDemoMode(false);
+      } else {
+        setIsDemoMode(true);
+        setupGuestUser();
       }
     };
     window.addEventListener("auth-change", handleAuthChange);
     return () => window.removeEventListener("auth-change", handleAuthChange);
-  }, [router]);
+  }, []);
 
   const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
 
@@ -580,26 +585,11 @@ export default function CandidateDashboard() {
   }, [user, isDemoMode]);
 
   // Login handler
-  const handleLinkedInLogin = async (e: React.MouseEvent) => {
+  const handleLinkedInLogin = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isLoggingIn) return;
-    setIsLoggingIn(true);
-    try {
-      const apiEndpoint = getApiUrl("/auth/linkedin/login");
-      const response = await fetch(apiEndpoint);
-      if (!response.ok) {
-        throw new Error("Failed to retrieve LinkedIn login authorization URL.");
-      }
-      const data = await response.json();
-      if (data.auth_url) {
-        window.location.href = data.auth_url;
-      }
-    } catch (error: unknown) {
-      const err = error as Error;
-      alert(`Unable to start LinkedIn login: ${err.message || String(error)}`);
-    } finally {
-      setIsLoggingIn(false);
-    }
+    console.log("[STEP 1] Login button clicked - Redirecting to LinkedIn Login Endpoint");
+    const loginUrl = getApiUrl("/auth/linkedin/login");
+    window.location.href = loginUrl;
   };
 
   // Logout handler
@@ -624,8 +614,8 @@ export default function CandidateDashboard() {
       
       setUser(null);
       setShowProfileDropdown(false);
-      
-      router.push("/");
+      setIsDemoMode(true);
+      setupGuestUser();
     } catch (err: unknown) {
       const error = err as Error;
       console.error("Logout error:", error);
@@ -638,7 +628,8 @@ export default function CandidateDashboard() {
         window.dispatchEvent(new CustomEvent("auth-change", { detail: null }));
       }
       setUser(null);
-      router.push("/");
+      setIsDemoMode(true);
+      setupGuestUser();
     } finally {
       setIsLoggingOut(false);
     }
@@ -1038,30 +1029,21 @@ export default function CandidateDashboard() {
             {/* Profile Avatar / Login trigger */}
             {!user || isDemoMode ? (
               <div className="flex items-center gap-3">
-                {/* Demo banner indicator */}
+                {/* Guest banner indicator */}
                 {isDemoMode && (
                   <span className="text-[11px] font-bold bg-amber-50 border border-amber-100 text-amber-700 px-2.5 py-1 rounded-full hidden xs:inline-block">
-                    Demo Mode
+                    Guest Mode
                   </span>
                 )}
                 
-                <button
-                  onClick={handleLinkedInLogin}
-                  disabled={isLoggingIn}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-white bg-slate-50 hover:bg-[#0A66C2] border border-slate-200 hover:border-[#0A66C2] rounded-xl transition-all duration-300 shadow-sm cursor-pointer disabled:opacity-50"
-                >
-                  <svg className="w-4 h-4 fill-[#0A66C2] group-hover:fill-white shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                  </svg>
-                  <span>{isLoggingIn ? "Connecting..." : "Login"}</span>
-                </button>
-
-                <button
-                  onClick={handleLinkedInLogin}
-                  className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
-                >
-                  Get Started
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleLinkedInLogin}
+                    className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                  >
+                    Login with LinkedIn
+                  </button>
+                </div>
               </div>
             ) : (
               /* REAL Authenticated Dropdown trigger */
@@ -1623,7 +1605,7 @@ export default function CandidateDashboard() {
                   <div className="space-y-3">
                     <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl text-[11px] font-mono text-slate-600 space-y-2">
                       <div><span className="text-slate-400">To:</span> recruiter@google.com</div>
-                      <div><span className="text-slate-400">Subject:</span> Application for SWE Intern - Arjun Kumar</div>
+                      <div><span className="text-slate-400">Subject:</span> Application for SWE Intern - {user?.full_name || "Guest User"}</div>
                       <hr className="border-slate-200/50 my-2" />
                       <p>Dear Hiring Manager,</p>
                       <p>I recently upgraded my profile for Software Engineering positions, aligning my project details with Google&apos;s core stack. I would love to connect to discuss active SDE internship opportunities...</p>
@@ -1656,14 +1638,14 @@ export default function CandidateDashboard() {
                   />
                 ) : (
                   <div className="h-full w-full bg-purple-50 flex items-center justify-center text-purple-700 text-3xl font-bold">
-                    {user?.full_name?.charAt(0) || "A"}
+                    {user?.full_name?.charAt(0) || "G"}
                   </div>
                 )}
               </div>
 
               {/* Profile Name & Title */}
               <h3 className="text-md font-extrabold text-slate-800 mt-4 leading-tight">
-                {user?.full_name || "Arjun Kumar"}
+                {user?.full_name || "Guest User"}
               </h3>
               <p className="text-xs text-slate-400 font-bold mt-1">
                 {user?.headline || "Software Engineer"}

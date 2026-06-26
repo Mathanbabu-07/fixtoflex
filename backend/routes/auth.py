@@ -19,11 +19,12 @@ class MockLoginRequest(BaseModel):
     user_id: str
     email: EmailStr
 
-@router.get("/linkedin/login", status_code=status.HTTP_200_OK)
+from fastapi.responses import RedirectResponse
+
+@router.get("/linkedin/login", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 async def get_linkedin_login_url():
     """
-    Generate the official LinkedIn OAuth 2.0 authorization URL.
-    Returns a signed state token to secure the transaction.
+    Generate the official LinkedIn OAuth 2.0 authorization URL and redirect the user.
     Reference: Step 1: LinkedIn Login Endpoint
     """
     try:
@@ -41,9 +42,9 @@ async def get_linkedin_login_url():
         
         # Build URL
         auth_url = f"https://www.linkedin.com/oauth/v2/authorization?{urlencode(params)}"
-        logger.info("Generated LinkedIn authorization URL successfully.")
+        logger.info(f"Redirecting user to LinkedIn authorization URL: {auth_url}")
         
-        return {"auth_url": auth_url}
+        return RedirectResponse(url=auth_url)
     except Exception as e:
         logger.error(f"Error creating LinkedIn authorization URL: {e}")
         raise HTTPException(

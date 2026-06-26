@@ -101,42 +101,11 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
   }, []);
 
 
-  const handleLinkedInLogin = async (e: React.MouseEvent) => {
+  const handleLinkedInLogin = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log("[STEP 1] Login button clicked - Triggering LinkedIn OAuth Flow");
-    if (isLoggingIn) {
-      console.log("[STEP 1] Blocked: Login request is already in progress");
-      return;
-    }
-    setIsLoggingIn(true);
-    try {
-      const apiEndpoint = getApiUrl("/auth/linkedin/login");
-      console.log("[STEP 2] Calling backend login initialization:", apiEndpoint);
-      const response = await fetch(apiEndpoint);
-      
-      console.log("[STEP 2] Received response status from backend:", response.status);
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.detail || "Failed to retrieve LinkedIn login authorization URL.");
-      }
-      
-      const data = await response.json();
-      console.log("[STEP 3] Received auth_url from backend:", data.auth_url);
-      
-      if (data.auth_url) {
-        console.log("[STEP 4] Redirecting browser window.location.href to LinkedIn authorization page...");
-        window.location.href = data.auth_url;
-        console.log("[STEP 5] Redirect command successfully sent to window.location.href");
-      } else {
-        throw new Error("Authorization URL (auth_url) was missing from the backend response payload.");
-      }
-    } catch (error: unknown) {
-      const err = error as Error;
-      console.error("[LOGIN FLOW ERROR] Exception caught during LinkedIn OAuth initialization:", err);
-      alert(`Unable to start LinkedIn login. Error: ${err.message || err}`);
-    } finally {
-      setIsLoggingIn(false);
-    }
+    console.log("[STEP 1] Login button clicked - Redirecting to LinkedIn Login Endpoint");
+    const loginUrl = getApiUrl("/auth/linkedin/login");
+    window.location.href = loginUrl;
   };
 
   const handleLogout = async () => {
