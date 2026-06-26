@@ -1,328 +1,287 @@
-FixToFlex – Multi-Source Job Tracker (Indeed + Internshala) Development Prompt
+FixToFlex – "My Target" Job Search Feature (Development Prompt)
 Objective
 
-Extend the existing Job Tracker by integrating Internshala Jobs while preserving the current Indeed workflow, backend architecture, UI, caching, Gemini ranking, and data pipeline.
+Add a new My Target feature inside the existing Job Tracker. This feature allows candidates to search jobs based only on manually entered target preferences, without using their profile, cached data, or career intelligence.
+The implementation must reuse the existing Indeed + Internshala scraping pipeline, Scrape.do integration, Gemini 3.1 Flash Lite ranking, UI components, scrolling behavior, apply flow, and backend architecture.
 
-The Job Tracker should aggregate jobs from Indeed and Internshala into a single experience while clearly indicating the source of each job.
+1. UI
 
-1. Existing Architecture (Do Not Change)
+Add a new secondary button beside Track My Jobs.
 
-Reuse the existing:
+Button
 
-FastAPI backend
-Scrape.do service layer
-Gemini 3.1 Flash Lite ranking pipeline
-Candidate profile context
-Job ranking algorithm
-Cache mechanism
-Supabase schemas
-Existing Job Tracker UI
-Existing loading animations
-Existing error handling
+Icon: 🎯 (Target icon)
+Label: My Target
+Same design language as existing buttons.
+Responsive.
 
-Only extend the pipeline to support Internshala.
+Clicking the button opens a centered modal with a close (×) button.
 
-2. Job Sources
+2. My Target Modal
 
-The Track My Jobs workflow should fetch jobs from:
+Create a modal with the following fields.
 
-Indeed
-Internshala
-
-using the same candidate profile.
-
-Candidate Context:
-
-Target Role
-Interested Domain
-Skills
-Experience
-Preferred Location
 Target Companies
-Target Salary (optional)
-3. Scraping Pipeline
 
-For both sources:
+Multi-select input.
+
+Requirements:
+Maximum 3 companies
+Comma separated input supported
+Searchable dropdown
+Auto-suggestions while typing
+Suggestions should come from a master company dataset
+User may also enter a custom company not found in suggestions
+Prevent duplicate companies
+
+Example:
+
+Google, Microsoft, OpenAI
+Target Job Roles
+
+Multi-select searchable dropdown.
+
+Requirements:
+
+Maximum 2 roles
+Auto-complete suggestions
+Custom role entry allowed
+Comma separated supported
+
+Example
+
+AI Engineer
+ML Engineer
+Target Salary Range
+
+Single select dropdown.
+
+Options:
+
+3 LPA – 5 LPA
+6 LPA – 9 LPA
+10 LPA – 15 LPA
+15 LPA – 20 LPA
+More than 20 LPA
+Only one value can be selected.
+
+Preferred Location
+Searchable multi-select dropdown.
+Use all Indian States and Union Territories.
+
+Maximum:
+
+3 locations
+Example
+Tamil Nadu
+Karnataka
+Telangana
+
+Action Button
+
+Bottom button
+
+Fetch Results
+
+Disable until at least:
+
+one company OR
+one job role
+
+is selected.
+
+3. Backend Workflow
+
+When user clicks Fetch Results
+
+DO NOT use
 
 Candidate Profile
+Resume
+LinkedIn
+Portfolio
+GitHub
+Career Intelligence
+Cached profile analysis
+
+This feature is completely independent.
+
+Pipeline
+
+Target Companies
+Target Roles
+Salary
+Locations
         │
         ▼
-Generate Search Query
+Generate Search Queries
         │
         ▼
 Scrape.do
         │
         ▼
-Extract Jobs
+Indeed Jobs
+Internshala Jobs
         │
         ▼
-Normalize JSON
+Normalize Data
         │
         ▼
 Gemini 3.1 Flash Lite
         │
         ▼
-Ranking & Match Score
+Rank Jobs
         │
         ▼
-Combined Job List
+Job Tracker UI
 
-Do not create a separate architecture for Internshala.
+4. Search Logic
 
-Reuse the existing Indeed pipeline.
+Search only using modal values.
 
-4. Internshala Extraction
+Examples
+
+Company
+Google AI Engineer Bangalore
+
+Role
+Machine Learning Engineer
+
+Salary
+10 LPA
+
+Location
+Tamil Nadu
+
+Generate optimized search queries for both
+
+Indeed
+Internshala
+
+5. Scraping
+
+Reuse the existing pipeline.
 
 Scrape
 
-https://internshala.com/jobs/
+Indeed
 
-Extract:
+Internshala
 
-Job Title
-Company
-Company Logo
-Location
-Salary / CTC
-Experience
-Employment Type
-Posted Date
-Job Description
-Required Skills
-Company Name
-Job URL
-Apply URL
-Company Profile URL
+Extract exactly the same fields already used.
 
-Normalize to the same schema used by Indeed.
+Do not create another scraper.
 
-5. Unified Job Model
+6. Gemini Ranking
 
-Both Indeed and Internshala jobs must return exactly the same JSON structure.
+Gemini should rank jobs only using
 
-Example:
+Target Companies
+Target Roles
+Salary Preference
+Preferred Locations
 
-{
-  "source": "Indeed",
-  "title": "",
-  "company": "",
-  "company_logo": "",
-  "location": "",
-  "salary": "",
-  "experience": "",
-  "posted_date": "",
-  "description": "",
-  "skills": [],
-  "match_score": 90,
-  "job_url": "",
-  "apply_url": ""
-}
+Do not use profile skills.
+Do not use resume.
+Do not use LinkedIn.
+Do not use cache.
 
-Internshala should populate the same fields.
+7. Results UI
 
-6. Combined Job List UI
-
-Use the same existing Job Tracker layout.
-
-Do not redesign it.
-
-The left panel should display a unified list containing jobs from both platforms.
-
-Each job card should show:
-
-Official platform logo
-Indeed logo
-Internshala logo
-Job Title
-Company
-Location
-Match Score
-Salary
-Platform Badge
-
-Example:
-
-Indeed Logo
-AI Engineer
-Google
-
-Internshala Logo
-ML Engineer
-Tech Company
-
-The platform source should be immediately visible.
-
-7. Job Details Panel
-
-Reuse the current right-side details panel.
-
-Do not create a new design.
-
-Display:
-
-Company Logo
-Job Title
-Company
-Location
-Salary
-Experience
-Work Mode
-Description
-Required Skills
-Gemini Match Analysis
-Matching Skills
-Missing Skills
-
-If source == Indeed
-
-show
-
-Apply on Indeed
-
-If source == Internshala
-
-show
-
-Apply on Internshala
-
-Use the official platform branding.
-
-8. Apply Button
-
-Maintain the same logic already implemented for Indeed.
-
-During scraping extract:
-
-apply_url
-job_url
-
-Priority:
-
-apply_url
-      ↓
-job_url
-      ↓
-Disable Apply Button
-
-Never return
-
-N/A
-Empty URLs
-
-When clicked:
-
-Indeed jobs
-
-↓
-
-Open actual Indeed application page.
-
-Internshala jobs
-
-↓
-
-Open actual Internshala application page.
-
-Do not redirect to internal routes.
-
-Do not fabricate URLs.
-
-9. Independent Scroll Areas
-
-Improve the viewing experience by making both panels independently scrollable.
-
+Reuse the existing Job Tracker interface.
+Do not redesign.
+Show
 Left Panel
 
-Scrollable Job List
+Combined Indeed + Internshala jobs
+Platform logo
+Match score
+Company
+Role
+Salary
+Location
 
-Vertical scrolling
-Infinite scrolling / pagination support
-Position preserved after selecting jobs
 Right Panel
 
+Full job description
+Skills
+Company
+Gemini Insights
+Apply button
+
+Everything should behave exactly like the existing Job Tracker.
+
+8. Apply Buttons
+
+Maintain the current workflow.
+
+Indeed
+Apply on Indeed
+
+Internshala
+Apply on Internshala
+
+Always redirect to the real application page using the scraped apply_url.
+
+Never redirect internally.
+Never use dummy URLs.
+
+9. Independent Scrolling
+
+Keep the existing behavior.
+
+Left
+Scrollable Job List
+
+Right
 Scrollable Job Details
 
-Description
-Responsibilities
-Skills
-Gemini Insights
+Both scroll independently.
 
-Scrolling the details panel must not move the job list.
+10. Cache Rules
 
-Scrolling the list must not affect the details panel.
+Do not reuse the profile job cache.
+Create a separate cache namespace for target searches.
 
-10. Gemini Ranking
+Cache key should depend on:
 
-Gemini receives jobs from both platforms together.
+Companies
+Roles
+Salary
+Locations
 
-Responsibilities:
+Reuse cached results only when the exact same target search is repeated.
 
+11. Validation
+
+Validate:
+
+Maximum 3 companies
+Maximum 2 job roles
+Maximum 3 preferred locations
+One salary option only
 Remove duplicates
-Rank by candidate relevance
-Generate Match Score
-Explain why the job matches
-Detect missing skills
-Prioritize better opportunities regardless of source
+Ignore empty values
+Trim whitespace
+Allow custom company/role entries
 
-Never fabricate jobs.
+12. Error Handling
 
-Only analyze scraped data.
+If no jobs match:
 
-11. Cache
+Display:
+No matching jobs found for your selected targets. Try changing your company, role, salary, or location preferences.
 
-Reuse the existing cache.
+If one source fails:
+Show jobs from the other source.
 
-Cache both sources together.
+If both fail:
+Show a friendly retry state.
 
-Refresh only when:
-
-Refresh Jobs clicked
-Candidate profile updated
-Career preferences changed
-Cache expired
-
-Avoid unnecessary API calls.
-
-12. Loading Experience
-
-Maintain the existing premium SaaS UI.
-
-Show:
-
-Loading skeletons
-Progressive job loading
-Smooth source merging
-Incremental rendering
-No UI blocking
-13. Error Handling
-
-Handle independently:
-
-Indeed unavailable
-
-↓
-
-Show Internshala jobs.
-
-Internshala unavailable
-
-↓
-
-Show Indeed jobs.
-
-Both unavailable
-
-↓
-
-Display a friendly "No jobs available" state.
-
-The failure of one platform must never stop the other.
-
-14. Final Deliverables
-Extend the existing Job Tracker to support Indeed + Internshala.
-Reuse the current backend architecture, schemas, caching, and Gemini pipeline.
-Display a unified job list with official platform logos and source badges.
-Use a single, consistent UI for both platforms.
-Implement independent scrolling for the job list and job details panels.
-Ensure Apply on Indeed and Apply on Internshala redirect to the real application pages.
-Preserve the existing design language, animations, and production-ready performance without introducing duplicate workflows or separate implementations.
+13. Deliverables
+Add a 🎯 My Target button beside Track My Jobs.
+Implement a searchable multi-select modal with company, role, salary, and location filters.
+Reuse the existing Scrape.do + Gemini + Indeed + Internshala pipeline without creating duplicate logic.
+Search jobs only from the manually entered target preferences, completely independent of candidate profiles and cached profile data.
+Display results using the existing Job Tracker UI with platform logos, independent scrolling, Gemini insights, and working Apply on Indeed / Apply on Internshala buttons that redirect to the real application pages.
+Implement separate caching for target-based searches and preserve the existing profile-based job tracking workflow unchanged.

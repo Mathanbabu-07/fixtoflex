@@ -2,6 +2,7 @@ import json
 import logging
 import urllib.parse
 import asyncio
+import hashlib
 from typing import Dict, Any, List
 import httpx
 from bs4 import BeautifulSoup
@@ -84,6 +85,84 @@ class JobTrackerService:
             
         except Exception as e:
             logger.error(f"Error in job tracker service: {e}")
+            return {"status": "error", "message": str(e)}
+
+    async def get_target_jobs(self, user_id: str, payload: Dict[str, Any], force_refresh: bool = False) -> Dict[str, Any]:
+        try:
+            # 1. Create a unique hash for the search parameters
+            search_str = json.dumps(payload, sort_keys=True)
+            search_hash = hashlib.md5(search_str.encode()).hexdigest()
+            
+            # 2. Check Target Cache
+            if not force_refresh:
+                cache_res = self.supabase.table("target_search_cache").select("*").eq("user_id", user_id).eq("search_hash", search_hash).execute()
+                if cache_res.data:
+                    cache_entry = cache_res.data[0]
+                    updated_at_str = cache_entry.get("updated_at")
+                    if updated_at_str:
+                        try:
+                            updated_at = datetime.fromisoformat(updated_at_str.replace("Z", "+00:00"))
+                            if datetime.now(updated_at.tzinfo) - updated_at < timedelta(hours=24):
+                                logger.info(f"Returning cached target jobs for user {user_id}")
+                                return {"status": "success", "data": cache_entry["jobs_json"], "cached": True}
+                        except Exception as e:
+                            logger.warning(f"Error parsing cache date: {e}")
+
+            # 3. Build search parameters
+            roles = payload.get("roles", [])
+            companies = payload.get("companies", [])
+            locations = payload.get("locations", [])
+            
+            role_str = " ".join(roles) if roles else ""
+            company_str = " ".join(companies) if companies else ""
+            combined_role = f"{company_str} {role_str}".strip() or "Software Engineer"
+            
+            location_str = " ".join(locations) if locations else "India"
+            
+            # 4. Scrape Both Sources Concurrently
+            indeed_task = self._scrape_indeed(combined_role, location_str)
+            internshala_task = self._scrape_internshala(combined_role, location_str)
+            
+            results = await asyncio.gather(indeed_task, internshala_task, return_exceptions=True)
+            
+            raw_jobs = []
+            for result in results:
+                if isinstance(result, Exception):
+                    logger.error(f"Scraping error: {result}")
+                elif isinstance(result, list):
+                    raw_jobs.extend(result)
+            
+            if not raw_jobs:
+                return {"status": "error", "message": "No matching jobs found for your selected targets. Try changing your company, role, salary, or location preferences."}
+            
+            # 5. Gemini Ranking
+            if not self.model:
+                logger.error("GEMINI_API1_KEY is not configured")
+                return {"status": "error", "message": "AI service is not configured."}
+                
+            ranked_jobs = await self._rank_jobs_with_gemini(raw_jobs, user_profile=None, target_preferences=payload)
+            
+            # 6. Save to cache
+            try:
+                check_res = self.supabase.table("target_search_cache").select("id").eq("user_id", user_id).eq("search_hash", search_hash).execute()
+                if check_res.data:
+                    self.supabase.table("target_search_cache").update({
+                        "jobs_json": ranked_jobs,
+                        "updated_at": "now()"
+                    }).eq("user_id", user_id).eq("search_hash", search_hash).execute()
+                else:
+                    self.supabase.table("target_search_cache").insert({
+                        "user_id": user_id,
+                        "search_hash": search_hash,
+                        "jobs_json": ranked_jobs
+                    }).execute()
+            except Exception as e:
+                logger.error(f"Failed to cache target jobs: {e}")
+            
+            return {"status": "success", "data": ranked_jobs, "cached": False}
+            
+        except Exception as e:
+            logger.error(f"Error in targeted job tracker service: {e}")
             return {"status": "error", "message": str(e)}
 
     async def _scrape_indeed(self, role: str, location: str) -> List[Dict[str, Any]]:
@@ -210,14 +289,27 @@ class JobTrackerService:
             logger.error(f"Internshala Scrape.do request failed: {e}")
             return []
 
-    async def _rank_jobs_with_gemini(self, raw_jobs: List[Dict[str, Any]], user_profile: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def _rank_jobs_with_gemini(self, raw_jobs: List[Dict[str, Any]], user_profile: Optional[Dict[str, Any]] = None, target_preferences: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+        if target_preferences:
+            profile_context = f"""
+            TARGET PREFERENCES:
+            Companies: {', '.join(target_preferences.get('companies', []))}
+            Roles: {', '.join(target_preferences.get('roles', []))}
+            Locations: {', '.join(target_preferences.get('locations', []))}
+            Salary: {target_preferences.get('salary', 'Any')}
+            """
+        else:
+            profile_context = f"""
+            CANDIDATE PROFILE:
+            Role: {user_profile.get('target_job_role') if user_profile else ''} / {user_profile.get('headline') if user_profile else ''}
+            Experience: {user_profile.get('experience') if user_profile else ''}
+            Skills: {user_profile.get('skills') if user_profile else ''}
+            """
+            
         prompt = f"""
         You are an expert technical recruiter and AI.
         
-        CANDIDATE PROFILE:
-        Role: {user_profile.get('target_job_role')} / {user_profile.get('headline')}
-        Experience: {user_profile.get('experience')}
-        Skills: {user_profile.get('skills')}
+        {profile_context}
         
         EXTRACTED JOB DATA:
         {json.dumps(raw_jobs, indent=2)}

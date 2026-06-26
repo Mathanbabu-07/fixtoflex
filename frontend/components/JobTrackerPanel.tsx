@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Briefcase, Loader2, RefreshCw, Star, MapPin, DollarSign, Building, Clock, ExternalLink, Calendar, CheckCircle2, AlertCircle } from "lucide-react";
+import { Briefcase, Loader2, RefreshCw, Star, MapPin, DollarSign, Building, Clock, ExternalLink, Calendar, CheckCircle2, AlertCircle, Target } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import MyTargetModal, { TargetPreferences } from "./MyTargetModal";
 
 interface Job {
   "Job Title"?: string;
@@ -32,6 +33,41 @@ export default function JobTrackerPanel({ getApiUrl }: JobTrackerPanelProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasTracked, setHasTracked] = useState(false);
+  const [isMyTargetModalOpen, setIsMyTargetModalOpen] = useState(false);
+
+  const fetchTargetJobs = async (preferences: TargetPreferences, forceRefresh: boolean = false) => {
+    setIsMyTargetModalOpen(false);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const endpoint = getApiUrl(`/job-tracker/target-jobs?force_refresh=${forceRefresh}`);
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(preferences),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch target jobs");
+      }
+
+      const data = await response.json();
+      if (data.status === "success" && data.data) {
+        setJobs(data.data);
+        if (data.data.length > 0) {
+          setSelectedJob(data.data[0]);
+        }
+        setHasTracked(true);
+      } else {
+        throw new Error(data.message || "No matching jobs found for your selected targets. Try changing your company, role, salary, or location preferences.");
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred while fetching target jobs.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchJobs = async (forceRefresh: boolean = false) => {
     setIsLoading(true);
@@ -84,14 +120,24 @@ export default function JobTrackerPanel({ getApiUrl }: JobTrackerPanelProps) {
             <p className="text-xs text-slate-400">Live AI-ranked jobs tailored to your profile.</p>
           </div>
         </div>
-        <button
-          onClick={() => fetchJobs(true)}
-          disabled={isLoading}
-          className="px-4 py-2 bg-[#7C3AED] hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-purple-200"
-        >
-          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-          <span>{hasTracked ? "Refresh Jobs" : "Track My Jobs"}</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsMyTargetModalOpen(true)}
+            disabled={isLoading}
+            className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all flex items-center gap-2 shadow-sm"
+          >
+            <Target className="w-4 h-4 text-indigo-500" />
+            <span>My Target</span>
+          </button>
+          <button
+            onClick={() => fetchJobs(true)}
+            disabled={isLoading}
+            className="px-4 py-2 bg-[#7C3AED] hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-purple-200"
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            <span>{hasTracked ? "Refresh Jobs" : "Track My Jobs"}</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content Area */}
@@ -346,6 +392,12 @@ export default function JobTrackerPanel({ getApiUrl }: JobTrackerPanelProps) {
           </div>
         )}
       </div>
+
+      <MyTargetModal 
+        isOpen={isMyTargetModalOpen} 
+        onClose={() => setIsMyTargetModalOpen(false)} 
+        onFetchResults={(prefs) => fetchTargetJobs(prefs, false)}
+      />
     </motion.div>
   );
 }
