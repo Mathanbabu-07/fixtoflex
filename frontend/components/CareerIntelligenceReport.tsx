@@ -636,7 +636,7 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
         </div>
 
         {/* Vertical Timeline container */}
-        <div className="pl-8 border-l border-slate-100 relative space-y-12">
+        <div className="pl-16 border-l-2 border-slate-100 relative space-y-12 ml-4">
           
           <AnimatePresence>
             {SECTIONS.map((sec, i) => {
@@ -654,19 +654,19 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
                   transition={{ duration: 0.4 }}
                   className="relative"
                 >
-                  {/* Timeline circular indicator */}
+                  {/* Timeline circular indicator — sits centered on the left border */}
                   <div 
-                    className={`absolute left-[48px] top-1 w-8 h-8 rounded-full border shadow-sm flex items-center justify-center transition-all duration-300 ${
+                    className={`absolute -left-[calc(4rem+1px)] top-0 w-8 h-8 rounded-full border-2 shadow-sm flex items-center justify-center transition-all duration-300 ${
                       isActive 
                         ? "bg-purple-50 border-purple-400 text-[#7C3AED] animate-pulse" 
-                        : "bg-white border-slate-100 text-indigo-600"
+                        : "bg-white border-slate-200 text-indigo-600"
                     }`}
                   >
                     {React.createElement(sec.icon, { className: "w-4 h-4" })}
                   </div>
 
                   <div className="w-full">
-                    <h3 className="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-800 mb-3">
                       {sec.title}
                     </h3>
                     
