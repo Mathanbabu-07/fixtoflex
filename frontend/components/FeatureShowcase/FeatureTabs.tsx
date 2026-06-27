@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Sparkles, 
-  FolderPlus, 
+  BrainCircuit, 
   Activity, 
   Inbox, 
   Mail 
@@ -18,10 +18,10 @@ interface FeatureTabsProps {
 export default function FeatureTabs({ activeTab, setActiveTab }: FeatureTabsProps) {
   const tabs = [
     { label: "Upgrade Your Profile", icon: Sparkles },
-    { label: "Portfolio Setup", icon: FolderPlus },
     { label: "Job Tracker", icon: Activity },
     { label: "My Applications", icon: Inbox },
-    { label: "Draft Email", icon: Mail }
+    { label: "Draft Email", icon: Mail },
+    { label: "Interview and Placement", icon: BrainCircuit }
   ];
 
   return (

@@ -6,7 +6,6 @@ import { ArrowRight, Sparkles, Code, Briefcase, Send, Terminal } from "lucide-re
 
 import FeatureTabs from "./FeatureTabs";
 import UpgradeProfileSection from "./Profile/UpgradeProfileSection";
-import PortfolioSetupSection from "./Portfolio/PortfolioSetupSection";
 import JobTrackerSection from "./JobTracker/JobTrackerSection";
 import MyAppsSection from "./MyApps/MyAppsSection";
 import MailSection from "./Mail/MailSection";
@@ -17,10 +16,10 @@ export default function FeatureShowcase() {
   // Tab info for placeholder displays
   const tabInfo = [
     { name: "Upgrade Your Profile", badge: "01 / 05" },
-    { name: "Portfolio Setup", badge: "02 / 05" },
-    { name: "Job Tracker", badge: "03 / 05" },
-    { name: "My Applications", badge: "04 / 05" },
-    { name: "Draft Email", badge: "05 / 05" }
+    { name: "Job Tracker", badge: "02 / 05" },
+    { name: "My Applications", badge: "03 / 05" },
+    { name: "Draft Email", badge: "04 / 05" },
+    { name: "Interview and Placement", badge: "05 / 05" }
   ];
 
   const renderActiveSection = () => {
@@ -41,19 +40,6 @@ export default function FeatureShowcase() {
       case 1:
         return (
           <motion.div
-            key="portfolio-setup"
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 30 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="w-full overflow-visible"
-          >
-            <PortfolioSetupSection tabIndexStr="02 / 05" />
-          </motion.div>
-        );
-      case 2:
-        return (
-          <motion.div
             key="job-tracker"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -61,10 +47,10 @@ export default function FeatureShowcase() {
             transition={{ duration: 0.5, ease: "easeInOut" }}
             className="w-full overflow-visible"
           >
-            <JobTrackerSection tabIndexStr="03 / 05" />
+            <JobTrackerSection tabIndexStr="02 / 05" />
           </motion.div>
         );
-      case 3:
+      case 2:
         return (
           <motion.div
             key="my-applications"
@@ -74,10 +60,10 @@ export default function FeatureShowcase() {
             transition={{ duration: 0.5, ease: "easeInOut" }}
             className="w-full overflow-visible"
           >
-            <MyAppsSection tabIndexStr="04 / 05" />
+            <MyAppsSection tabIndexStr="03 / 05" />
           </motion.div>
         );
-      case 4:
+      case 3:
         return (
           <motion.div
             key="draft-email"
@@ -87,9 +73,10 @@ export default function FeatureShowcase() {
             transition={{ duration: 0.5, ease: "easeInOut" }}
             className="w-full overflow-visible"
           >
-            <MailSection tabIndexStr="05 / 05" />
+            <MailSection tabIndexStr="04 / 05" />
           </motion.div>
         );
+      case 4:
       default:
         return (
           <motion.div
@@ -101,8 +88,8 @@ export default function FeatureShowcase() {
             className="w-full"
           >
             <PlaceholderSection
-              badge={tabInfo[activeTab].badge}
-              title={tabInfo[activeTab].name}
+              badge={tabInfo[activeTab]?.badge || "05 / 05"}
+              title={tabInfo[activeTab]?.name || "Interview and Placement"}
             />
           </motion.div>
         );

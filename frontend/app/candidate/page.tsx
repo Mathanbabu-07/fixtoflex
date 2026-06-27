@@ -45,6 +45,7 @@ import CareerIntelligenceReport from "@/components/CareerIntelligenceReport";
 import JobTrackerPanel from "@/components/JobTrackerPanel";
 import InternshipTrackerPanel from "@/components/InternshipTrackerPanel";
 import MyTargetAnalysisModal from "@/components/MyTargetAnalysisModal";
+import InterviewPlacementPanel from "@/components/InterviewPlacementPanel";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 // Custom inline SVG icons because brand icons are missing from this lucide-react version
@@ -177,21 +178,21 @@ interface UserProfile {
 const tabSlugs: Record<string, string> = {
   "Fix My Profile": "fix-my-profile",
   "Career Intelligence": "career-intelligence",
-  "Portfolio Setup": "portfolio-setup",
   "Job Tracker": "job-tracker",
   "Internship Opportunity": "internship-opportunity",
   "My Applications": "my-applications",
   "Draft Mail": "draft-mail",
+  "Interview and Placement": "interview-placement",
 };
 
 const slugToTabs: Record<string, string> = {
   "fix-my-profile": "Fix My Profile",
   "career-intelligence": "Career Intelligence",
-  "portfolio-setup": "Portfolio Setup",
   "job-tracker": "Job Tracker",
   "internship-opportunity": "Internship Opportunity",
   "my-applications": "My Applications",
   "draft-mail": "Draft Mail",
+  "interview-placement": "Interview and Placement",
 };
 
 export default function CandidateDashboard() {
@@ -809,11 +810,11 @@ export default function CandidateDashboard() {
   // Sidebar Tabs Config
   const sidebarItems = [
     { name: "Fix My Profile", icon: User },
-    { name: "Portfolio Setup", icon: Globe },
     { name: "Job Tracker", icon: Briefcase },
     { name: "Internship Opportunity", icon: Award },
     { name: "My Applications", icon: FileText },
     { name: "Draft Mail", icon: Mail },
+    { name: "Interview and Placement", icon: BrainCircuit },
   ];
 
   // Calculate dynamic Profile Strength
@@ -1421,51 +1422,8 @@ export default function CandidateDashboard() {
               )}
 
               {/* Dynamic Views for other tabs */}
-              {activeTab === "Portfolio Setup" && (
-                <motion.div
-                  key="portfolio-setup"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col gap-6"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <Globe className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-slate-800">Portfolio Setup</h2>
-                      <p className="text-xs text-slate-400">Deploy your professional recruiter-facing portfolio site.</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="border border-slate-100 rounded-2xl p-5 bg-slate-50/50 flex flex-col justify-between">
-                      <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Selected Template</span>
-                        <h4 className="text-md font-bold text-slate-700 mt-1">Minimalist Developer Template</h4>
-                        <p className="text-xs text-slate-400 mt-2">Clean, glassmorphic dark-mode configuration optimized for software engineer roles.</p>
-                      </div>
-                      <button className="mt-4 px-4 py-2 border border-[#7C3AED] hover:bg-purple-50 text-[#7C3AED] text-xs font-semibold rounded-xl transition-all self-start">
-                        Change Theme
-                      </button>
-                    </div>
-
-                    <div className="border border-slate-100 rounded-2xl p-5 bg-slate-50/50 flex flex-col justify-between">
-                      <div>
-                        <span className="text-[10px] font-bold text-[#7C3AED] uppercase">Custom Domain</span>
-                        <h4 className="text-md font-bold text-slate-700 mt-1">
-                          {user?.full_name ? `${user.full_name.toLowerCase().replace(/\s+/g, "")}.fixtoflex.dev` : "yourname.fixtoflex.dev"}
-                        </h4>
-                        <p className="text-xs text-slate-400 mt-2">Get a clean free subdomain to show to recruiters, or connect a custom one.</p>
-                      </div>
-                      <button className="mt-4 px-4 py-2 bg-[#7C3AED] text-white text-xs font-semibold rounded-xl hover:bg-purple-700 transition-all self-start flex items-center gap-1">
-                        <span>Deploy Portfolio</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
+              {activeTab === "Interview and Placement" && (
+                <InterviewPlacementPanel />
               )}
 
               {activeTab === "Job Tracker" && (
