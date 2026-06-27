@@ -1,117 +1,60 @@
-FixToFlex – "My Target" Job Search Feature (Development Prompt)
+FixToFlex – Fix My Profile "My Target" Career Intelligence (Development Prompt)
 Objective
 
-Add a new My Target feature inside the existing Job Tracker. This feature allows candidates to search jobs based only on manually entered target preferences, without using their profile, cached data, or career intelligence.
-The implementation must reuse the existing Indeed + Internshala scraping pipeline, Scrape.do integration, Gemini 3.1 Flash Lite ranking, UI components, scrolling behavior, apply flow, and backend architecture.
+Implement a new 🎯 My Target feature inside the Fix My Profile section.
+
+This feature allows candidates to choose one target company and one target job role, then automatically collect real hiring expectations from Indeed and Internshala, compare them against the candidate's complete profile, and generate a detailed AI career improvement report.
+
+Reuse the existing Scrape.do + Gemini 3.1 Flash Lite + backend workflow + analysis pipeline + cache structure. Do not create duplicate pipelines.
 
 1. UI
 
-Add a new secondary button beside Track My Jobs.
+Add a new 🎯 My Target button in the top-right area of the Fix My Profile card.
 
-Button
+Style:
 
-Icon: 🎯 (Target icon)
-Label: My Target
 Same design language as existing buttons.
+Secondary purple outline/button style.
 Responsive.
 
-Clicking the button opens a centered modal with a close (×) button.
+Clicking it opens a centered modal with a close (×) button.
 
-2. My Target Modal
+2. Target Modal
 
-Create a modal with the following fields.
+Collect only the following fields.
 
-Target Companies
+Target Company
+Searchable autocomplete dropdown.
+Only one company can be selected.
+Suggest companies while typing.
+Allow custom company names.
+Target Job Role
+Searchable autocomplete dropdown.
+Only one role can be selected.
+Suggest roles while typing.
+Allow custom roles.
+Preferred Location (Optional)
+Single searchable dropdown.
+Indian states/cities.
+Button
 
-Multi-select input.
+Replace Fetch Results with
 
-Requirements:
-Maximum 3 companies
-Comma separated input supported
-Searchable dropdown
-Auto-suggestions while typing
-Suggestions should come from a master company dataset
-User may also enter a custom company not found in suggestions
-Prevent duplicate companies
+Search & Analyze
 
-Example:
-
-Google, Microsoft, OpenAI
-Target Job Roles
-
-Multi-select searchable dropdown.
-
-Requirements:
-
-Maximum 2 roles
-Auto-complete suggestions
-Custom role entry allowed
-Comma separated supported
-
-Example
-
-AI Engineer
-ML Engineer
-Target Salary Range
-
-Single select dropdown.
-
-Options:
-
-3 LPA – 5 LPA
-6 LPA – 9 LPA
-10 LPA – 15 LPA
-15 LPA – 20 LPA
-More than 20 LPA
-Only one value can be selected.
-
-Preferred Location
-Searchable multi-select dropdown.
-Use all Indian States and Union Territories.
-
-Maximum:
-
-3 locations
-Example
-Tamil Nadu
-Karnataka
-Telangana
-
-Action Button
-
-Bottom button
-
-Fetch Results
-
-Disable until at least:
-
-one company OR
-one job role
-
-is selected.
+Disable until Company + Job Role are selected.
 
 3. Backend Workflow
 
-When user clicks Fetch Results
+When the user clicks Search & Analyze, reuse the existing backend architecture.
 
-DO NOT use
+Pipeline:
 
-Candidate Profile
-Resume
-LinkedIn
-Portfolio
-GitHub
-Career Intelligence
-Cached profile analysis
-
-This feature is completely independent.
-
-Pipeline
-
-Target Companies
-Target Roles
-Salary
-Locations
+Target Company
+        +
+Target Job Role
+        +
+Location (Optional)
         │
         ▼
 Generate Search Queries
@@ -120,168 +63,294 @@ Generate Search Queries
 Scrape.do
         │
         ▼
-Indeed Jobs
-Internshala Jobs
+Indeed
+        +
+Internshala
         │
         ▼
-Normalize Data
+Extract Matching Jobs
+        │
+        ▼
+Extract Full Job Description
+Responsibilities
+Requirements
+Preferred Skills
+Qualifications
+Experience
+Company Expectations
+        │
+        ▼
+Normalize & Merge Data
         │
         ▼
 Gemini 3.1 Flash Lite
         │
         ▼
-Rank Jobs
+Compare With Candidate Profile
         │
         ▼
-Job Tracker UI
+Generate Career Intelligence Report
+4. Scraping Rules
 
-4. Search Logic
+Search only for
 
-Search only using modal values.
+Selected Company
+Selected Role
+Optional Location
 
-Examples
-
-Company
-Google AI Engineer Bangalore
-
-Role
-Machine Learning Engineer
-
-Salary
-10 LPA
-
-Location
-Tamil Nadu
-
-Generate optimized search queries for both
+Scrape from:
 
 Indeed
 Internshala
 
-5. Scraping
+Extract:
 
-Reuse the existing pipeline.
-
-Scrape
-
-Indeed
-
-Internshala
-
-Extract exactly the same fields already used.
-
-Do not create another scraper.
-
-6. Gemini Ranking
-
-Gemini should rank jobs only using
-
-Target Companies
-Target Roles
-Salary Preference
-Preferred Locations
-
-Do not use profile skills.
-Do not use resume.
-Do not use LinkedIn.
-Do not use cache.
-
-7. Results UI
-
-Reuse the existing Job Tracker interface.
-Do not redesign.
-Show
-Left Panel
-
-Combined Indeed + Internshala jobs
-Platform logo
-Match score
+Job title
 Company
-Role
-Salary
 Location
+Salary
+Employment type
+Full Job Description
+Responsibilities
+Required Skills
+Preferred Skills
+Experience
+Education
+Technologies
+Tools
+Frameworks
+Apply URL
 
-Right Panel
+Merge duplicate postings from both platforms.
 
-Full job description
+5. AI Analysis
+
+Reuse the existing candidate analysis.
+
+Load existing:
+
+Career Preferences
 Skills
-Company
-Gemini Insights
-Apply button
+Resume Analysis
+Portfolio Analysis
+GitHub Analysis
+LinkedIn Analysis
 
-Everything should behave exactly like the existing Job Tracker.
+Do not re-run these analyses if cached.
 
-8. Apply Buttons
+Use the cached profile intelligence.
 
-Maintain the current workflow.
+Only scrape fresh company/job requirements.
 
-Indeed
-Apply on Indeed
+6. Gemini Analysis
 
-Internshala
-Apply on Internshala
+Gemini should compare
 
-Always redirect to the real application page using the scraped apply_url.
+Candidate Profile
 
-Never redirect internally.
-Never use dummy URLs.
+↓
 
-9. Independent Scrolling
+Target Company Requirements
 
-Keep the existing behavior.
+Generate a structured report.
 
-Left
-Scrollable Job List
+Section 1 — Company Hiring Expectations
 
-Right
-Scrollable Job Details
+Show exactly what the company is looking for.
 
-Both scroll independently.
+Include:
 
-10. Cache Rules
+Role Overview
+Responsibilities
+Required Skills
+Preferred Skills
+Required Tools
+Required Frameworks
+Experience Expectations
+Education Requirements
 
-Do not reuse the profile job cache.
-Create a separate cache namespace for target searches.
+Use the scraped job descriptions.
 
-Cache key should depend on:
+Do not invent requirements.
 
-Companies
-Roles
-Salary
-Locations
+Section 2 — Match Analysis
 
-Reuse cached results only when the exact same target search is repeated.
+Show
 
-11. Validation
+Current Match Score
 
-Validate:
+Strengths
 
-Maximum 3 companies
-Maximum 2 job roles
-Maximum 3 preferred locations
-One salary option only
-Remove duplicates
-Ignore empty values
-Trim whitespace
-Allow custom company/role entries
+Weaknesses
 
-12. Error Handling
+Missing Skills
 
-If no jobs match:
+Missing Technologies
 
-Display:
-No matching jobs found for your selected targets. Try changing your company, role, salary, or location preferences.
+Missing Experience
 
-If one source fails:
-Show jobs from the other source.
+Explain why.
 
-If both fail:
-Show a friendly retry state.
+Section 3 — Skill Improvement Roadmap
 
-13. Deliverables
-Add a 🎯 My Target button beside Track My Jobs.
-Implement a searchable multi-select modal with company, role, salary, and location filters.
-Reuse the existing Scrape.do + Gemini + Indeed + Internshala pipeline without creating duplicate logic.
-Search jobs only from the manually entered target preferences, completely independent of candidate profiles and cached profile data.
-Display results using the existing Job Tracker UI with platform logos, independent scrolling, Gemini insights, and working Apply on Indeed / Apply on Internshala buttons that redirect to the real application pages.
-Implement separate caching for target-based searches and preserve the existing profile-based job tracking workflow unchanged.
+Recommend:
+
+Programming Languages
+
+Frameworks
+
+Libraries
+
+Cloud Platforms
+
+AI Tools
+
+Developer Tools
+
+Soft Skills
+
+Learning order
+
+Prioritize as:
+
+Critical
+
+Important
+
+Nice to Have
+
+Section 4 — Project Roadmap
+
+Recommend projects that directly improve the candidate's chances.
+
+For every project include:
+
+Project Title
+Difficulty
+Objective
+Required Skills
+Tech Stack
+Features
+Expected Outcome
+Why it matches the company
+
+Arrange Beginner → Intermediate → Advanced.
+
+Section 5 — Resume Improvements
+
+Generate company-specific suggestions.
+
+Recommend:
+
+Resume headline
+Summary improvements
+ATS keywords
+Skills ordering
+Project ordering
+Bullet improvements
+Missing sections
+Experience wording
+Achievement formatting
+Certifications to include
+
+Tailor everything to the selected company and role.
+
+Section 6 — Portfolio Improvements
+
+Recommend:
+
+Homepage improvements
+Featured projects
+Skills section
+Technology badges
+Project descriptions
+Live demos
+GitHub links
+Case studies
+UI improvements
+Recruiter-focused content
+
+Everything should align with the selected company.
+
+Section 7 — Career Action Plan
+
+Generate an implementation roadmap.
+
+Example:
+
+Week 1
+
+Week 2
+
+Month 1
+
+Month 2
+
+Month 3
+
+Prioritize tasks from highest impact to lowest.
+
+7. Excluded Sections
+
+Do not generate:
+
+LinkedIn Improvements
+GitHub Improvements
+
+Those remain part of the existing Career Intelligence workflow.
+
+8. Caching
+
+Cache the report separately.
+
+Cache key:
+
+userId
++
+company
++
+role
++
+location
+
+Do not regenerate if the same target is searched again.
+
+Allow regeneration only when:
+
+Company changes
+Role changes
+Location changes
+User clicks Analyze Now
+9. UI Result
+
+Reuse the existing Career Intelligence page.
+
+Do not create a new page.
+
+Replace the generic recommendations with this target-specific report.
+
+Keep the existing clean unified layout.
+
+Display sections in order:
+
+Company Hiring Expectations
+Match Analysis
+Skill Improvement Roadmap
+Project Roadmap
+Resume Improvements
+Portfolio Improvements
+Career Action Plan
+
+Use collapsible sections and smooth loading animations consistent with the existing UI.
+
+10. Error Handling
+If no matching jobs are found, display a clear message asking the user to try another company, role, or location.
+If only one source (Indeed or Internshala) succeeds, generate the report from the available data.
+Never fabricate company requirements when scraping returns no valid job descriptions.
+Deliverables
+Add a 🎯 My Target button to the Fix My Profile page.
+Implement a modal with one target company, one target role, optional location, and a Search & Analyze button.
+Reuse the existing Scrape.do + Gemini + analysis pipeline; only scrape fresh company/job data while reusing cached candidate profile analysis.
+Scrape and merge real job requirements from Indeed and Internshala.
+Generate a detailed, company-specific AI report including Company Hiring Expectations, Match Analysis, Skill Roadmap, Project Roadmap, Resume Improvements, Portfolio Improvements, and a Career Action Plan.
+Cache target reports independently and regenerate only when the target changes or the user explicitly requests a fresh analysis.

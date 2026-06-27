@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, TrendingUp, Code, BookOpen, User, CheckCircle2, AlertTriangle, ArrowRight, Loader2, FileText, Globe } from "lucide-react";
+import { Sparkles, TrendingUp, Code, BookOpen, User, CheckCircle2, AlertTriangle, ArrowRight, Loader2, FileText, Globe, Target, Building, Briefcase, MapPin, ChevronLeft, Calendar, Zap } from "lucide-react";
+import MyTargetAnalysisModal from "./MyTargetAnalysisModal";
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -98,6 +99,16 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
   const [currentSectionIndex, setCurrentSectionIndex] = useState<number>(0);
   const [isTyping, setIsTyping] = useState<boolean>(false);
 
+  // Target mode states
+  const [isTargetMode, setIsTargetMode] = useState(false);
+  const [targetReport, setTargetReport] = useState<any>(null);
+  const [targetLoading, setTargetLoading] = useState(false);
+  const [targetError, setTargetError] = useState<string | null>(null);
+  const [targetModalOpen, setTargetModalOpen] = useState(false);
+  const [targetInfo, setTargetInfo] = useState<{ company: string; role: string; location: string } | null>(null);
+  const [targetSectionIndex, setTargetSectionIndex] = useState<number>(0);
+  const [isTargetTyping, setIsTargetTyping] = useState<boolean>(false);
+
   useEffect(() => {
     // Attempt local storage load
     const cached = localStorage.getItem("user_session");
@@ -173,9 +184,71 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
     }
   };
 
+  const fetchTargetReport = async (company: string, role: string, location: string) => {
+    setTargetModalOpen(false);
+    setIsTargetMode(true);
+    setTargetLoading(true);
+    setTargetError(null);
+    setTargetReport(null);
+    setTargetInfo({ company, role, location });
+    setTargetSectionIndex(0);
+    try {
+      const res = await fetch(getApiUrl("/career-intelligence/target-report"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ company, role, location: location || null })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Failed to generate target report");
+      }
+      const data = await res.json();
+      setTargetReport(data.data);
+      setTargetSectionIndex(0);
+    } catch (e: any) {
+      setTargetError(e.message);
+    } finally {
+      setTargetLoading(false);
+    }
+  };
+
+  // Target report streaming animation
+  useEffect(() => {
+    if (!targetReport) return;
+    const totalSections = 7;
+    if (targetSectionIndex >= totalSections) {
+      setIsTargetTyping(false);
+      return;
+    }
+    setIsTargetTyping(true);
+    const delay = targetSectionIndex === 0 ? 500 : 1000;
+    const timer = setTimeout(() => {
+      setIsTargetTyping(false);
+      const nextTimer = setTimeout(() => {
+        setTargetSectionIndex((prev) => prev + 1);
+      }, 300);
+      return () => clearTimeout(nextTimer);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [targetReport, targetSectionIndex]);
+
   const handleSkipAnimation = () => {
-    setCurrentSectionIndex(SECTIONS.length);
-    setIsTyping(false);
+    if (isTargetMode) {
+      setTargetSectionIndex(7);
+      setIsTargetTyping(false);
+    } else {
+      setCurrentSectionIndex(SECTIONS.length);
+      setIsTyping(false);
+    }
+  };
+
+  const handleBackToGeneral = () => {
+    setIsTargetMode(false);
+    setTargetReport(null);
+    setTargetError(null);
+    setTargetInfo(null);
+    setTargetSectionIndex(0);
   };
 
   if (loading) {
@@ -590,6 +663,349 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
     }
   ];
 
+  // ─── TARGET REPORT SECTIONS ───
+  const PriorityBadgeTarget = ({ priority }: { priority: string }) => {
+    const colors: any = {
+      Critical: "bg-rose-100 text-rose-700 border-rose-200",
+      Important: "bg-amber-100 text-amber-700 border-amber-200",
+      "Nice to Have": "bg-emerald-100 text-emerald-700 border-emerald-200",
+    };
+    return (
+      <span className={`px-2.5 py-0.5 text-[9px] font-extrabold uppercase rounded-md border shrink-0 ${colors[priority] || "bg-slate-100 text-slate-700 border-slate-200"}`}>
+        {priority}
+      </span>
+    );
+  };
+
+  const TARGET_SECTIONS = targetReport ? [
+    {
+      id: "hiring-expectations",
+      title: `1. ${targetInfo?.company || "Company"} Hiring Expectations`,
+      icon: Building,
+      render: () => {
+        const exp = targetReport.company_hiring_expectations || {};
+        return (
+          <div className="space-y-4">
+            <p className="text-slate-600 text-sm leading-relaxed">{exp.role_overview}</p>
+            {exp.responsibilities?.length > 0 && (
+              <div>
+                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Responsibilities</h4>
+                <ul className="space-y-1.5">
+                  {exp.responsibilities.map((r: string, i: number) => (
+                    <li key={i} className="text-xs text-slate-600 flex items-start gap-2"><span className="text-purple-500 mt-0.5">•</span>{r}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {exp.required_skills?.length > 0 && (
+                <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  <h4 className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Required Skills</h4>
+                  <div className="flex flex-wrap gap-1.5">{exp.required_skills.map((s: string, i: number) => (<span key={i} className="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-100 rounded-md text-[10px] font-bold">{s}</span>))}</div>
+                </div>
+              )}
+              {exp.preferred_skills?.length > 0 && (
+                <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  <h4 className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-2">Preferred Skills</h4>
+                  <div className="flex flex-wrap gap-1.5">{exp.preferred_skills.map((s: string, i: number) => (<span key={i} className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-md text-[10px] font-bold">{s}</span>))}</div>
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {exp.required_tools?.length > 0 && (
+                <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Required Tools</h4>
+                  <div className="flex flex-wrap gap-1.5">{exp.required_tools.map((s: string, i: number) => (<span key={i} className="px-2 py-0.5 bg-white border border-slate-200 text-slate-600 rounded-md text-[10px] font-semibold">{s}</span>))}</div>
+                </div>
+              )}
+              {exp.required_frameworks?.length > 0 && (
+                <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Required Frameworks</h4>
+                  <div className="flex flex-wrap gap-1.5">{exp.required_frameworks.map((s: string, i: number) => (<span key={i} className="px-2 py-0.5 bg-white border border-slate-200 text-slate-600 rounded-md text-[10px] font-semibold">{s}</span>))}</div>
+                </div>
+              )}
+            </div>
+            {exp.experience_expectations && <p className="text-xs text-slate-600"><strong className="text-slate-700">Experience:</strong> {exp.experience_expectations}</p>}
+            {exp.education_requirements && <p className="text-xs text-slate-600"><strong className="text-slate-700">Education:</strong> {exp.education_requirements}</p>}
+          </div>
+        );
+      }
+    },
+    {
+      id: "match-analysis",
+      title: "2. Match Analysis",
+      icon: TrendingUp,
+      render: () => {
+        const match = targetReport.match_analysis || {};
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center min-w-[100px]">
+                <span className="text-3xl font-black text-[#7C3AED]">{match.match_score || 0}%</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Match Score</span>
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed flex-1">{match.analysis_summary}</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {match.strengths?.length > 0 && (
+                <div className="bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
+                  <h4 className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-2">✓ Strengths</h4>
+                  <ul className="space-y-1.5">{match.strengths.map((s: string, i: number) => (<li key={i} className="text-xs text-slate-600 flex items-start gap-2"><CheckCircle2 className="w-3 h-3 text-emerald-500 mt-0.5 shrink-0" />{s}</li>))}</ul>
+                </div>
+              )}
+              {match.weaknesses?.length > 0 && (
+                <div className="bg-rose-50/30 p-4 rounded-xl border border-rose-100">
+                  <h4 className="text-[10px] font-bold text-rose-700 uppercase tracking-wider mb-2">✗ Weaknesses</h4>
+                  <ul className="space-y-1.5">{match.weaknesses.map((s: string, i: number) => (<li key={i} className="text-xs text-slate-600 flex items-start gap-2"><AlertTriangle className="w-3 h-3 text-rose-400 mt-0.5 shrink-0" />{s}</li>))}</ul>
+                </div>
+              )}
+            </div>
+            {match.missing_skills?.length > 0 && (
+              <div><h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Missing Skills</h4><div className="flex flex-wrap gap-1.5">{match.missing_skills.map((s: string, i: number) => (<span key={i} className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-md text-[10px] font-bold">{s}</span>))}</div></div>
+            )}
+            {match.missing_technologies?.length > 0 && (
+              <div><h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Missing Technologies</h4><div className="flex flex-wrap gap-1.5">{match.missing_technologies.map((s: string, i: number) => (<span key={i} className="px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 rounded-md text-[10px] font-bold">{s}</span>))}</div></div>
+            )}
+            {match.missing_experience && <p className="text-xs text-slate-600"><strong className="text-slate-700">Missing Experience:</strong> {match.missing_experience}</p>}
+          </div>
+        );
+      }
+    },
+    {
+      id: "skill-roadmap",
+      title: "3. Skill Improvement Roadmap",
+      icon: Code,
+      render: () => {
+        const skills = (targetReport.skill_improvement_roadmap || []).sort((a: any, b: any) => (a.learning_order || 99) - (b.learning_order || 99));
+        return (
+          <div className="space-y-3">
+            {skills.map((skill: any, idx: number) => (
+              <div key={idx} className="bg-slate-50/50 border border-slate-100/80 rounded-2xl p-4 hover:bg-slate-50 transition-colors shadow-xs">
+                <div className="flex justify-between items-start gap-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wider bg-purple-50 px-2 py-0.5 rounded-md">{skill.category}</span>
+                    <h4 className="text-sm font-bold text-slate-800 pt-1">{skill.skill}</h4>
+                  </div>
+                  <PriorityBadgeTarget priority={skill.priority || "Important"} />
+                </div>
+                <p className="text-xs text-slate-500 mt-2"><strong className="text-slate-700">Why:</strong> {skill.why_important}</p>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="text-[10px] text-slate-400 font-semibold">Difficulty: {skill.learning_difficulty}</span>
+                  {skill.learning_order && <span className="text-[10px] text-indigo-500 font-bold">Order: #{skill.learning_order}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    },
+    {
+      id: "project-roadmap",
+      title: "4. Project Roadmap",
+      icon: BookOpen,
+      render: () => (
+        <div className="space-y-4">
+          {(targetReport.project_roadmap || []).map((proj: any, idx: number) => (
+            <div key={idx} className="bg-slate-50/50 border border-slate-100 rounded-2xl p-5 shadow-xs">
+              <div className="flex justify-between items-start gap-4">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800">{proj.title}</h4>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase mt-0.5 block">Difficulty: {proj.difficulty}</span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 mt-2"><strong className="text-slate-700">Objective:</strong> {proj.objective}</p>
+              <p className="text-xs text-slate-600 mt-1"><strong className="text-slate-700">Expected Outcome:</strong> {proj.expected_outcome}</p>
+              <p className="text-xs text-indigo-600 mt-1"><strong className="text-indigo-700">Company Alignment:</strong> {proj.company_alignment}</p>
+              {proj.features?.length > 0 && (
+                <div className="mt-2">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Features:</span>
+                  <ul className="mt-1 space-y-1">{proj.features.map((f: string, i: number) => (<li key={i} className="text-xs text-slate-500 flex items-start gap-1.5"><span className="text-purple-400">✦</span>{f}</li>))}</ul>
+                </div>
+              )}
+              {proj.tech_stack?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {proj.tech_stack.map((tech: string, j: number) => (<span key={j} className="px-2 py-0.5 bg-white border border-slate-200 text-slate-500 rounded-md text-[10px] font-semibold">{tech}</span>))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: "resume-improvements",
+      title: "5. Resume Improvements",
+      icon: FileText,
+      render: () => (
+        <div className="grid grid-cols-1 gap-2.5">
+          {(targetReport.resume_improvements || []).map((item: any, i: number) => (
+            <div key={i} className="text-xs text-slate-700 bg-slate-50/50 p-4 rounded-xl border border-slate-100 flex items-start justify-between gap-4 shadow-xs">
+              <div>
+                <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wider bg-purple-50 px-2 py-0.5 rounded-md">{item.category}</span>
+                <p className="leading-relaxed mt-1.5">{item.suggestion}</p>
+              </div>
+              <PriorityBadgeTarget priority={item.priority} />
+            </div>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: "portfolio-improvements",
+      title: "6. Portfolio Improvements",
+      icon: Globe,
+      render: () => (
+        <div className="grid grid-cols-1 gap-2.5">
+          {(targetReport.portfolio_improvements || []).map((item: any, i: number) => (
+            <div key={i} className="text-xs text-slate-700 bg-slate-50/50 p-4 rounded-xl border border-slate-100 flex items-start justify-between gap-4 shadow-xs">
+              <div>
+                <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wider bg-purple-50 px-2 py-0.5 rounded-md">{item.category}</span>
+                <p className="leading-relaxed mt-1.5">{item.suggestion}</p>
+              </div>
+              <PriorityBadgeTarget priority={item.priority} />
+            </div>
+          ))}
+        </div>
+      )
+    },
+    {
+      id: "career-action-plan",
+      title: "7. Career Action Plan",
+      icon: Calendar,
+      render: () => {
+        const plan = targetReport.career_action_plan || {};
+        const periods = [
+          { key: "week_1", label: "Week 1" },
+          { key: "week_2", label: "Week 2" },
+          { key: "month_1", label: "Month 1" },
+          { key: "month_2", label: "Month 2" },
+          { key: "month_3", label: "Month 3" }
+        ];
+        return (
+          <div className="relative pl-6 border-l-2 border-purple-100 ml-2 space-y-6">
+            {periods.map(({ key, label }) => {
+              const items = plan[key] || [];
+              if (items.length === 0) return null;
+              return (
+                <div key={key} className="relative">
+                  <div className="absolute left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-[#7C3AED] shadow-xs" />
+                  <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 shadow-xs">
+                    <h4 className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider mb-2">{label}</h4>
+                    <ul className="space-y-2">
+                      {items.map((item: string, i: number) => (
+                        <li key={i} className="text-xs text-slate-600 flex items-start gap-2"><span className="text-[#7C3AED] shrink-0 mt-0.5">✦</span>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+    }
+  ] : [];
+
+  // ─── RENDER ───
+
+  // Target mode: loading
+  if (isTargetMode && targetLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-20">
+        <div className="relative mb-6">
+          <div className="absolute inset-0 bg-[#7C3AED]/20 blur-xl rounded-full animate-pulse" />
+          <div className="w-16 h-16 bg-white border border-slate-100 rounded-3xl shadow-xl flex items-center justify-center relative">
+            <Loader2 className="w-8 h-8 text-[#7C3AED] animate-spin" />
+          </div>
+        </div>
+        <h2 className="text-xl font-bold text-slate-800">Analyzing {targetInfo?.company} × {targetInfo?.role}...</h2>
+        <p className="text-sm text-slate-500 mt-2">Scraping job requirements and comparing with your profile</p>
+      </div>
+    );
+  }
+
+  // Target mode: error
+  if (isTargetMode && targetError) {
+    return (
+      <div className="p-8 bg-rose-50 border border-rose-100 rounded-3xl text-center">
+        <AlertTriangle className="w-10 h-10 text-rose-500 mx-auto mb-4" />
+        <h3 className="text-lg font-bold text-slate-800 mb-2">Could not generate target report</h3>
+        <p className="text-sm text-slate-600 mb-6">{targetError}</p>
+        <div className="flex justify-center gap-3">
+          <button onClick={handleBackToGeneral} className="px-6 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-200 transition-colors cursor-pointer">Back to General</button>
+          <button onClick={() => targetInfo && fetchTargetReport(targetInfo.company, targetInfo.role, targetInfo.location)} className="px-6 py-2 bg-rose-500 text-white font-bold rounded-xl text-sm hover:bg-rose-600 transition-colors cursor-pointer">Try Again</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Target mode: report loaded
+  if (isTargetMode && targetReport) {
+    return (
+      <div className="flex flex-col gap-8 w-full max-w-4xl mx-auto pb-16">
+        {/* Header */}
+        <div className="bg-linear-to-r from-[#7C3AED] to-[#4F46E5] rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
+            <div>
+              <h2 className="text-2xl font-extrabold flex items-center gap-2.5">
+                <Target className="w-7 h-7" /> Target Career Intelligence
+              </h2>
+              <p className="text-white/80 text-xs font-medium mt-1">
+                {targetInfo?.company} × {targetInfo?.role}{targetInfo?.location ? ` · ${targetInfo.location}` : ""}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {targetSectionIndex < TARGET_SECTIONS.length && (
+                <button onClick={handleSkipAnimation} className="px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white font-bold rounded-xl text-xs backdrop-blur-xs transition-colors cursor-pointer shrink-0">Skip Animation</button>
+              )}
+              <button onClick={handleBackToGeneral} className="px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white font-bold rounded-xl text-xs backdrop-blur-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1.5">
+                <ChevronLeft className="w-3.5 h-3.5" /> General Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Document */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-8 lg:p-12 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/5 blur-3xl rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500/5 blur-3xl rounded-full pointer-events-none" />
+
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-5 mb-8">
+            <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-[#7C3AED]">
+              <Target className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-extrabold text-slate-800">Target Career Report — {targetInfo?.company}</h1>
+              <p className="text-[11px] text-slate-400 font-semibold mt-0.5">Company-specific analysis powered by Gemini AI</p>
+            </div>
+          </div>
+
+          <div className="pl-16 border-l-2 border-slate-100 relative space-y-12 ml-4">
+            <AnimatePresence>
+              {TARGET_SECTIONS.map((sec, i) => {
+                const isVisible = i < targetSectionIndex;
+                const isActive = i === targetSectionIndex && isTargetTyping;
+                if (!isVisible && !isActive) return null;
+                return (
+                  <motion.div key={sec.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="relative">
+                    <div className={`absolute -left-[calc(4rem+1px)] top-0 w-8 h-8 rounded-full border-2 shadow-sm flex items-center justify-center transition-all duration-300 ${isActive ? "bg-purple-50 border-purple-400 text-[#7C3AED] animate-pulse" : "bg-white border-slate-200 text-indigo-600"}`}>
+                      {React.createElement(sec.icon, { className: "w-4 h-4" })}
+                    </div>
+                    <div className="w-full">
+                      <h3 className="text-base font-bold text-slate-800 mb-3">{sec.title}</h3>
+                      {isActive ? <TypingIndicator /> : sec.render()}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 w-full max-w-4xl mx-auto pb-16">
       
@@ -605,14 +1021,22 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
               Optimizing your career profile for tech recruiters and ATS compliance.
             </p>
           </div>
-          {currentSectionIndex < SECTIONS.length && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={handleSkipAnimation}
-              className="px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white font-bold rounded-xl text-xs backdrop-blur-xs transition-colors cursor-pointer shrink-0"
+              onClick={() => setTargetModalOpen(true)}
+              className="px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white font-bold rounded-xl text-xs backdrop-blur-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
             >
-              Skip Animation
+              <Target className="w-4 h-4" /> My Target
             </button>
-          )}
+            {currentSectionIndex < SECTIONS.length && (
+              <button
+                onClick={handleSkipAnimation}
+                className="px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white font-bold rounded-xl text-xs backdrop-blur-xs transition-colors cursor-pointer shrink-0"
+              >
+                Skip Animation
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -681,6 +1105,11 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
 
       </div>
 
+      <MyTargetAnalysisModal
+        isOpen={targetModalOpen}
+        onClose={() => setTargetModalOpen(false)}
+        onSearchAnalyze={(company, role, location) => fetchTargetReport(company, role, location)}
+      />
     </div>
   );
 }

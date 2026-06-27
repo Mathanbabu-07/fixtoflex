@@ -19,3 +19,13 @@ CREATE TABLE IF NOT EXISTS target_search_cache (
     updated_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE(user_id, search_hash)
 );
+
+CREATE TABLE IF NOT EXISTS target_career_reports (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    search_hash TEXT NOT NULL,
+    report_json JSONB NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(user_id, search_hash)
+);

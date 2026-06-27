@@ -930,4 +930,164 @@ Respond STRICTLY with a valid JSON object matching exactly the following schema:
             }
         }
 
+    async def generate_target_career_intelligence(
+        self,
+        unified_context: Dict[str, Any],
+        job_requirements: list,
+        target_preferences: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Generate a company-specific career intelligence report by comparing
+        the candidate's cached profile against scraped job requirements.
+        """
+        if not self.model:
+            return self._get_target_career_intelligence_mock()
+
+        company = target_preferences.get("company", "Unknown Company")
+        role = target_preferences.get("role", "Unknown Role")
+        location = target_preferences.get("location", "")
+
+        prompt = f"""
+You are an expert AI Career Coach, Technical Recruiter, and Engineering Manager.
+
+TARGET SEARCH:
+- Company: {company}
+- Role: {role}
+- Location: {location or "Any"}
+
+CANDIDATE PROFILE (from cached analyses):
+{json.dumps(unified_context, indent=2)}
+
+SCRAPED JOB REQUIREMENTS (from Indeed & Internshala for {company} {role}):
+{json.dumps(job_requirements[:10], indent=2)}
+
+TASK:
+Compare the candidate's complete profile against the target company's real hiring expectations.
+Generate a structured, company-specific career improvement report.
+
+STRICT RULES:
+1. Use ONLY the scraped job data for company requirements. Do NOT fabricate requirements.
+2. Use ONLY the candidate profile data for the match analysis. Do NOT assume skills.
+3. Every recommendation must be specific to {company} and the {role} position.
+4. Do NOT include LinkedIn Improvements or GitHub Improvements sections.
+5. Provide detailed, actionable advice — not generic tips.
+
+Respond STRICTLY with a valid JSON object matching exactly the following schema:
+{{
+  "company_hiring_expectations": {{
+    "role_overview": "string (detailed overview of what {company} expects for {role})",
+    "responsibilities": ["string"],
+    "required_skills": ["string"],
+    "preferred_skills": ["string"],
+    "required_tools": ["string"],
+    "required_frameworks": ["string"],
+    "experience_expectations": "string",
+    "education_requirements": "string"
+  }},
+  "match_analysis": {{
+    "match_score": integer (0-100),
+    "strengths": ["string (specific candidate strengths that match)"],
+    "weaknesses": ["string (specific gaps)"],
+    "missing_skills": ["string"],
+    "missing_technologies": ["string"],
+    "missing_experience": "string",
+    "analysis_summary": "string (detailed explanation of match)"
+  }},
+  "skill_improvement_roadmap": [
+    {{
+      "category": "string (e.g., Programming Languages, Frameworks, Cloud Platforms, AI Tools, Developer Tools, Soft Skills)",
+      "skill": "string",
+      "why_important": "string (specific to {company})",
+      "priority": "string (Critical, Important, or Nice to Have)",
+      "learning_difficulty": "string (Easy, Medium, Hard)",
+      "learning_order": integer (1 = learn first)
+    }}
+  ],
+  "project_roadmap": [
+    {{
+      "title": "string",
+      "difficulty": "string (Beginner, Intermediate, Advanced)",
+      "objective": "string",
+      "required_skills": ["string"],
+      "tech_stack": ["string"],
+      "features": ["string"],
+      "expected_outcome": "string",
+      "company_alignment": "string (why this project helps for {company})"
+    }}
+  ],
+  "resume_improvements": [
+    {{
+      "suggestion": "string",
+      "category": "string (e.g., Headline, Summary, ATS Keywords, Skills Ordering, Project Ordering, Bullet Improvements, Missing Sections, Experience Wording, Achievement Formatting, Certifications)",
+      "priority": "string (Critical, Important, Nice to Have)"
+    }}
+  ],
+  "portfolio_improvements": [
+    {{
+      "suggestion": "string",
+      "category": "string (e.g., Homepage, Featured Projects, Skills Section, Technology Badges, Project Descriptions, Live Demos, GitHub Links, Case Studies, UI Improvements, Recruiter Content)",
+      "priority": "string (Critical, Important, Nice to Have)"
+    }}
+  ],
+  "career_action_plan": {{
+    "week_1": ["string"],
+    "week_2": ["string"],
+    "month_1": ["string"],
+    "month_2": ["string"],
+    "month_3": ["string"]
+  }}
+}}
+"""
+        try:
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(response_mime_type="application/json")
+            )
+            return self._parse_json_safe(response.text)
+        except Exception as e:
+            logger.error(f"Gemini API error during Target Career Intelligence: {e}")
+            raise Exception("Failed to generate Target Career Intelligence Report.")
+
+    def _get_target_career_intelligence_mock(self) -> Dict[str, Any]:
+        return {
+            "company_hiring_expectations": {
+                "role_overview": "The company is looking for a skilled software engineer with expertise in modern web technologies.",
+                "responsibilities": ["Design and implement scalable web applications", "Collaborate with cross-functional teams"],
+                "required_skills": ["Python", "JavaScript", "React"],
+                "preferred_skills": ["TypeScript", "Docker", "AWS"],
+                "required_tools": ["Git", "VS Code", "Jira"],
+                "required_frameworks": ["React", "FastAPI", "Next.js"],
+                "experience_expectations": "2-4 years of relevant experience",
+                "education_requirements": "Bachelor's degree in Computer Science or related field"
+            },
+            "match_analysis": {
+                "match_score": 72,
+                "strengths": ["Strong React and TypeScript skills", "Relevant project experience"],
+                "weaknesses": ["Limited cloud infrastructure experience", "No Docker/Kubernetes exposure"],
+                "missing_skills": ["Docker", "Kubernetes", "CI/CD"],
+                "missing_technologies": ["AWS", "Terraform"],
+                "missing_experience": "Needs more production-scale deployment experience.",
+                "analysis_summary": "The candidate shows solid foundational alignment but needs to strengthen cloud and DevOps competencies."
+            },
+            "skill_improvement_roadmap": [
+                {"category": "Cloud Platforms", "skill": "AWS (EC2, S3, Lambda)", "why_important": "Core infrastructure for the company's services.", "priority": "Critical", "learning_difficulty": "Medium", "learning_order": 1}
+            ],
+            "project_roadmap": [
+                {"title": "Cloud-Native API Platform", "difficulty": "Advanced", "objective": "Build a production-ready API with CI/CD.", "required_skills": ["Python", "Docker", "AWS"], "tech_stack": ["FastAPI", "Docker", "AWS ECS"], "features": ["Auto-scaling", "Health checks", "Logging"], "expected_outcome": "Demonstrates production deployment skills.", "company_alignment": "Directly maps to the company's cloud-first architecture."}
+            ],
+            "resume_improvements": [
+                {"suggestion": "Add cloud deployment keywords to your summary.", "category": "ATS Keywords", "priority": "Critical"}
+            ],
+            "portfolio_improvements": [
+                {"suggestion": "Add a case study showing system design decisions.", "category": "Case Studies", "priority": "Important"}
+            ],
+            "career_action_plan": {
+                "week_1": ["Set up AWS free tier account", "Complete Docker tutorial"],
+                "week_2": ["Deploy a FastAPI app to AWS ECS", "Update resume with cloud keywords"],
+                "month_1": ["Build the Cloud-Native API project", "Get AWS Cloud Practitioner certification"],
+                "month_2": ["Add case study to portfolio", "Practice system design interviews"],
+                "month_3": ["Apply to target positions", "Network with company employees on LinkedIn"]
+            }
+        }
+
 
