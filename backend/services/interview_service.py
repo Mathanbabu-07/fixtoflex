@@ -23,25 +23,37 @@ class InterviewService:
         """Loads cached profile data from existing analysis."""
         profile_data = {}
         
-        # User Basic Info
-        user_res = self.supabase.table("users").select("*").eq("id", user_id).execute()
-        if user_res.data:
-            profile_data["user"] = user_res.data[0]
+        try:
+            # User Basic Info
+            user_res = self.supabase.table("users").select("*").eq("id", user_id).execute()
+            if user_res.data:
+                profile_data["user"] = user_res.data[0]
+        except Exception as e:
+            logger.warning(f"Failed to fetch user info: {e}")
             
-        # Resume Summary
-        resume_res = self.supabase.table("resume_analysis_results").select("gemini_summary").eq("user_id", user_id).order('created_at', desc=True).limit(1).execute()
-        if resume_res.data and resume_res.data[0].get("gemini_summary"):
-            profile_data["resume"] = resume_res.data[0]["gemini_summary"]
+        try:
+            # Resume Summary
+            resume_res = self.supabase.table("resume_analysis_results").select("gemini_summary").eq("user_id", user_id).order('created_at', desc=True).limit(1).execute()
+            if resume_res.data and resume_res.data[0].get("gemini_summary"):
+                profile_data["resume"] = resume_res.data[0]["gemini_summary"]
+        except Exception as e:
+            logger.warning(f"Failed to fetch resume summary: {e}")
             
-        # Portfolio Summary
-        portfolio_res = self.supabase.table("portfolio_analysis_history").select("summary_json").eq("user_id", user_id).order('created_at', desc=True).limit(1).execute()
-        if portfolio_res.data and portfolio_res.data[0].get("summary_json"):
-             profile_data["portfolio"] = portfolio_res.data[0]["summary_json"]
+        try:
+            # Portfolio Summary
+            portfolio_res = self.supabase.table("portfolio_analysis_history").select("summary_json").eq("user_id", user_id).order('created_at', desc=True).limit(1).execute()
+            if portfolio_res.data and portfolio_res.data[0].get("summary_json"):
+                 profile_data["portfolio"] = portfolio_res.data[0]["summary_json"]
+        except Exception as e:
+            logger.warning(f"Failed to fetch portfolio summary: {e}")
              
-        # LinkedIn/Career Intelligence (Experience, Skills, Certifications are usually here or in resume)
-        linkedin_res = self.supabase.table("linkedin_analysis_history").select("summary_json").eq("user_id", user_id).order('created_at', desc=True).limit(1).execute()
-        if linkedin_res.data and linkedin_res.data[0].get("summary_json"):
-             profile_data["linkedin"] = linkedin_res.data[0]["summary_json"]
+        try:
+            # LinkedIn/Career Intelligence (Experience, Skills, Certifications are usually here or in resume)
+            linkedin_res = self.supabase.table("linkedin_analysis_results").select("summary_json").eq("user_id", user_id).order('created_at', desc=True).limit(1).execute()
+            if linkedin_res.data and linkedin_res.data[0].get("summary_json"):
+                 profile_data["linkedin"] = linkedin_res.data[0]["summary_json"]
+        except Exception as e:
+            logger.warning(f"Failed to fetch linkedin analysis: {e}")
 
         return profile_data
 
