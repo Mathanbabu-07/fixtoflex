@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 import logging
 from services.interview_service import InterviewService
-from middleware.auth import get_current_user
+from middleware.auth_middleware import get_current_user
 
 router = APIRouter(
     prefix="/interview",
