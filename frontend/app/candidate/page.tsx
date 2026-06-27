@@ -43,6 +43,7 @@ import {
 import AIAnalysisDashboard from "@/components/AIAnalysisDashboard";
 import CareerIntelligenceReport from "@/components/CareerIntelligenceReport";
 import JobTrackerPanel from "@/components/JobTrackerPanel";
+import InternshipTrackerPanel from "@/components/InternshipTrackerPanel";
 import MyTargetAnalysisModal from "@/components/MyTargetAnalysisModal";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
@@ -1472,50 +1473,7 @@ export default function CandidateDashboard() {
               )}
 
               {activeTab === "Internship Opportunity" && (
-                <motion.div
-                  key="internships"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col gap-6"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#7C3AED] flex items-center justify-center">
-                      <Award className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-slate-800">Internship Opportunities</h2>
-                      <p className="text-xs text-slate-400">Explore matched roles aligned with your experience.</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    {[
-                      { company: "Google", role: "Software Engineer Intern", match: "87%", type: "Remote", skills: "React, TypeScript, Go" },
-                      { company: "Microsoft", role: "SDE Intern", match: "82%", type: "Bengaluru", skills: "C#, Azure, SQL" },
-                      { company: "Swiggy", role: "Backend Development Intern", match: "78%", type: "Hybrid", skills: "Node.js, Postgres, Redis" },
-                    ].map((opp, idx) => (
-                      <div key={idx} className="p-4 border border-slate-100 bg-slate-50/50 rounded-2xl flex items-center justify-between gap-4 transition-all hover:border-[#7C3AED]/30">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-bold text-slate-800">{opp.role}</h4>
-                            <span className="text-[10px] text-slate-400 font-bold">• {opp.company}</span>
-                          </div>
-                          <p className="text-[10px] text-slate-400 font-medium">Location: {opp.type} | Skills: {opp.skills}</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <span className="text-[9px] text-slate-400 font-bold block">MATCH</span>
-                            <span className="text-xs font-extrabold text-emerald-500">{opp.match}</span>
-                          </div>
-                          <button className="px-3.5 py-1.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-[10px] font-bold rounded-lg transition-all shadow-sm">
-                            Apply
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
+                <InternshipTrackerPanel getApiUrl={getApiUrl} />
               )}
 
               {activeTab === "My Applications" && (

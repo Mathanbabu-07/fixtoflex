@@ -1,356 +1,237 @@
-FixToFlex – Fix My Profile "My Target" Career Intelligence (Development Prompt)
+FixToFlex – Internship Tracker (Development Prompt)
 Objective
 
-Implement a new 🎯 My Target feature inside the Fix My Profile section.
+Implement a Internship Tracker section that recommends internships using only the candidate's Career Preferences and Technical Skills (do not use Resume, GitHub, Portfolio, LinkedIn, or Career Intelligence cache).
 
-This feature allows candidates to choose one target company and one target job role, then automatically collect real hiring expectations from Indeed and Internshala, compare them against the candidate's complete profile, and generate a detailed AI career improvement report.
+Reuse the existing Job Tracker architecture, Scrape.do pipeline, Gemini 3.1 Flash Lite ranking, frontend layout, UI components, independent scrolling, apply button flow, caching, and backend services. Do not create duplicate implementations.
 
-Reuse the existing Scrape.do + Gemini 3.1 Flash Lite + backend workflow + analysis pipeline + cache structure. Do not create duplicate pipelines.
+1. Data Sources
 
-1. UI
+Scrape internships from:
 
-Add a new 🎯 My Target button in the top-right area of the Fix My Profile card.
+Unstop: https://unstop.com/internships
+Internshala: https://internshala.com/internships
 
-Style:
+Use the existing Scrape.do workflow.
 
-Same design language as existing buttons.
-Secondary purple outline/button style.
-Responsive.
+2. Candidate Input
 
-Clicking it opens a centered modal with a close (×) button.
+Generate internship search queries only from:
 
-2. Target Modal
-
-Collect only the following fields.
-
-Target Company
-Searchable autocomplete dropdown.
-Only one company can be selected.
-Suggest companies while typing.
-Allow custom company names.
+Interested Domain
 Target Job Role
-Searchable autocomplete dropdown.
-Only one role can be selected.
-Suggest roles while typing.
-Allow custom roles.
-Preferred Location (Optional)
-Single searchable dropdown.
-Indian states/cities.
-Button
+Technical Skills
+Experience (Fresher/Student)
+Career Preferences
 
-Replace Fetch Results with
+Do NOT use:
 
-Search & Analyze
-
-Disable until Company + Job Role are selected.
-
+Resume
+GitHub
+Portfolio
+LinkedIn
+Previous Career Intelligence
+Job Tracker cache
 3. Backend Workflow
 
-When the user clicks Search & Analyze, reuse the existing backend architecture.
+Reuse the existing backend architecture.
 
-Pipeline:
-
-Target Company
-        +
-Target Job Role
-        +
-Location (Optional)
+Career Preferences
++
+Technical Skills
         │
         ▼
-Generate Search Queries
+Generate Internship Search Queries
         │
         ▼
 Scrape.do
         │
-        ▼
-Indeed
-        +
-Internshala
-        │
-        ▼
-Extract Matching Jobs
-        │
-        ▼
-Extract Full Job Description
-Responsibilities
-Requirements
-Preferred Skills
-Qualifications
-Experience
-Company Expectations
-        │
-        ▼
-Normalize & Merge Data
-        │
-        ▼
+        ├──────────────┐
+        ▼              ▼
+   Unstop       Internshala
+        │              │
+        └──────┬───────┘
+               ▼
+Normalize Internship Data
+               ▼
 Gemini 3.1 Flash Lite
-        │
-        ▼
-Compare With Candidate Profile
-        │
-        ▼
-Generate Career Intelligence Report
-4. Scraping Rules
+(Profile Matching & Ranking)
+               ▼
+Internship Tracker UI
+4. Scraping Requirements
 
-Search only for
-
-Selected Company
-Selected Role
-Optional Location
-
-Scrape from:
-
-Indeed
-Internshala
+Collect as many internships as possible from both platforms.
 
 Extract:
 
-Job title
-Company
+Internship Title
+Company Name
+Company Logo
+Internship Type
+Work From Home / On-site / Hybrid
 Location
-Salary
-Employment type
-Full Job Description
+Stipend
+Duration
+Apply Deadline
+Skills Required
+Eligibility
 Responsibilities
-Required Skills
-Preferred Skills
-Experience
-Education
-Technologies
-Tools
-Frameworks
-Apply URL
+Internship Description
+Selection Process (if available)
+Perks
+Posted Date
+Company Profile URL
+Direct Apply URL
 
-Merge duplicate postings from both platforms.
+Never scrape only the first page if additional results are available.
 
-5. AI Analysis
+Support pagination where possible.
 
-Reuse the existing candidate analysis.
+Merge duplicate internships.
 
-Load existing:
+5. Internship Ranking
 
-Career Preferences
+Gemini should rank internships using:
+
+Career Domain
+Target Role
 Skills
-Resume Analysis
-Portfolio Analysis
-GitHub Analysis
-LinkedIn Analysis
+Fresher/Student profile
 
-Do not re-run these analyses if cached.
+Return:
 
-Use the cached profile intelligence.
-
-Only scrape fresh company/job requirements.
-
-6. Gemini Analysis
-
-Gemini should compare
-
-Candidate Profile
-
-↓
-
-Target Company Requirements
-
-Generate a structured report.
-
-Section 1 — Company Hiring Expectations
-
-Show exactly what the company is looking for.
-
-Include:
-
-Role Overview
-Responsibilities
-Required Skills
-Preferred Skills
-Required Tools
-Required Frameworks
-Experience Expectations
-Education Requirements
-
-Use the scraped job descriptions.
-
-Do not invent requirements.
-
-Section 2 — Match Analysis
-
-Show
-
-Current Match Score
-
-Strengths
-
-Weaknesses
-
+Match Score
+Matching Skills
 Missing Skills
+Short explanation
 
-Missing Technologies
+Reuse the Job Tracker Gemini prompt structure.
 
-Missing Experience
+6. Frontend Layout
 
-Explain why.
+Reuse the existing Job Tracker UI.
 
-Section 3 — Skill Improvement Roadmap
+Do not redesign.
 
-Recommend:
+Left Panel:
 
-Programming Languages
+Combined internship list from Unstop and Internshala.
+Platform logo.
+Internship title.
+Company.
+Location.
+Stipend.
+Match score.
 
-Frameworks
+Right Panel:
 
-Libraries
+Internship details.
+Description.
+Responsibilities.
+Required Skills.
+Eligibility.
+Duration.
+Perks.
+Gemini Insights.
+Apply button.
 
-Cloud Platforms
+Maintain independent scrolling for both panels.
 
-AI Tools
+7. Apply Buttons
 
-Developer Tools
+Display platform-specific buttons.
 
-Soft Skills
+For Internshala:
 
-Learning order
+Apply on Internshala
 
-Prioritize as:
+For Unstop:
 
-Critical
+Apply on Unstop
 
-Important
+Use the scraped direct application URL.
 
-Nice to Have
+Never redirect internally.
 
-Section 4 — Project Roadmap
+Never use placeholder or dummy URLs.
 
-Recommend projects that directly improve the candidate's chances.
+Always open the actual application page of the selected internship.
 
-For every project include:
+8. Filters
 
-Project Title
-Difficulty
-Objective
-Required Skills
-Tech Stack
-Features
-Expected Outcome
-Why it matches the company
+Add filters above the internship list.
 
-Arrange Beginner → Intermediate → Advanced.
+Support:
 
-Section 5 — Resume Improvements
+Stipend
+All
+With Stipend
+Without Stipend
+Work Mode
+All
+Remote (Work From Home)
+On-site
+Hybrid
+Platform
+All
+Internshala
+Unstop
 
-Generate company-specific suggestions.
+Filters should update results instantly without re-scraping.
 
-Recommend:
+9. Refresh
 
-Resume headline
-Summary improvements
-ATS keywords
-Skills ordering
-Project ordering
-Bullet improvements
-Missing sections
-Experience wording
-Achievement formatting
-Certifications to include
+Add a Refresh Internships button.
 
-Tailor everything to the selected company and role.
+Behavior:
 
-Section 6 — Portfolio Improvements
+Clear internship cache.
+Re-run scraping.
+Fetch fresh internships.
+Update ranking.
+10. Cache
 
-Recommend:
-
-Homepage improvements
-Featured projects
-Skills section
-Technology badges
-Project descriptions
-Live demos
-GitHub links
-Case studies
-UI improvements
-Recruiter-focused content
-
-Everything should align with the selected company.
-
-Section 7 — Career Action Plan
-
-Generate an implementation roadmap.
-
-Example:
-
-Week 1
-
-Week 2
-
-Month 1
-
-Month 2
-
-Month 3
-
-Prioritize tasks from highest impact to lowest.
-
-7. Excluded Sections
-
-Do not generate:
-
-LinkedIn Improvements
-GitHub Improvements
-
-Those remain part of the existing Career Intelligence workflow.
-
-8. Caching
-
-Cache the report separately.
+Create a dedicated internship cache.
 
 Cache key:
 
 userId
 +
-company
+career_preferences
 +
-role
-+
-location
+technical_skills
 
-Do not regenerate if the same target is searched again.
+Cache only internship results.
 
-Allow regeneration only when:
+Do not reuse Job Tracker cache.
 
-Company changes
-Role changes
-Location changes
-User clicks Analyze Now
-9. UI Result
+11. Error Handling
 
-Reuse the existing Career Intelligence page.
+If one source fails:
 
-Do not create a new page.
+Show internships from the other source.
 
-Replace the generic recommendations with this target-specific report.
+If both fail:
 
-Keep the existing clean unified layout.
+Show a friendly retry state.
 
-Display sections in order:
+If no internships match:
 
-Company Hiring Expectations
-Match Analysis
-Skill Improvement Roadmap
-Project Roadmap
-Resume Improvements
-Portfolio Improvements
-Career Action Plan
+Display:
 
-Use collapsible sections and smooth loading animations consistent with the existing UI.
+No matching internships were found. Try updating your career preferences or technical skills.
 
-10. Error Handling
-If no matching jobs are found, display a clear message asking the user to try another company, role, or location.
-If only one source (Indeed or Internshala) succeeds, generate the report from the available data.
-Never fabricate company requirements when scraping returns no valid job descriptions.
-Deliverables
-Add a 🎯 My Target button to the Fix My Profile page.
-Implement a modal with one target company, one target role, optional location, and a Search & Analyze button.
-Reuse the existing Scrape.do + Gemini + analysis pipeline; only scrape fresh company/job data while reusing cached candidate profile analysis.
-Scrape and merge real job requirements from Indeed and Internshala.
-Generate a detailed, company-specific AI report including Company Hiring Expectations, Match Analysis, Skill Roadmap, Project Roadmap, Resume Improvements, Portfolio Improvements, and a Career Action Plan.
-Cache target reports independently and regenerate only when the target changes or the user explicitly requests a fresh analysis.
+12. Performance
+Run Unstop and Internshala scraping in parallel.
+Normalize both datasets before Gemini analysis.
+Paginate backend requests when supported.
+Lazy-load internship details.
+Cache ranked results to reduce API usage.
+13. Deliverables
+Implement an Internship Tracker using the existing Job Tracker architecture.
+Scrape internships from Unstop and Internshala using the existing Scrape.do pipeline.
+Use only Career Preferences and Technical Skills to search and rank internships.
+Display a unified internship list with platform logos, match scores, stipend, work mode, and company details.
+Reuse the existing two-panel UI with independent scrolling and Gemini insights.
+Implement working Apply on Unstop and Apply on Internshala buttons that redirect to the actual application pages.
+Add filters for Stipend, Work Mode, and Platform, plus a Refresh Internships action and a dedicated internship cache.
