@@ -198,7 +198,6 @@ export default function CareerIntelligenceReport({ userId, initialTargetSearch, 
   };
 
   const fetchTargetReport = async (company: string, role: string, location: string) => {
-    setTargetModalOpen(false);
     setIsTargetMode(true);
     setTargetLoading(true);
     setTargetError(null);
