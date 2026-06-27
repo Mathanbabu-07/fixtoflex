@@ -127,7 +127,7 @@ export default function InterviewReportViewer({ report, onClose }: InterviewRepo
                         
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                           <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
-                            <span className="text-[10px] font-bold text-rose-500 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                               <AlertTriangle className="w-3 h-3" /> HR Feedback
                             </span>
                             <p className="text-xs text-slate-600 leading-relaxed font-medium">
@@ -136,7 +136,7 @@ export default function InterviewReportViewer({ report, onClose }: InterviewRepo
                           </div>
                           
                           <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 shadow-xs">
-                            <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-2 flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                               <CheckCircle2 className="w-3 h-3" /> Preferred Answer Style
                             </span>
                             <p className="text-xs text-slate-600 leading-relaxed font-medium">
