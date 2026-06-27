@@ -43,6 +43,7 @@ import {
 import AIAnalysisDashboard from "@/components/AIAnalysisDashboard";
 import CareerIntelligenceReport from "@/components/CareerIntelligenceReport";
 import JobTrackerPanel from "@/components/JobTrackerPanel";
+import MyTargetAnalysisModal from "@/components/MyTargetAnalysisModal";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 // Custom inline SVG icons because brand icons are missing from this lucide-react version
@@ -241,6 +242,11 @@ export default function CandidateDashboard() {
   // Profile Edit State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editModalMode, setEditModalMode] = useState<"all" | "linkedin" | "github" | "portfolio">("all");
+  
+  // Target Search State
+  const [targetSearch, setTargetSearch] = useState<{ company: string; role: string; location: string } | null>(null);
+  const [isTargetModalOpen, setIsTargetModalOpen] = useState(false);
+
   const [formData, setFormData] = useState({
     full_name: "",
     headline: "",
@@ -1207,6 +1213,16 @@ export default function CandidateDashboard() {
                           </select>
                         </div>
 
+                        {/* My Target Button at Top-Right */}
+                        <div className="absolute top-4 right-6 z-10">
+                          <button
+                            onClick={() => setIsTargetModalOpen(true)}
+                            className="px-4 py-2 bg-purple-50 text-[#7C3AED] hover:bg-purple-100 border border-purple-200/50 text-xs font-bold rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center gap-1.5 cursor-pointer animate-pulse-slow"
+                          >
+                            <Target className="w-4 h-4" /> My Target
+                          </button>
+                        </div>
+
                         {/* Middle Circular User Icon decoration */}
                         <div className="w-14 h-14 bg-purple-50 border border-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-6 shadow-sm">
                           <User className="w-6 h-6" />
@@ -1371,6 +1387,17 @@ export default function CandidateDashboard() {
                         </div>
 
                       </div>
+
+                      <MyTargetAnalysisModal
+                        isOpen={isTargetModalOpen}
+                        onClose={() => setIsTargetModalOpen(false)}
+                        onSearchAnalyze={(company, role, location) => {
+                          setTargetSearch({ company, role, location });
+                          setIsTargetModalOpen(false);
+                          setActiveTab("Career Intelligence");
+                          updateUrl("Career Intelligence", false);
+                        }}
+                      />
                     </>
                   )}
                 </motion.div>
@@ -1384,7 +1411,11 @@ export default function CandidateDashboard() {
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <CareerIntelligenceReport userId={user?.id || "00000000-0000-0000-0000-000000000000"} />
+                  <CareerIntelligenceReport
+                    userId={user?.id || "00000000-0000-0000-0000-000000000000"}
+                    initialTargetSearch={targetSearch}
+                    onClearTargetSearch={() => setTargetSearch(null)}
+                  />
                 </motion.div>
               )}
 

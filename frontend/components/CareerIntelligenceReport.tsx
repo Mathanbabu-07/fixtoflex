@@ -19,6 +19,8 @@ const LinkedinIcon = ({ className }: { className?: string }) => (
 
 interface CareerIntelligenceReportProps {
   userId: string;
+  initialTargetSearch?: { company: string; role: string; location: string } | null;
+  onClearTargetSearch?: () => void;
 }
 
 // Client-side Summary Generators
@@ -89,7 +91,7 @@ const generateFinalObservation = (user: any, report: any) => {
 By tidying up your GitHub repository documentation, optimizing resume impact statements, and developing the recommended portfolio case studies, you will transition from a passive candidate to an active, high-signal talent. Complete the next 7 days checklist to initiate this transformation.`;
 };
 
-export default function CareerIntelligenceReport({ userId }: CareerIntelligenceReportProps) {
+export default function CareerIntelligenceReport({ userId, initialTargetSearch, onClearTargetSearch }: CareerIntelligenceReportProps) {
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,10 +106,21 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
   const [targetReport, setTargetReport] = useState<any>(null);
   const [targetLoading, setTargetLoading] = useState(false);
   const [targetError, setTargetError] = useState<string | null>(null);
-  const [targetModalOpen, setTargetModalOpen] = useState(false);
   const [targetInfo, setTargetInfo] = useState<{ company: string; role: string; location: string } | null>(null);
   const [targetSectionIndex, setTargetSectionIndex] = useState<number>(0);
   const [isTargetTyping, setIsTargetTyping] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (initialTargetSearch) {
+      fetchTargetReport(initialTargetSearch.company, initialTargetSearch.role, initialTargetSearch.location);
+    } else {
+      setIsTargetMode(false);
+      setTargetReport(null);
+      setTargetError(null);
+      setTargetInfo(null);
+      setTargetSectionIndex(0);
+    }
+  }, [initialTargetSearch]);
 
   useEffect(() => {
     // Attempt local storage load
@@ -249,6 +262,9 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
     setTargetError(null);
     setTargetInfo(null);
     setTargetSectionIndex(0);
+    if (onClearTargetSearch) {
+      onClearTargetSearch();
+    }
   };
 
   if (loading) {
@@ -1022,12 +1038,6 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setTargetModalOpen(true)}
-              className="px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white font-bold rounded-xl text-xs backdrop-blur-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
-            >
-              <Target className="w-4 h-4" /> My Target
-            </button>
             {currentSectionIndex < SECTIONS.length && (
               <button
                 onClick={handleSkipAnimation}
@@ -1105,11 +1115,6 @@ export default function CareerIntelligenceReport({ userId }: CareerIntelligenceR
 
       </div>
 
-      <MyTargetAnalysisModal
-        isOpen={targetModalOpen}
-        onClose={() => setTargetModalOpen(false)}
-        onSearchAnalyze={(company, role, location) => fetchTargetReport(company, role, location)}
-      />
     </div>
   );
 }
