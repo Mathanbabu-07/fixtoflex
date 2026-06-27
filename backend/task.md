@@ -1,237 +1,586 @@
-FixToFlex – Internship Tracker (Development Prompt)
-Objective
+# FixToFlex – AI Voice Interview Simulator 
 
-Implement a Internship Tracker section that recommends internships using only the candidate's Career Preferences and Technical Skills (do not use Resume, GitHub, Portfolio, LinkedIn, or Career Intelligence cache).
+## Goal
 
-Reuse the existing Job Tracker architecture, Scrape.do pipeline, Gemini 3.1 Flash Lite ranking, frontend layout, UI components, independent scrolling, apply button flow, caching, and backend services. Do not create duplicate implementations.
+Implement Personalized AI Voice Interview** inside the **Interview & Placement** section.
+This module simulates a real software company HR/technical interview. The AI asks personalized interview questions generated only from the candidate's existing profile analysis (Resume, Portfolio, Skills, Projects, Experience, Certifications) and evaluates spoken answers in real time.
+Reuse the existing backend architecture (analysis cache, profile summaries, queue system, Gemini workflow). Do not modify any existing Fix My Profile or Career Intelligence pipelines.
 
-1. Data Sources
+---
+# Backend
+## Reuse Existing Data
 
-Scrape internships from:
+Do not analyze the profile again.
 
-Unstop: https://unstop.com/internships
-Internshala: https://internshala.com/internships
+Reuse cached outputs from existing analysis:
+* Resume Summary
+* Portfolio Summary
+* Candidate Details
+* Skills
+* Projects
+* Experience
+* Certifications
+* Career Preferences
 
-Use the existing Scrape.do workflow.
+Only read existing cache.
+Never re-run profile analysis.
 
-2. Candidate Input
+---
+# New Environment Variables
 
-Generate internship search queries only from:
+Create a separate Gemini key only for interviews.
 
-Interested Domain
-Target Job Role
-Technical Skills
-Experience (Fresher/Student)
-Career Preferences
+```env
+GEMINI_INTERVIEW_API_KEY=
+```
+Use:
 
-Do NOT use:
+Gemini 3.1 Flash Lite
+Only this API handles:
+
+* Question Generation
+* Answer Evaluation
+* Interview Feedback
+* Final Report
+
+Existing Gemini APIs remain unchanged.
+
+---
+# Interview Start UI
+
+Create a clean card matching the existing FixToFlex UI.
+
+Title
+AI Voice Interview Simulator
+
+Subtitle
+Practice a realistic software company interview with personalized AI questions.
+
+Configuration
+Interview Difficulty
+
+Dropdown
+* Easy
+* Hard
+
+Number of Questions
+Dropdown
+
+5
+6
+7
+...
+15
+
+Interview Mode
+Voice Only
+
+Estimated Time
+Automatically calculated
+
+Example
+5 Questions → 5 Minutes
+10 Questions → 10 Minutes
+15 Questions → 15 Minutes
+Primary Button
+Start Interview
+
+---
+# Interview Flow
+
+When Start Interview is clicked
+
+Step 1
+Load candidate profile from cache.
+Do not call profile analysis.
+
+Step 2
+Gemini generates the first interview question.
+
+Question sources
 
 Resume
-GitHub
 Portfolio
-LinkedIn
-Previous Career Intelligence
-Job Tracker cache
-3. Backend Workflow
-
-Reuse the existing backend architecture.
-
-Career Preferences
-+
+Projects in resume , portfolio
 Technical Skills
-        │
-        ▼
-Generate Internship Search Queries
-        │
-        ▼
-Scrape.do
-        │
-        ├──────────────┐
-        ▼              ▼
-   Unstop       Internshala
-        │              │
-        └──────┬───────┘
-               ▼
-Normalize Internship Data
-               ▼
-Gemini 3.1 Flash Lite
-(Profile Matching & Ranking)
-               ▼
-Internship Tracker UI
-4. Scraping Requirements
+Experience
+Achievements in resume , portfolio
+Certifications resume , portfolio
+General HR Questions
 
-Collect as many internships as possible from both platforms.
+No predefined question list.
+Generate dynamically.
 
-Extract:
+Examples
 
-Internship Title
-Company Name
-Company Logo
-Internship Type
-Work From Home / On-site / Hybrid
-Location
-Stipend
-Duration
-Apply Deadline
-Skills Required
-Eligibility
-Responsibilities
-Internship Description
-Selection Process (if available)
-Perks
-Posted Date
-Company Profile URL
-Direct Apply URL
+Tell me about yourself.
 
-Never scrape only the first page if additional results are available.
+Explain your final year project.
 
-Support pagination where possible.
+Why did you choose FastAPI?
 
-Merge duplicate internships.
+Explain your AI Job Tracker architecture.
 
-5. Internship Ranking
+What was your biggest technical challenge?
 
-Gemini should rank internships using:
+How did you optimize performance?
 
-Career Domain
-Target Role
-Skills
-Fresher/Student profile
+Why should we hire you?
 
-Return:
+Describe a failure.
 
-Match Score
-Matching Skills
-Missing Skills
-Short explanation
+Tell me about teamwork.
 
-Reuse the Job Tracker Gemini prompt structure.
+How do you solve production issues?
 
-6. Frontend Layout
+Every candidate receives different questions.
 
-Reuse the existing Job Tracker UI.
+---
 
-Do not redesign.
+# Voice Answer
 
-Left Panel:
+Voice only.
 
-Combined internship list from Unstop and Internshala.
-Platform logo.
-Internship title.
-Company.
-Location.
-Stipend.
-Match score.
+No typing.
 
-Right Panel:
+When question appears
 
-Internship details.
-Description.
-Responsibilities.
-Required Skills.
-Eligibility.
-Duration.
-Perks.
-Gemini Insights.
-Apply button.
+Start
 
-Maintain independent scrolling for both panels.
+60-second countdown
 
-7. Apply Buttons
+give Microphone symbol button with answer label text to start answering with voie. 
 
-Display platform-specific buttons.
+Live speech transcription.
 
-For Internshala:
+Requirements
 
-Apply on Internshala
+High accuracy
 
-For Unstop:
+Low latency
 
-Apply on Unstop
+Continuous transcription
 
-Use the scraped direct application URL.
+No sentence loss
 
-Never redirect internally.
+Partial transcript updates while speaking.
 
-Never use placeholder or dummy URLs.
+Display transcript live beneath the question.
 
-Always open the actual application page of the selected internship.
+Example
 
-8. Filters
+You
 
-Add filters above the internship list.
+"I implemented the backend using FastAPI..."
 
-Support:
+The transcript updates continuously.
 
-Stipend
-All
-With Stipend
-Without Stipend
-Work Mode
-All
-Remote (Work From Home)
-On-site
-Hybrid
-Platform
-All
-Internshala
-Unstop
+---
 
-Filters should update results instantly without re-scraping.
+# Timer
 
-9. Refresh
+Every question
 
-Add a Refresh Internships button.
+Maximum
 
-Behavior:
+60 seconds
 
-Clear internship cache.
-Re-run scraping.
-Fetch fresh internships.
-Update ranking.
-10. Cache
+Display
 
-Create a dedicated internship cache.
+Circular countdown
 
-Cache key:
+59
 
-userId
-+
-career_preferences
-+
-technical_skills
+58
 
-Cache only internship results.
+57
 
-Do not reuse Job Tracker cache.
+...
 
-11. Error Handling
+0
 
-If one source fails:
+If candidate finishes early
 
-Show internships from the other source.
+Show
 
-If both fail:
+Next Question
 
-Show a friendly retry state.
+button.
 
-If no internships match:
+If timer reaches zero
 
-Display:
+Automatically stop recording
 
-No matching internships were found. Try updating your career preferences or technical skills.
+Save transcript
 
-12. Performance
-Run Unstop and Internshala scraping in parallel.
-Normalize both datasets before Gemini analysis.
-Paginate backend requests when supported.
-Lazy-load internship details.
-Cache ranked results to reduce API usage.
-13. Deliverables
-Implement an Internship Tracker using the existing Job Tracker architecture.
-Scrape internships from Unstop and Internshala using the existing Scrape.do pipeline.
-Use only Career Preferences and Technical Skills to search and rank internships.
-Display a unified internship list with platform logos, match scores, stipend, work mode, and company details.
-Reuse the existing two-panel UI with independent scrolling and Gemini insights.
-Implement working Apply on Unstop and Apply on Internshala buttons that redirect to the actual application pages.
-Add filters for Stipend, Work Mode, and Platform, plus a Refresh Internships action and a dedicated internship cache.
+Evaluate answer
+
+Generate next question.
+
+---
+# Question Navigation
+
+Question 1 / N
+↓
+Answer
+↓
+Evaluate silently
+↓
+Generate next question
+↓
+Continue
+
+Last Question
+
+↓
+View My Score
+
+---
+# Question Generation Logic
+
+Gemini generates questions in this order
+
+Resume
+↓
+Projects
+↓
+Technical Skills
+↓
+Experience
+↓
+Achievements
+↓
+Certifications
+↓
+General HR
+
+Difficulty
+
+Easy
+
+Basic
+
+Moderate
+
+General HR
+
+Hard
+
+Deep technical
+
+Architecture
+
+Problem solving
+
+Scenario questions
+
+Follow-up questions
+
+No repeated questions.
+
+---
+# AI Evaluation
+
+After every answer
+
+Evaluate internally.
+
+Do not interrupt candidate.
+
+Store
+
+Question
+
+Transcript
+
+Evaluation
+
+Score
+
+Feedback
+
+Use these scoring categories
+
+Technical Knowledge
+
+Problem Solving
+
+Decision Making
+
+Communication
+
+Confidence
+
+Content Delivery
+
+Practical Thinking
+
+Score each
+
+0–100
+
+Store all results.
+
+---
+# Final Score Screen
+
+After the last question
+
+Generate one unified interview report.
+
+Sections
+
+Overall Interview Score
+
+Example
+
+86 / 100
+
+---
+
+Performance Breakdown
+
+Technical Knowledge
+
+Communication
+
+Confidence
+
+Problem Solving
+
+Decision Making
+
+Content Delivery
+
+Professionalism
+
+Display
+
+Progress bars
+
+Circular charts
+
+Overall recommendation
+
+---
+
+Strengths
+
+Example
+
+Strong technical fundamentals
+
+Excellent project explanation
+
+Good communication
+
+Confident speaking
+
+---
+
+Areas to Improve
+
+Separate section.
+
+Not generic.
+
+Question-specific.
+
+Example
+
+Question
+
+Explain your AI Job Tracker.
+
+Your Answer
+
+"I used FastAPI..."
+
+HR Feedback
+
+You immediately started discussing technologies.
+
+A recruiter first expects a high-level explanation of the business problem before technical implementation.
+
+Preferred Answer Style
+
+Start with
+
+"The goal of this project was..."
+
+Then
+
+Architecture
+
+Challenges
+
+Impact
+
+Result
+
+Improvement
+
+Structure your answers using
+
+Problem
+
+Solution
+
+Result
+
+---
+
+Repeat this detailed feedback
+
+for every interview question.
+
+---
+HR Perspective
+
+Generate recruiter comments.
+
+Examples
+
+Recruiters prefer measurable achievements.
+
+Avoid lengthy introductions.
+
+Maintain eye contact.
+
+Avoid filler words.
+
+Provide business impact.
+
+Speak confidently.
+
+Use STAR method for behavioural questions.
+
+---
+
+Interview Summary
+
+Generate
+
+Overall hiring recommendation
+
+Example
+
+Likely to clear Round 1
+
+Needs improvement before Technical Round 2
+
+OR
+
+Ready for Product Companies
+
+---
+
+Future Preparation Plan
+
+Generate personalized preparation
+
+Technical Topics
+
+Communication
+
+Behavioral
+
+Projects
+
+Resume
+
+Mock Practice
+
+Priority
+
+High
+
+Medium
+
+Low
+
+---
+
+History
+
+Save every interview.
+
+Interview History
+
+Date
+
+Company Type
+
+Difficulty
+
+Questions
+
+Overall Score
+
+Allow reopening previous reports.
+
+---
+
+Architecture
+
+Candidate
+
+↓
+
+Start Interview
+
+↓
+
+Load Cached Profile
+
+↓
+
+Gemini Generates Question
+
+↓
+
+Voice Recording
+
+↓
+
+Live Speech-to-Text
+
+↓
+
+Transcript
+
+↓
+
+Gemini Evaluation
+
+↓
+
+Store Result
+
+↓
+
+Next Question
+
+↓
+
+Final Report
+
+↓
+
+Save History
+
+---
+
+Constraints
+
+* Voice-only interview; no typing.
+* Never reanalyze the candidate profile.
+* Reuse existing Resume, Portfolio, Skills, Projects, Experience, Certifications, and Career Preference cache.
+* Use only `GEMINI_INTERVIEW_API_KEY` with Gemini 3.1 Flash Lite for interview generation and evaluation.
+* One question at a time; do not generate all questions upfront.
+* Each question has a strict 60-second limit.
+* Live transcription must update continuously during recording.
+* Store transcripts, scores, and feedback for every question.
+* Generate detailed, actionable HR-style feedback instead of generic suggestions.
+* Maintain the existing FixToFlex UI language, animations, spacing, and component design.
+* Keep the implementation modular so future additions like company-specific interviews, coding rounds, and voice-based follow-up questions can reuse the same interview engine.

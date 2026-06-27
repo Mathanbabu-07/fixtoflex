@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from config.database import settings, get_supabase_client
-from routes import auth, users, analysis, career_intelligence, job_tracker, internship_tracker
+from routes import auth, users, analysis, career_intelligence, job_tracker, internship_tracker, interview
 
 # Configure root logger to output to stdout
 logging.basicConfig(
@@ -61,6 +61,7 @@ app.include_router(analysis.router)
 app.include_router(career_intelligence.router)
 app.include_router(job_tracker.router)
 app.include_router(internship_tracker.router)
+app.include_router(interview.router)
 
 @app.get("/health", status_code=status.HTTP_200_OK, tags=["System"])
 async def health_check():

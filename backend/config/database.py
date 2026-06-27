@@ -47,6 +47,7 @@ class Settings(BaseSettings):
     # Gemini settings
     GEMINI_API_KEY: str = ""
     GEMINI_API1_KEY: str = ""
+    GEMINI_INTERVIEW_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.1-flash-lite"
 
     # Jina Reader settings
@@ -84,6 +85,7 @@ except Exception as e:
         SCRAPEDO_BASE_URL = os.environ.get("SCRAPEDO_BASE_URL", "http://api.scrape.do")
         GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
         GEMINI_API1_KEY = os.environ.get("GEMINI_API1_KEY", "")
+        GEMINI_INTERVIEW_API_KEY = os.environ.get("GEMINI_INTERVIEW_API_KEY", "")
         GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
         JINA_API_KEY = os.environ.get("JINA_API_KEY", "")
     settings = FallbackSettings()
