@@ -44,6 +44,8 @@ export default function InterviewPlacementPanel() {
   // Speech Recognition setup
   const recognitionRef = useRef<any>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const finalTranscriptRef = useRef<string>("");
+  const isRecordingRef = useRef<boolean>(false);
 
   // Initialize SpeechRecognition
   useEffect(() => {
@@ -56,28 +58,46 @@ export default function InterviewPlacementPanel() {
         recognitionRef.current.lang = 'en-US';
 
         recognitionRef.current.onresult = (event: any) => {
-          let currentTranscript = "";
-          for (let i = 0; i < event.results.length; i++) {
-             currentTranscript += event.results[i][0].transcript;
+          let interimTranscript = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscriptRef.current += event.results[i][0].transcript + " ";
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
           }
-          setTranscript(currentTranscript);
+          setTranscript(finalTranscriptRef.current + interimTranscript);
         };
 
         recognitionRef.current.onerror = (event: any) => {
           console.error("Speech recognition error", event.error);
         };
+
+        recognitionRef.current.onend = () => {
+          // If the user hasn't explicitly stopped, restart the recognition
+          if (isRecordingRef.current && recognitionRef.current) {
+            try {
+              recognitionRef.current.start();
+            } catch (e) {
+              // ignore already started errors
+            }
+          }
+        };
       }
     }
     
     return () => {
+      isRecordingRef.current = false;
       stopRecordingAndTimer();
     };
   }, []);
 
   const startRecordingAndTimer = () => {
+    finalTranscriptRef.current = "";
     setTranscript("");
     setTimeLeft(60);
     setIsRecording(true);
+    isRecordingRef.current = true;
     
     if (recognitionRef.current) {
        try {
@@ -101,6 +121,7 @@ export default function InterviewPlacementPanel() {
 
   const stopRecordingAndTimer = () => {
     setIsRecording(false);
+    isRecordingRef.current = false;
     if (timerRef.current) clearInterval(timerRef.current);
     if (recognitionRef.current) {
       try {
