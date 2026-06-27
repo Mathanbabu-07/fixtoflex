@@ -159,35 +159,36 @@ class InternshipTrackerService:
             return self._get_dummy_internships(source="Internshala")
 
     async def _scrape_unstop(self, query: str) -> List[Dict[str, Any]]:
-        # Using unstop keywords
+        # Using unstop public API
         q = urllib.parse.quote(query)
-        target_url = f"https://unstop.com/internships?keyword={q}"
-        
-        if not self.scrape_do_key:
-            return self._get_dummy_internships(source="Unstop")
-            
-        api_url = f"{self.scrape_do_url}?token={self.scrape_do_key}&url={urllib.parse.quote(target_url)}&render=true"
+        api_url = f"https://unstop.com/api/public/opportunity/search-result?opportunity=internships&page=1&per_page=15&searchTerm={q}"
         
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.get(api_url)
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+                }
+                response = await client.get(api_url, headers=headers)
                 response.raise_for_status()
-                html = response.text
+                data = response.json()
                 
-                soup = BeautifulSoup(html, "html.parser")
+                items = data.get('data', {}).get('data', [])
                 internships = []
                 
-                # Unstop's actual cards might require JS, we pass render=true to scrape.do (if supported)
-                # or fallback to extracting generic links/cards.
-                cards = soup.select(".listing-card, .job-card, a[href*='/internships/']")
-                for card in cards[:15]:
-                    try:
-                        internships.append({
-                            "source": "Unstop",
-                            "Raw HTML": str(card)[:500]
-                        })
-                    except Exception:
-                        continue
+                for item in items[:15]:
+                    title = item.get('title', 'Unknown Title')
+                    company = item.get('organisation', {}).get('name', 'Unknown Company')
+                    seo_url = item.get('seo_url', '')
+                    
+                    # Convert object to string for Gemini processing
+                    # We pass the raw dict as a string so Gemini can extract what it needs (salary, skills etc)
+                    internships.append({
+                        "source": "Unstop",
+                        "Raw HTML": json.dumps(item)[:1500], # Provide a chunk of json string to gemini instead of html
+                        "Internship Title": title,
+                        "Company Name": company,
+                        "job_url": seo_url
+                    })
                         
                 if not internships:
                     return self._get_dummy_internships(source="Unstop")
@@ -195,7 +196,7 @@ class InternshipTrackerService:
                 return internships
                 
         except Exception as e:
-            logger.error(f"Unstop Scrape.do request failed: {e}")
+            logger.error(f"Unstop API request failed: {e}")
             return self._get_dummy_internships(source="Unstop")
 
     async def _rank_internships_with_gemini(self, raw_internships: List[Dict[str, Any]], profile_data: Dict[str, Any]) -> List[Dict[str, Any]]:
