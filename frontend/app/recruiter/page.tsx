@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -437,7 +437,7 @@ function ScoreBadge({ score }: { score: number }) {
 // Main Component
 // ---------------------------------------------------------------------------
 
-export default function RecruiterDashboard() {
+function RecruiterDashboardInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1756,5 +1756,13 @@ export default function RecruiterDashboard() {
 
       </main>
     </div>
+  );
+}
+
+export default function RecruiterDashboard() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 text-[#7C3AED] animate-spin" /></div>}>
+      <RecruiterDashboardInner />
+    </Suspense>
   );
 }
