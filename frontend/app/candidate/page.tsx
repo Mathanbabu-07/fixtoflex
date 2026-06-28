@@ -1503,14 +1503,6 @@ export default function CandidateDashboard() {
                 <InterviewPlacementPanel />
               )}
 
-              <div className={activeTab === "Job Tracker" ? "block h-full" : "hidden"}>
-                <JobTrackerPanel getApiUrl={getApiUrl} onMakeDraft={handleMakeDraft} />
-              </div>
-
-              <div className={activeTab === "Internship Opportunity" ? "block h-full" : "hidden"}>
-                <InternshipTrackerPanel getApiUrl={getApiUrl} onMakeDraft={handleMakeDraft} />
-              </div>
-
               {activeTab === "My Applications" && (
                 <motion.div
                   key="my-apps"
@@ -1550,8 +1542,17 @@ export default function CandidateDashboard() {
                   </div>
                 </motion.div>
               )}
+            </AnimatePresence>
 
-              <div className={activeTab === "Draft Mail" ? "flex flex-col gap-6" : "hidden"}>
+            <div className={activeTab === "Job Tracker" ? "block h-full" : "hidden"}>
+              <JobTrackerPanel getApiUrl={getApiUrl} onMakeDraft={handleMakeDraft} />
+            </div>
+
+            <div className={activeTab === "Internship Opportunity" ? "block h-full" : "hidden"}>
+              <InternshipTrackerPanel getApiUrl={getApiUrl} onMakeDraft={handleMakeDraft} />
+            </div>
+
+            <div className={activeTab === "Draft Mail" ? "flex flex-col gap-6" : "hidden"}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-purple-50 text-[#7C3AED] flex items-center justify-center">
@@ -1699,7 +1700,6 @@ export default function CandidateDashboard() {
                     </div>
                   )}
                 </div>
-            </AnimatePresence>
           </main>
 
           {/* 4. RIGHT PROFILE SIDEBAR */}
