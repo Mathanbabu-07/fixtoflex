@@ -33,7 +33,8 @@ import {
   Hash,
   RefreshCw,
   ChevronRight,
-  Award
+  Award,
+  Send
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -252,6 +253,109 @@ function DraftMailLoadingOverlay({
   );
 }
 
+// ---------------------------------------------------------------------------
+// Send Mail Loading Overlay
+// ---------------------------------------------------------------------------
+
+function SendMailLoadingOverlay({ 
+  candidateName, 
+  onClose,
+  isComplete
+}: { 
+  candidateName: string; 
+  onClose?: () => void;
+  isComplete?: boolean;
+}) {
+  const [currentStage, setCurrentStage] = useState(0);
+  const stages = [
+    "Preparing email...",
+    "Sending invitation...",
+    "Delivering..."
+  ];
+
+  useEffect(() => {
+    if (isComplete) {
+      setCurrentStage(stages.length - 1);
+      return;
+    }
+    const interval = setInterval(() => {
+      setCurrentStage(prev => {
+        if (prev >= stages.length - 1) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 1200);
+    return () => clearInterval(interval);
+  }, [isComplete]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0F0A2A]/60 backdrop-blur-md"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+      >
+        <div className="p-8">
+          <div className="flex flex-col items-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-[#10B981] to-[#059669] flex items-center justify-center mb-5 shadow-lg shadow-emerald-200">
+              {isComplete ? (
+                <CheckCircle2 className="w-8 h-8 text-white" />
+              ) : (
+                <Send className="w-8 h-8 text-white animate-pulse translate-x-0.5" />
+              )}
+            </div>
+            <h3 className="text-xl font-extrabold text-[#1E1B4B] mb-1">
+              {isComplete ? "Mail Sent!" : "Sending Email"}
+            </h3>
+            <p className="text-xs text-slate-400 font-medium text-center">
+              {isComplete 
+                ? `Successfully sent to ${candidateName}.` 
+                : `Using Gemini to write and send a personalized email to ${candidateName}`}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {stages.map((stage, idx) => {
+              const isCompleted = isComplete ? true : idx < currentStage;
+              const isCurrent = !isComplete && idx === currentStage;
+              return (
+                <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${isCurrent ? "bg-emerald-50/70 border border-emerald-100" : isCompleted ? "bg-emerald-50/50" : "bg-slate-50/50"}`}>
+                  {isCompleted ? (
+                    <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                  ) : isCurrent ? (
+                    <Loader2 className="w-4.5 h-4.5 text-[#10B981] animate-spin shrink-0" />
+                  ) : (
+                    <div className="w-4.5 h-4.5 rounded-full border-2 border-slate-200 shrink-0" />
+                  )}
+                  <span className={`text-xs font-bold ${isCompleted ? "text-emerald-700" : isCurrent ? "text-[#10B981]" : "text-slate-400"}`}>
+                    {stage}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {isComplete && (
+            <button
+              onClick={onClose}
+              className="mt-6 w-full py-3 bg-linear-to-r from-[#10B981] to-[#059669] text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer"
+            >
+              Done
+            </button>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 
 // ---------------------------------------------------------------------------
 // Multi-Stage Loading Overlay
@@ -451,6 +555,9 @@ function RecruiterDashboardInner() {
 
   // Draft Mail states
   const [draftingFor, setDraftingFor] = useState<{name: string, isComplete: boolean} | null>(null);
+
+  // Send Mail states
+  const [sendingMailFor, setSendingMailFor] = useState<{name: string, isComplete: boolean} | null>(null);
 
   // Form inputs states
   const [jobRole, setJobRole] = useState("");
@@ -830,6 +937,49 @@ function RecruiterDashboardInner() {
     }
   };
 
+  const handleSendMail = async (candidate: CandidateResult) => {
+    if (!user?.google_access_token) {
+      alert("Please connect your Gmail account from the navigation bar first.");
+      return;
+    }
+    
+    setSendingMailFor({ name: candidate.candidate_name, isComplete: false });
+    
+    try {
+      const apiEndpoint = getApiUrl("/recruiter/send_mail");
+      const requestPayload = {
+        candidate_name: candidate.candidate_name,
+        candidate_email: candidate.email,
+        candidate_skills: candidate.skills_found,
+        match_score: candidate.match_score,
+        job_role: jobRole,
+        company_name: "FixToFlex", // Could be dynamic if added to form
+        job_description: jobDescription,
+        requirements: skills,
+      };
+
+      const response = await fetch(apiEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestPayload),
+        credentials: "include"
+      });
+
+      if (response.ok) {
+        // Complete the animation
+        setSendingMailFor({ name: candidate.candidate_name, isComplete: true });
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to send mail: ${errorData.detail}`);
+        setSendingMailFor(null);
+      }
+    } catch (err) {
+      console.error("Send mail error:", err);
+      alert("A network error occurred while sending the mail.");
+      setSendingMailFor(null);
+    }
+  };
+
   if (sessionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-linear-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff]">
@@ -889,6 +1039,17 @@ function RecruiterDashboardInner() {
             candidateName={draftingFor.name} 
             isComplete={draftingFor.isComplete}
             onClose={() => setDraftingFor(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Send Mail Loading Overlay */}
+      <AnimatePresence>
+        {sendingMailFor && (
+          <SendMailLoadingOverlay 
+            candidateName={sendingMailFor.name} 
+            isComplete={sendingMailFor.isComplete}
+            onClose={() => setSendingMailFor(null)}
           />
         )}
       </AnimatePresence>
@@ -1630,14 +1791,24 @@ function RecruiterDashboardInner() {
                       <div className="flex items-center gap-3 shrink-0">
                         <ScoreBadge score={result.match_score} />
                         {result.email && (
-                          <button
-                            type="button"
-                            onClick={() => handleDraftMail(result)}
-                            className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-[#7C3AED] text-xs font-bold rounded-xl cursor-pointer transition-colors shadow-sm"
-                          >
-                            <Mail className="w-3.5 h-3.5" />
-                            <span>Draft Mail</span>
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleDraftMail(result)}
+                              className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-[#7C3AED] text-xs font-bold rounded-xl cursor-pointer transition-colors shadow-sm"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                              <span>Draft Mail</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSendMail(result)}
+                              className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-[#10B981] text-xs font-bold rounded-xl cursor-pointer transition-colors shadow-sm"
+                            >
+                              <Send className="w-3.5 h-3.5 translate-x-0.5" />
+                              <span>Send Mail</span>
+                            </button>
+                          </div>
                         )}
                         <button
                           type="button"

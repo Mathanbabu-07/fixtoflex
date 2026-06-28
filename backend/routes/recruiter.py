@@ -473,3 +473,119 @@ Respond ONLY with the email body text.
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create draft in Gmail."
         )
+
+
+@router.post("/send_mail", status_code=status.HTTP_200_OK)
+async def send_recruiter_mail(
+    payload: DraftMailRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Generates a personalized recruiter email using Gemini and sends it directly via the recruiter's Gmail.
+    """
+    if not payload.candidate_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Candidate email is required to send an email."
+        )
+
+    # 1. Check if recruiter has Gmail connected
+    if not current_user.get("google_access_token"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Gmail account not connected. Please connect your Gmail first."
+        )
+
+    try:
+        # 2. Get Gmail client for the current user
+        service = gmail_service.get_gmail_client(current_user["id"])
+    except ValueError as e:
+        logger.error(f"Failed to get Gmail client for user {current_user['id']}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error retrieving Gmail client: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to connect to Gmail service."
+        )
+
+    # 3. Generate personalized email using Gemini
+    prompt = f"""You are an expert technical recruiter writing a personalized outreach email to a candidate.
+
+TASK: Write a professional email draft to invite the candidate to apply or discuss the role.
+
+═══════════════════════════════════════════
+CANDIDATE INFO
+═══════════════════════════════════════════
+- Name: {payload.candidate_name}
+- Match Score: {payload.match_score}%
+- Skills: {', '.join(payload.candidate_skills) if payload.candidate_skills else 'Not specified'}
+
+═══════════════════════════════════════════
+JOB INFO
+═══════════════════════════════════════════
+- Role: {payload.job_role}
+- Company: {payload.company_name}
+- Description: {payload.job_description}
+- Requirements: {', '.join(payload.requirements) if payload.requirements else 'Not specified'}
+
+═══════════════════════════════════════════
+REQUIREMENTS
+═══════════════════════════════════════════
+- Personalized greeting.
+- Mention why they are a strong match (mentioning their specific skills).
+- Brief job summary.
+- Professional recruiter tone.
+- Encourage them to apply or reply.
+- DO NOT exaggerate or promise employment.
+- Keep it concise (3-4 short paragraphs).
+- DO NOT include subject line in the body, just the body text.
+- Sign off as the recruiter team.
+
+Respond ONLY with the email body text.
+"""
+
+    gemini_client = GeminiClient()
+    email_body = ""
+    
+    if gemini_client.model:
+        try:
+            response = gemini_client.model.generate_content(prompt)
+            email_body = response.text.strip()
+        except Exception as e:
+            logger.error(f"Gemini generation failed for send mail: {e}")
+            # Fallback text
+            email_body = f"Hi {payload.candidate_name},\n\nI came across your profile and noticed your strong background in {', '.join(payload.candidate_skills[:3]) if payload.candidate_skills else 'relevant technologies'}. We have an open role for a {payload.job_role} at {payload.company_name} that aligns well with your experience.\n\nLet me know if you would be open to a quick chat to discuss this opportunity further.\n\nBest regards,\nRecruiting Team"
+    else:
+        # Fallback text if Gemini is not configured
+        email_body = f"Hi {payload.candidate_name},\n\nI came across your profile and noticed your strong background in {', '.join(payload.candidate_skills[:3]) if payload.candidate_skills else 'relevant technologies'}. We have an open role for a {payload.job_role} at {payload.company_name} that aligns well with your experience.\n\nLet me know if you would be open to a quick chat to discuss this opportunity further.\n\nBest regards,\nRecruiting Team"
+
+    # 4. Create MIME message
+    subject = f"Opportunity for {payload.job_role} at {payload.company_name}"
+    
+    message = EmailMessage()
+    message.set_content(email_body)
+    message['To'] = payload.candidate_email
+    message['Subject'] = subject
+
+    # Encode as base64url
+    encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+    create_message = {'raw': encoded_message}
+
+    # 5. Send mail in Gmail
+    try:
+        sent_message = service.users().messages().send(userId="me", body=create_message).execute()
+        return {
+            "success": True,
+            "message": "Mail sent successfully.",
+            "message_id": sent_message.get("id")
+        }
+    except Exception as e:
+        logger.error(f"Failed to send Gmail for {payload.candidate_email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send mail via Gmail."
+        )
