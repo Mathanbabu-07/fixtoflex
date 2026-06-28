@@ -1,359 +1,148 @@
-Recruiter UI Development Prompt (FixToFlex)
+Recruiter AI Resume Matching Backend
 Objective
 
-Build a Recruiter Dashboard that is completely independent from the Candidate UI. Recruiter data, APIs, database tables, cache, sessions, and state must never share candidate information.
+Implement the complete backend pipeline for the Recruiter – Find Better Match feature. The recruiter uploads multiple resumes and enters a job description. The system analyzes every uploaded resume individually and returns the Top N best-matched candidates.
 
-The UI should follow the same premium SaaS design language used throughout FixToFlex (white background, subtle shadows, rounded cards, purple accent, clean typography, smooth animations), without any left sidebar/menu. The page should be a full-width dashboard with only the existing top navigation.
+Backend Workflow
+Recruiter fills Job Details
+        │
+        ▼
+Uploads Multiple Resumes
+        │
+        ▼
+Clicks "Find Better Match"
+        │
+        ▼
+Select Top Results
+(Top 1 / Top 2 / Top 5 / Custom Number ≤ Uploaded Count)
+        │
+        ▼
+Extract text from every resume
+        │
+        ▼
+Analyze each resume individually using Gemini 3.5 Flash
+        │
+        ▼
+Compare against:
+• Job Description
+• Requirements
+• Skills
+• Qualification
+• Experience
+• Certifications
+• Tools
+• Soft Skills
+        │
+        ▼
+Generate Matching Score (0–100)
+        │
+        ▼
+Sort by Highest Score
+        │
+        ▼
+Return only requested Top N candidates
+Analysis Rules
 
-Layout
+Analyze every uploaded resume independently.
 
-Create a centered responsive page.
+Extract:
 
----------------------------------------------------------
-Top Navbar
----------------------------------------------------------
-
-Recruiter Dashboard
-
----------------------------------------------------------
-|                 Job Details                          |
----------------------------------------------------------
-
----------------------------------------------------------
-|                Requirements                          |
----------------------------------------------------------
-
----------------------------------------------------------
-| Upload Resumes | AI Matching Information             |
----------------------------------------------------------
-
----------------------------------------------------------
-|        Find Better Match Button                      |
----------------------------------------------------------
-
-Everything should be inside premium rounded white cards.
-
-Spacing should match the Candidate UI.
-
-Section 1 — Job Details Card
-
-Title
-
-Create Job & Find Better Match
-
-Subtitle
-
-Define your hiring requirements and let AI identify the most suitable candidates.
-
-Fields
-
-Job Role *
-
-Single line input
-
-Example
-
-AI Engineer
-Company Location *
-
-Searchable location field
-
-Example
-
-Bangalore, Karnataka
-Salary Range
-
-Dropdown
-
-3 LPA – 5 LPA
-
-6 LPA – 9 LPA
-
-10 LPA – 15 LPA
-
-15 LPA – 20 LPA
-
-20+ LPA
-Work Mode
-
-Segmented buttons
-
-○ Work From Home
-
-○ Onsite
-
-○ Hybrid
-
-Only one selectable.
-
-Job Description *
-
-Large textarea
-
-Approximately 15–20 lines
-
-Character counter
-
-Placeholder
-
-Paste complete job description including responsibilities and expectations...
-Section 2 — Requirements Card
-
-Title
-
-Requirements
-
-Skills *
-
-Tag input
-
-Recruiter can continuously enter skills.
-
-Examples
-
-Python
-
-SQL
-
-TensorFlow
-
-React
-
-AWS
-
-Docker
-
-NodeJS
-
-Show tags with removable chips.
-
-Qualification *
-
-Checkboxes
-
-UG
-
-PG
-
-Students/Fresher
-
+Candidate Name
+Email ID
+Phone Number (optional)
+LinkedIn URL (if available)
+GitHub URL (if available)
+College Name & Degree (if available)
 Experience
-
-Dropdown
-
-0 Years
-
-1 Year
-
-2 Years
-
-3 Years
-
-...
-
-10+ Years
-Certifications (Optional)
-
-Tag input
-
-Examples
-
-AWS
-
-Azure
-
-Google Cloud
-
-CCNA
-
-PMP
-Soft Skills
-
-Tag input
-
-Examples
-
-Leadership
-
-Communication
-
-Critical Thinking
-
-Problem Solving
-
-Ownership
-
-Time Management
-Languages
-
-Tag input
-
-Examples
-
-English
-
-Tamil
-
-Hindi
-
-French
-Tools & Frameworks
-
-Tag input
-
-Examples
-
-Git
-
-Docker
-
-Kubernetes
-
-TensorFlow
-
-PyTorch
-
-Spring Boot
-
-React
-
-Angular
-Section 3 — Upload Resumes
-
-Premium upload card.
-
-Support
-
-PDF
-
-DOCX
-
-Drag & Drop
-
-Multiple upload.
-
-Allow
-
-Maximum 50 resumes.
-
-After upload show
-
-resume1.pdf
-
-resume2.pdf
-
-resume3.pdf
-
-...
-
-Each file shows
-
-• icon
-
-• filename
-
-• size
-
-• remove button
-
-Upload progress animation.
-
-Section 4 — AI Matching Information Card
-
-Small side card.
-
-Contains bullets only.
-
-AI will analyze
-
-✓ Skills
-
-✓ Experience
-
-✓ Projects
-
-✓ Resume quality
-
-✓ Technical match
-
-✓ Cultural fit
-
-✓ ATS compatibility
-
-Bottom info card
-
-Higher quality job descriptions
-produce better candidate ranking.
-Bottom CTA
-
-Centered premium button
-
-✨ Find Better Match
-
-Large gradient purple button.
-
-Hover animation.
-
-Loading animation.
-
-UI Design Requirements
-
-Maintain FixToFlex styling.
-
-Use
-
-large rounded cards
-soft shadows
-18–22px border radius
-purple gradients
-subtle hover effects
-premium whitespace
-responsive layout
-glass-like modern SaaS appearance
-
-Do not add any left sidebar or vertical navigation.
-
-Only use the existing top navigation already present in the Recruiter UI.
-
-Responsiveness
-
-Desktop
-
-Two-column layout.
-
-Tablet
-
-Cards stack vertically.
-
-Mobile
-
-Single column.
-
-Upload section moves below requirements.
-
-Validation
-
-Required fields
-
-Job Role
-Company Location
-Job Description
 Skills
-Qualification
-Resume Upload
+Projects
+Certifications
 
-Disable Find Better Match until required fields are completed.
+Compare with the complete job requirements and calculate an overall matching score based on:
 
-Animations
-Smooth fade-in on page load.
-Card hover elevation.
-Input focus glow (purple).
-Upload progress animation.
-Button ripple effect.
-Loading spinner during processing.
-Smooth transitions throughout.
-Important Constraints
-Keep the Recruiter UI completely isolated from the Candidate UI.
-Do not reuse Candidate profile data, cache, analysis results, or stored state.
-This page is only for recruiter job creation and resume matching.
-Match the premium visual quality and spacing of the provided reference while removing the left sidebar entirely.
+Technical Skills
+Relevant Projects
+Experience
+Education
+Certifications
+Tools & Frameworks
+Soft Skills
+Overall Role Fit
+
+Return candidates sorted by highest score.
+
+Result Card
+
+Display only the requested Top N candidates.
+
+Each result card should contain:
+
+Candidate Name
+Match Score
+Email ID
+LinkedIn Profile (if available) dont give duplicate or dummy data
+GitHub Profile (if available) dont give duplicate or dummy data
+College Name & Degree (if available) dont give duplicate or dummy data
+Resume Preview Button
+Match Summary (2–3 lines)
+Top Results Dropdown
+
+Inside Find Better Match button, add a dropdown:
+
+Top 1
+
+Top 2
+
+Top 5
+
+Custom Number
+
+If Custom Number is selected:
+
+Allow numeric input.
+Maximum value = Uploaded Resume Count.
+Validate before processing.
+Loading Experience
+
+Do not mention Gemini or any AI model.
+
+Show a premium multi-stage loading animation:
+
+✓ Reading uploaded resumes...
+
+✓ Extracting candidate information...
+
+✓ Understanding job requirements...
+
+✓ Comparing candidate profiles...
+
+✓ Ranking the strongest matches...
+
+✓ Preparing recruiter insights...
+
+Add:
+
+Animated progress bar
+Smooth card shimmer
+Rotating workflow icon
+Live processed count
+
+Example:
+
+Processing resumes...
+
+18 / 42 Completed
+
+The loading should feel dynamic and professional.
+
+Performance
+Process resumes asynchronously where possible.
+Cache extracted resume text during the current recruiter session.
+Analyze each resume only once per search unless the recruiter changes the job description or uploads/removes resumes.
+Return results sorted by score in descending order.
+Constraints
+Use Gemini 3.5 Flash for resume analysis and matching.
+Keep recruiter analysis completely isolated from candidate data and caches.
+Never access or reuse candidate-side stored results.
+Handle missing fields (LinkedIn, GitHub, College, etc.) gracefully without failing the analysis.
+Ensure stable, fast processing for large batches of uploaded resumes.

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -23,15 +23,40 @@ import {
   Info,
   Lock,
   Plus,
-  X
+  X,
+  Mail,
+  Phone,
+  ExternalLink,
+  Globe,
+  GraduationCap,
+  Eye,
+  Hash,
+  RefreshCw,
+  ChevronRight,
+  Award
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
 interface CandidateResult {
   filename: string;
   file_size: string;
+  text_content: string;
   candidate_name: string;
+  email: string | null;
+  phone: string | null;
+  linkedin_url: string | null;
+  github_url: string | null;
+  college_name: string | null;
+  degree: string | null;
+  experience_summary: string;
+  skills_found: string[];
+  projects_found: string[];
+  certifications_found: string[];
   match_score: number;
   strengths: string[];
   weaknesses: string[];
@@ -39,6 +64,274 @@ interface CandidateResult {
   missing_skills: string[];
   fit_summary: string;
 }
+
+// ---------------------------------------------------------------------------
+// Loading Stages
+// ---------------------------------------------------------------------------
+
+const LOADING_STAGES = [
+  "Reading uploaded resumes...",
+  "Extracting candidate information...",
+  "Understanding job requirements...",
+  "Comparing candidate profiles...",
+  "Ranking the strongest matches...",
+  "Preparing recruiter insights...",
+];
+
+// ---------------------------------------------------------------------------
+// Resume Preview Modal
+// ---------------------------------------------------------------------------
+
+function ResumePreviewModal({ 
+  isOpen, 
+  onClose, 
+  candidateName, 
+  resumeText 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  candidateName: string; 
+  resumeText: string;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-[#7C3AED]" />
+            </div>
+            <div>
+              <h3 className="font-bold text-[#1E1B4B] text-lg">{candidateName}</h3>
+              <p className="text-xs text-slate-400 font-medium">Resume Preview</p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <pre className="text-sm text-slate-700 font-family-name:var(--font-sans)] whitespace-pre-wrap leading-relaxed">
+            {resumeText || "No resume text available."}
+          </pre>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-slate-100 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors cursor-pointer"
+          >
+            Close
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+
+// ---------------------------------------------------------------------------
+// Multi-Stage Loading Overlay
+// ---------------------------------------------------------------------------
+
+function MatchingLoadingOverlay({ 
+  totalResumes, 
+  processedCount 
+}: { 
+  totalResumes: number; 
+  processedCount: number;
+}) {
+  const [currentStage, setCurrentStage] = useState(0);
+  const [completedStages, setCompletedStages] = useState<number[]>([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentStage(prev => {
+        const next = prev + 1;
+        if (next >= LOADING_STAGES.length) {
+          clearInterval(interval);
+          return prev;
+        }
+        setCompletedStages(cs => [...cs, prev]);
+        return next;
+      });
+    }, 2200);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const progressPercent = totalResumes > 0 
+    ? Math.min(Math.round((processedCount / totalResumes) * 100), 100) 
+    : 0;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F0A2A]/60 backdrop-blur-md"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 200, damping: 25 }}
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
+      >
+        {/* Top gradient strip */}
+        <div className="h-1.5 bg-linear-to-r from-[#7C3AED] via-[#6366F1] to-[#4F46E5] relative overflow-hidden">
+          <motion.div
+            className="absolute inset-0 bg-linear-to-r from-transparent via-white/40 to-transparent"
+            animate={{ x: ["-100%", "100%"] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          />
+        </div>
+
+        <div className="p-8">
+          {/* Rotating icon + Title */}
+          <div className="flex flex-col items-center mb-8">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              className="w-16 h-16 rounded-2xl bg-linear-to-br from-[#7C3AED] to-[#4F46E5] flex items-center justify-center mb-5 shadow-lg shadow-purple-200"
+            >
+              <RefreshCw className="w-7 h-7 text-white" />
+            </motion.div>
+            <h3 className="text-xl font-extrabold text-[#1E1B4B] mb-1">Analyzing Resumes</h3>
+            <p className="text-xs text-slate-400 font-medium">Finding the strongest matches for your role</p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-slate-500">Processing resumes...</span>
+              <span className="text-xs font-extrabold text-[#7C3AED]">
+                {processedCount} / {totalResumes} Completed
+              </span>
+            </div>
+            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-linear-to-r from-[#7C3AED] to-[#4F46E5] rounded-full relative"
+                initial={{ width: "5%" }}
+                animate={{ width: `${Math.max(progressPercent, 5)}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent"
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                />
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Stage List */}
+          <div className="space-y-3">
+            {LOADING_STAGES.map((stage, idx) => {
+              const isCompleted = completedStages.includes(idx);
+              const isCurrent = currentStage === idx;
+              
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: idx <= currentStage ? 1 : 0.3, x: 0 }}
+                  transition={{ delay: idx * 0.15, duration: 0.3 }}
+                  className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
+                    isCurrent 
+                      ? "bg-purple-50/70 border border-purple-100" 
+                      : isCompleted 
+                        ? "bg-emerald-50/50" 
+                        : "bg-slate-50/50"
+                  }`}
+                >
+                  {isCompleted ? (
+                    <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                  ) : isCurrent ? (
+                    <Loader2 className="w-4.5 h-4.5 text-[#7C3AED] animate-spin shrink-0" />
+                  ) : (
+                    <div className="w-4.5 h-4.5 rounded-full border-2 border-slate-200 shrink-0" />
+                  )}
+                  <span className={`text-xs font-bold ${
+                    isCompleted 
+                      ? "text-emerald-700" 
+                      : isCurrent 
+                        ? "text-[#7C3AED]" 
+                        : "text-slate-400"
+                  }`}>
+                    {stage}
+                  </span>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Shimmer cards */}
+          <div className="mt-6 space-y-2">
+            {[1, 2, 3].map((i) => (
+              <motion.div
+                key={i}
+                className="h-3 rounded-full bg-slate-100 overflow-hidden"
+                style={{ width: `${100 - i * 20}%` }}
+              >
+                <motion.div
+                  className="h-full bg-linear-to-r from-transparent via-slate-200/80 to-transparent w-full"
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2, ease: "linear" }}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+
+// ---------------------------------------------------------------------------
+// Score Badge Component
+// ---------------------------------------------------------------------------
+
+function ScoreBadge({ score }: { score: number }) {
+  const color = score >= 85 
+    ? "from-emerald-500 to-emerald-600" 
+    : score >= 70 
+      ? "from-[#7C3AED] to-[#4F46E5]" 
+      : score >= 50 
+        ? "from-amber-500 to-orange-500" 
+        : "from-rose-500 to-rose-600";
+
+  return (
+    <div className={`inline-flex items-center gap-1.5 px-4 py-1.5 bg-linear-to-r ${color} text-white text-sm font-extrabold rounded-full shadow-sm`}>
+      <span>{score}%</span>
+      <span className="text-white/80 text-xs font-bold">Match</span>
+    </div>
+  );
+}
+
+
+// ---------------------------------------------------------------------------
+// Main Component
+// ---------------------------------------------------------------------------
 
 export default function RecruiterDashboard() {
   const router = useRouter();
@@ -76,11 +369,35 @@ export default function RecruiterDashboard() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
 
+  // Top N selection
+  const [topNOption, setTopNOption] = useState<"Top 1" | "Top 2" | "Top 5" | "All" | "Custom">("All");
+  const [customTopN, setCustomTopN] = useState<number>(1);
+  const [showTopNDropdown, setShowTopNDropdown] = useState(false);
+
   // Matching states
   const [isMatching, setIsMatching] = useState(false);
   const [matchResults, setMatchResults] = useState<CandidateResult[]>([]);
   const [hasMatched, setHasMatched] = useState(false);
   const [matchError, setMatchError] = useState("");
+  const [totalAnalyzed, setTotalAnalyzed] = useState(0);
+  const [processedCount, setProcessedCount] = useState(0);
+
+  // Resume preview modal
+  const [previewResume, setPreviewResume] = useState<{ name: string; text: string } | null>(null);
+
+  // Top N dropdown ref for click-outside
+  const topNRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (topNRef.current && !topNRef.current.contains(e.target as Node)) {
+        setShowTopNDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Load session
   const getApiUrl = (path: string): string => {
@@ -129,6 +446,18 @@ export default function RecruiterDashboard() {
       qualification.length > 0 &&
       uploadedResumes.length > 0
     );
+  };
+
+  // Compute actual top_n value to send
+  const getTopNValue = (): number | null => {
+    switch (topNOption) {
+      case "Top 1": return 1;
+      case "Top 2": return 2;
+      case "Top 5": return 5;
+      case "Custom": return Math.min(customTopN, uploadedResumes.length);
+      case "All": return null;
+      default: return null;
+    }
   };
 
   // Tag helpers
@@ -257,9 +586,24 @@ export default function RecruiterDashboard() {
     setIsMatching(true);
     setMatchError("");
     setHasMatched(false);
+    setProcessedCount(0);
+
+    // Simulate progressive count for UX
+    const total = uploadedResumes.length;
+    const countInterval = setInterval(() => {
+      setProcessedCount(prev => {
+        if (prev >= total) {
+          clearInterval(countInterval);
+          return total;
+        }
+        return prev + 1;
+      });
+    }, Math.max(800, 12000 / total));
 
     try {
       const apiEndpoint = getApiUrl("/recruiter/match");
+      const topNValue = getTopNValue();
+
       const requestPayload = {
         job_role: jobRole,
         company_location: companyLocation,
@@ -274,7 +618,8 @@ export default function RecruiterDashboard() {
         soft_skills: softSkills.length > 0 ? softSkills : null,
         languages: languages.length > 0 ? languages : null,
         tools_frameworks: toolsFrameworks.length > 0 ? toolsFrameworks : null,
-        resumes: uploadedResumes
+        resumes: uploadedResumes,
+        top_n: topNValue
       };
 
       const response = await fetch(apiEndpoint, {
@@ -286,25 +631,35 @@ export default function RecruiterDashboard() {
 
       if (response.ok) {
         const matchData = await response.json();
+        setProcessedCount(matchData.total_analyzed || total);
+        setTotalAnalyzed(matchData.total_analyzed || total);
         setMatchResults(matchData.results || []);
-        setHasMatched(true);
         
-        // Smooth scroll to results
+        // Small delay to let loading animation finish gracefully
         setTimeout(() => {
-          const element = document.getElementById("matching-results-section");
-          if (element) {
-            element.scrollIntoView({ behavior: "smooth" });
-          }
-        }, 100);
+          setHasMatched(true);
+          setIsMatching(false);
+          clearInterval(countInterval);
+
+          // Smooth scroll to results
+          setTimeout(() => {
+            const element = document.getElementById("matching-results-section");
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth" });
+            }
+          }, 200);
+        }, 1500);
       } else {
         const errDetail = await response.json();
         setMatchError(errDetail.detail || "Failed to match resumes.");
+        setIsMatching(false);
+        clearInterval(countInterval);
       }
     } catch (err: any) {
       console.error("Matching error:", err);
       setMatchError(err.message || "A network error occurred while matching resumes.");
-    } finally {
       setIsMatching(false);
+      clearInterval(countInterval);
     }
   };
 
@@ -326,6 +681,28 @@ export default function RecruiterDashboard() {
       {/* Floating background gradient blobs */}
       <div className="absolute top-[120px] left-[5%] w-80 h-80 bg-purple-200/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-[10%] right-[5%] w-96 h-96 bg-indigo-100/30 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Multi-Stage Loading Overlay */}
+      <AnimatePresence>
+        {isMatching && (
+          <MatchingLoadingOverlay 
+            totalResumes={uploadedResumes.length}
+            processedCount={processedCount}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Resume Preview Modal */}
+      <AnimatePresence>
+        {previewResume && (
+          <ResumePreviewModal
+            isOpen={!!previewResume}
+            onClose={() => setPreviewResume(null)}
+            candidateName={previewResume.name}
+            resumeText={previewResume.text}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Main Container */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 pt-[120px] pb-24 z-10 relative">
@@ -728,15 +1105,18 @@ export default function RecruiterDashboard() {
               </div>
 
               <p className="text-xs text-slate-500 leading-relaxed mb-5 font-medium">
-                Our AI analyzes skills, experience, and potential to find the best matching candidates for your job opening.
+                Our system analyzes skills, experience, and potential to find the best matching candidates for your job opening.
               </p>
 
               <ul className="space-y-3.5 mb-6">
                 {[
-                  "Semantic Skill Matching",
-                  "Experience Level Analysis",
-                  "Resume Intelligence",
-                  "Cultural Fit Insights"
+                  "Technical Skills Match",
+                  "Relevant Projects Analysis",
+                  "Experience & Education Fit",
+                  "Certifications Verification",
+                  "Tools & Framework Match",
+                  "Soft Skills Assessment",
+                  "Overall Role Compatibility"
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-2 text-xs font-bold text-[#1E1B4B]">
                     <div className="w-4 h-4 rounded-full bg-purple-50 flex items-center justify-center text-[#7C3AED]">
@@ -750,7 +1130,7 @@ export default function RecruiterDashboard() {
               <div className="p-4 bg-purple-50/50 border border-purple-100/50 rounded-2xl flex items-start gap-2.5">
                 <Info className="w-4.5 h-4.5 text-[#7C3AED] shrink-0 mt-0.5" />
                 <p className="text-[11px] font-semibold text-[#7C3AED] leading-normal">
-                  More accurate matches save you time and effort.
+                  Higher quality job descriptions produce better candidate ranking.
                 </p>
               </div>
             </motion.section>
@@ -794,7 +1174,7 @@ export default function RecruiterDashboard() {
                 </div>
                 <h4 className="text-sm font-bold text-[#1E1B4B]">Upload Candidate Resumes</h4>
                 <p className="text-[10px] text-slate-400 font-medium max-w-[200px] mt-1">
-                  Upload multiple resumes (PDF/DOC/DOCX) to find the best matches.
+                  Upload multiple resumes (PDF/DOCX) to find the best matches.
                 </p>
 
                 <button 
@@ -877,7 +1257,7 @@ export default function RecruiterDashboard() {
         </div>
 
         {/* Form Validation Feedback & Bottom CTA */}
-        <div className="mt-12 flex flex-col items-center justify-center space-y-4 border-t border-slate-100 pt-8">
+        <div className="mt-12 flex flex-col items-center justify-center space-y-5 border-t border-slate-100 pt-8">
           
           {matchError && (
             <div className="px-4 py-3 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-2 text-xs font-bold text-rose-600">
@@ -886,23 +1266,90 @@ export default function RecruiterDashboard() {
             </div>
           )}
 
-          <div className="relative">
+          {/* Top N Selection + Find Better Match Button */}
+          <div className="flex items-center gap-4 flex-wrap justify-center">
+            
+            {/* Top N Dropdown */}
+            <div ref={topNRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setShowTopNDropdown(!showTopNDropdown)}
+                className="flex items-center gap-2 px-5 py-3.5 bg-white border border-slate-200 hover:border-purple-200 rounded-xl text-sm font-bold text-slate-700 cursor-pointer transition-all duration-200 shadow-xs"
+              >
+                <Hash className="w-4 h-4 text-[#7C3AED]" />
+                <span>{topNOption === "Custom" ? `Top ${customTopN}` : topNOption === "All" ? "All Results" : topNOption}</span>
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              </button>
+
+              <AnimatePresence>
+                {showTopNDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -5, scale: 0.97 }}
+                    className="absolute bottom-full mb-2 left-0 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-20 min-w-[200px]"
+                  >
+                    {(["All", "Top 1", "Top 2", "Top 5", "Custom"] as const).map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => {
+                          setTopNOption(option);
+                          if (option !== "Custom") {
+                            setShowTopNDropdown(false);
+                          }
+                        }}
+                        className={`w-full text-left px-4 py-3 text-xs font-bold transition-colors cursor-pointer ${
+                          topNOption === option
+                            ? "bg-purple-50 text-[#7C3AED]"
+                            : "text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        {option === "All" ? "All Results" : option === "Custom" ? "Custom Number" : option}
+                      </button>
+                    ))}
+
+                    {/* Custom Number Input */}
+                    {topNOption === "Custom" && (
+                      <div className="p-3 border-t border-slate-100">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min={1}
+                            max={uploadedResumes.length || 50}
+                            value={customTopN}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 1;
+                              setCustomTopN(Math.min(Math.max(val, 1), uploadedResumes.length || 50));
+                            }}
+                            className="w-20 px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-700 focus:outline-hidden focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED]/20"
+                          />
+                          <span className="text-[10px] text-slate-400 font-semibold">
+                            / {uploadedResumes.length} max
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowTopNDropdown(false)}
+                            className="ml-auto px-3 py-1.5 bg-[#7C3AED] text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-[#6D28D9] transition-colors"
+                          >
+                            Set
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* CTA Button */}
             <button
               onClick={handleFindBetterMatch}
               disabled={!isFormValid() || isMatching}
               className={`px-8 py-4 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#6D28D9] hover:to-[#4338CA] text-white text-base font-extrabold rounded-2xl shadow-md hover:shadow-lg active:scale-98 transition-all duration-300 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              {isMatching ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Matching Resumes...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5" />
-                  <span>Find Better Match</span>
-                </>
-              )}
+              <Sparkles className="w-5 h-5" />
+              <span>Find Better Match</span>
             </button>
           </div>
 
@@ -927,13 +1374,18 @@ export default function RecruiterDashboard() {
               transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
               className="mt-16 border-t border-slate-100 pt-16"
             >
-              <div className="mb-8 text-left">
-                <h3 className="text-2xl font-extrabold text-[#1E1B4B]">
-                  AI Matching Candidates <span className="text-[#7C3AED]">({matchResults.length})</span>
-                </h3>
-                <p className="text-xs font-medium text-slate-400 mt-1">
-                  Ranked in order of compatibility against your requirements.
-                </p>
+              <div className="mb-8 flex items-end justify-between flex-wrap gap-4">
+                <div>
+                  <h3 className="text-2xl font-extrabold text-[#1E1B4B]">
+                    Best Matched Candidates <span className="text-[#7C3AED]">({matchResults.length})</span>
+                  </h3>
+                  <p className="text-xs font-medium text-slate-400 mt-1">
+                    {totalAnalyzed > matchResults.length 
+                      ? `Showing top ${matchResults.length} of ${totalAnalyzed} analyzed resumes, ranked by compatibility.`
+                      : "Ranked in order of compatibility against your requirements."
+                    }
+                  </p>
+                </div>
               </div>
 
               {/* Match Results list */}
@@ -944,98 +1396,139 @@ export default function RecruiterDashboard() {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.08 }}
-                    className="bg-white rounded-3xl border border-slate-100 p-6 md:p-8 shadow-xs flex flex-col md:flex-row justify-between gap-6 hover:shadow-md hover:border-purple-100/50 transition-all duration-300"
+                    className="bg-white rounded-3xl border border-slate-100 p-6 md:p-8 shadow-xs hover:shadow-md hover:border-purple-100/50 transition-all duration-300"
                   >
-                    
-                    {/* Candidate Details (Left / Main) */}
-                    <div className="flex-1 space-y-4">
-                      
-                      {/* Name and Match Score badge */}
-                      <div className="flex items-center justify-between md:justify-start gap-4">
-                        <h4 className="text-lg font-extrabold text-[#1E1B4B]">
-                          {result.candidate_name}
-                        </h4>
-                        
-                        {/* Radial progress score fallback badge */}
-                        <div className="px-3.5 py-1 bg-purple-50 border border-purple-100 text-[#7C3AED] text-xs font-extrabold rounded-full">
-                          {result.match_score}% Match
+                    {/* Top Row: Name + Score + Resume Preview */}
+                    <div className="flex items-start justify-between gap-4 mb-5 flex-wrap">
+                      <div className="flex items-center gap-4">
+                        {/* Rank badge */}
+                        <div className="w-10 h-10 rounded-xl bg-linear-to-br from-purple-50 to-indigo-50 flex items-center justify-center text-[#7C3AED] font-extrabold text-sm border border-purple-100 shrink-0">
+                          #{idx + 1}
                         </div>
-                      </div>
-
-                      {/* Brief Recruiter Summary */}
-                      <p className="text-xs text-slate-500 leading-relaxed font-medium bg-slate-50/50 p-4 border border-slate-100 rounded-2xl">
-                        {result.fit_summary}
-                      </p>
-
-                      {/* Skills Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        
-                        {/* Matched Skills */}
-                        <div className="space-y-1.5 text-left">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                            Matched Skills
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {result.matched_skills.map((s, sidx) => (
-                              <span key={sidx} className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold rounded-lg capitalize">
-                                ✓ {s}
+                        <div>
+                          <h4 className="text-lg font-extrabold text-[#1E1B4B]">
+                            {result.candidate_name}
+                          </h4>
+                          {/* Contact row */}
+                          <div className="flex items-center gap-3 mt-1 flex-wrap">
+                            {result.email && (
+                              <a href={`mailto:${result.email}`} className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-[#7C3AED] transition-colors">
+                                <Mail className="w-3 h-3" />
+                                <span>{result.email}</span>
+                              </a>
+                            )}
+                            {result.phone && (
+                              <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-500">
+                                <Phone className="w-3 h-3" />
+                                <span>{result.phone}</span>
                               </span>
-                            ))}
-                            {result.matched_skills.length === 0 && (
-                              <span className="text-[10px] text-slate-400 font-medium">None listed</span>
                             )}
                           </div>
                         </div>
-
-                        {/* Missing Skills */}
-                        <div className="space-y-1.5 text-left">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                            Missing Skills
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {result.missing_skills.map((s, sidx) => (
-                              <span key={sidx} className="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 text-[10px] font-bold rounded-lg capitalize">
-                                ✗ {s}
-                              </span>
-                            ))}
-                            {result.missing_skills.length === 0 && (
-                              <span className="text-[10px] text-slate-400 font-medium">No critical gaps</span>
-                            )}
-                          </div>
-                        </div>
-
                       </div>
-
+                      <div className="flex items-center gap-3 shrink-0">
+                        <ScoreBadge score={result.match_score} />
+                        <button
+                          type="button"
+                          onClick={() => setPreviewResume({ name: result.candidate_name, text: result.text_content })}
+                          className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl cursor-pointer transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Resume</span>
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Strengths & Weaknesses (Right sidebar in card) */}
-                    <div className="w-full md:w-[260px] md:border-l border-slate-100 md:pl-6 space-y-4 shrink-0">
+                    {/* Info Pills Row — LinkedIn, GitHub, College */}
+                    <div className="flex items-center gap-2.5 mb-5 flex-wrap">
+                      {result.linkedin_url && (
+                        <a 
+                          href={result.linkedin_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-lg text-[11px] font-bold text-blue-700 hover:bg-blue-100 transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          <span>LinkedIn</span>
+                        </a>
+                      )}
+                      {result.github_url && (
+                        <a 
+                          href={result.github_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                        >
+                          <Globe className="w-3 h-3" />
+                          <span>GitHub</span>
+                        </a>
+                      )}
+                      {result.college_name && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg text-[11px] font-bold text-amber-800">
+                          <GraduationCap className="w-3 h-3" />
+                          <span>{result.college_name}{result.degree ? ` — ${result.degree}` : ""}</span>
+                        </div>
+                      )}
+                      {result.certifications_found && result.certifications_found.length > 0 && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-lg text-[11px] font-bold text-emerald-700">
+                          <Award className="w-3 h-3" />
+                          <span>{result.certifications_found.join(", ")}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Fit Summary */}
+                    <p className="text-xs text-slate-500 leading-relaxed font-medium bg-slate-50/50 p-4 border border-slate-100 rounded-2xl mb-5">
+                      {result.fit_summary}
+                    </p>
+
+                    {/* Skills + Strengths Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       
-                      {/* Strengths */}
-                      <div className="space-y-2 text-left">
-                        <span className="text-[10px] font-bold text-[#1E1B4B] uppercase tracking-wider block">
-                          Key Strengths
+                      {/* Matched Skills */}
+                      <div className="space-y-1.5 text-left">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Matched Skills
                         </span>
-                        <ul className="space-y-1.5">
-                          {result.strengths.map((str, sidx) => (
-                            <li key={sidx} className="text-[11px] font-semibold text-slate-600 leading-normal flex items-start gap-1.5">
-                              <span className="text-emerald-500 text-xs -mt-1px">•</span>
-                              <span>{str}</span>
-                            </li>
+                        <div className="flex flex-wrap gap-1.5">
+                          {result.matched_skills.map((s, sidx) => (
+                            <span key={sidx} className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold rounded-lg capitalize">
+                              ✓ {s}
+                            </span>
                           ))}
-                        </ul>
+                          {result.matched_skills.length === 0 && (
+                            <span className="text-[10px] text-slate-400 font-medium">None listed</span>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Weaknesses */}
-                      <div className="space-y-2 text-left">
-                        <span className="text-[10px] font-bold text-[#1E1B4B] uppercase tracking-wider block">
-                          Areas to Explore
+                      {/* Missing Skills */}
+                      <div className="space-y-1.5 text-left">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Missing Skills
                         </span>
-                        <ul className="space-y-1.5">
-                          {result.weaknesses.map((weak, sidx) => (
+                        <div className="flex flex-wrap gap-1.5">
+                          {result.missing_skills.map((s, sidx) => (
+                            <span key={sidx} className="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 text-[10px] font-bold rounded-lg capitalize">
+                              ✗ {s}
+                            </span>
+                          ))}
+                          {result.missing_skills.length === 0 && (
+                            <span className="text-[10px] text-slate-400 font-medium">No critical gaps</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Key Strengths */}
+                      <div className="space-y-1.5 text-left">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Key Strengths
+                        </span>
+                        <ul className="space-y-1">
+                          {result.strengths.map((str, sidx) => (
                             <li key={sidx} className="text-[11px] font-semibold text-slate-600 leading-normal flex items-start gap-1.5">
-                              <span className="text-rose-500 text-xs -mt--1px">•</span>
-                              <span>{weak}</span>
+                              <span className="text-emerald-500 text-xs">•</span>
+                              <span>{str}</span>
                             </li>
                           ))}
                         </ul>
