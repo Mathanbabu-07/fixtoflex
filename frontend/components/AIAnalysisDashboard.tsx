@@ -119,10 +119,7 @@ export default function AIAnalysisDashboard({ githubUrl, portfolioUrl, resumeFil
             const data = await response.json();
             setQueueStatus(data.data);
             if (data.data?.overall_status === "Completed") {
-              // Auto-navigate after a brief delay so the user sees the Double Tick visual completion state
-              setTimeout(() => {
-                onNavigateToCareerIntelligence?.();
-              }, 2500);
+              // Analysis is complete, wait for user to click button instead of auto-navigating
             }
           }
         } catch (err) {

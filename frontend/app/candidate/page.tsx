@@ -1065,24 +1065,27 @@ export default function CandidateDashboard() {
           
           {/* Active Navigation Marker / Headline */}
           <div className="flex items-center gap-3">
-            <h1 className="text-lg font-bold text-slate-800 hidden sm:inline-block">
-              Candidate Command Centre
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-100 text-[#7C3AED] text-xs font-bold capitalize">
-              {user?.role || "Candidate"}
-            </span>
-            <button 
-              onClick={() => {
-                setActiveTab("Fix My Profile");
-                setShowAIAnalysis(true);
-                setAnalysisResetKey(prev => prev + 1);
-                updateUrl("Fix My Profile", true);
-              }}
-              className="ml-4 px-4 py-1.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-xs font-bold rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Analyze
-            </button>
+            {activeTab === "Fix My Profile" && (
+              <>
+                <h1 className="text-lg font-bold text-slate-800 hidden sm:inline-block">
+                  Candidate Command Centre
+                </h1>
+                <span className="px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-100 text-[#7C3AED] text-xs font-bold capitalize">
+                  {user?.role || "Candidate"}
+                </span>
+                <button 
+                  onClick={() => {
+                    setShowAIAnalysis(true);
+                    setAnalysisResetKey(prev => prev + 1);
+                    updateUrl("Fix My Profile", true);
+                  }}
+                  className="ml-4 px-4 py-1.5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-xs font-bold rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Analyze
+                </button>
+              </>
+            )}
           </div>
 
           {/* Desktop Top Links & Authenticated state */}
@@ -1500,13 +1503,13 @@ export default function CandidateDashboard() {
                 <InterviewPlacementPanel />
               )}
 
-              {activeTab === "Job Tracker" && (
+              <div className={activeTab === "Job Tracker" ? "block h-full" : "hidden"}>
                 <JobTrackerPanel getApiUrl={getApiUrl} onMakeDraft={handleMakeDraft} />
-              )}
+              </div>
 
-              {activeTab === "Internship Opportunity" && (
+              <div className={activeTab === "Internship Opportunity" ? "block h-full" : "hidden"}>
                 <InternshipTrackerPanel getApiUrl={getApiUrl} onMakeDraft={handleMakeDraft} />
-              )}
+              </div>
 
               {activeTab === "My Applications" && (
                 <motion.div
@@ -1548,8 +1551,7 @@ export default function CandidateDashboard() {
                 </motion.div>
               )}
 
-              {activeTab === "Draft Mail" && (
-                <div className="flex flex-col gap-6">
+              <div className={activeTab === "Draft Mail" ? "flex flex-col gap-6" : "hidden"}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-purple-50 text-[#7C3AED] flex items-center justify-center">
@@ -1697,8 +1699,6 @@ export default function CandidateDashboard() {
                     </div>
                   )}
                 </div>
-              )}
-
             </AnimatePresence>
           </main>
 
