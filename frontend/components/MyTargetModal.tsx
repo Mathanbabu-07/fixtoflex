@@ -21,7 +21,23 @@ const INDIAN_STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana",
   "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
   "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu",
-  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi", "Chandigarh"
+  "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi", "Chandigarh",
+  "Bengaluru", "Hyderabad", "Chennai", "Mumbai", "Pune", "Noida", "Gurugram", "Kolkata", "Ahmedabad", "Jaipur", "Kochi", "Coimbatore", "Indore", "Thiruvananthapuram"
+];
+
+const POPULAR_COMPANIES = [
+  "Google", "Microsoft", "Amazon", "Meta", "Apple", "Netflix", "Zoho", "TCS", "Infosys", "Wipro",
+  "HCL", "Cognizant", "Accenture", "IBM", "Oracle", "SAP", "Salesforce", "Adobe", "Uber", "Flipkart",
+  "Razorpay", "PhonePe", "Paytm", "Swiggy", "Zomato", "CRED", "Freshworks", "Atlassian", "Stripe", "Shopify",
+  "Tesla", "Airbnb", "Tech Mahindra", "Capgemini", "Deloitte", "PwC", "EY", "KPMG", "Intel", "Cisco", "Nvidia", "Qualcomm"
+];
+
+const POPULAR_ROLES = [
+  "Software Engineer", "AI Engineer", "Data Scientist", "Data Analyst", "Frontend Developer",
+  "Backend Developer", "Full Stack Developer", "DevOps Engineer", "Cloud Engineer", "ML Engineer",
+  "Product Manager", "UI/UX Designer", "Mobile Developer", "QA Engineer", "Cybersecurity Analyst",
+  "System Administrator", "Database Administrator", "Business Analyst", "Embedded Engineer", "Blockchain Developer",
+  "Solutions Architect", "Enterprise Architect", "Network Engineer", "Technical Writer"
 ];
 
 const SALARY_OPTIONS = [
@@ -44,25 +60,39 @@ export default function MyTargetModal({ isOpen, onClose, onFetchResults }: MyTar
   const [locations, setLocations] = useState<string[]>([]);
   const [locationInput, setLocationInput] = useState("");
 
-  const handleAddCompany = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      const val = companyInput.trim().replace(/,$/, "");
-      if (val && !companies.includes(val) && companies.length < 3) {
-        setCompanies([...companies, val]);
-        setCompanyInput("");
-      }
+  const [companyDropOpen, setCompanyDropOpen] = useState(false);
+  const [roleDropOpen, setRoleDropOpen] = useState(false);
+  const [locationDropOpen, setLocationDropOpen] = useState(false);
+
+  const handleAddCompany = (val: string) => {
+    if (val && !companies.includes(val) && companies.length < 3) {
+      setCompanies([...companies, val]);
+      setCompanyInput("");
+      setCompanyDropOpen(false);
     }
   };
 
-  const handleAddRole = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleCompanyKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const val = companyInput.trim().replace(/,$/, "");
+      handleAddCompany(val);
+    }
+  };
+
+  const handleAddRole = (val: string) => {
+    if (val && !roles.includes(val) && roles.length < 2) {
+      setRoles([...roles, val]);
+      setRoleInput("");
+      setRoleDropOpen(false);
+    }
+  };
+
+  const handleRoleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
       const val = roleInput.trim().replace(/,$/, "");
-      if (val && !roles.includes(val) && roles.length < 2) {
-        setRoles([...roles, val]);
-        setRoleInput("");
-      }
+      handleAddRole(val);
     }
   };
 
@@ -70,6 +100,7 @@ export default function MyTargetModal({ isOpen, onClose, onFetchResults }: MyTar
     if (val && !locations.includes(val) && locations.length < 3) {
       setLocations([...locations, val]);
       setLocationInput("");
+      setLocationDropOpen(false);
     }
   };
 
@@ -124,14 +155,30 @@ export default function MyTargetModal({ isOpen, onClose, onFetchResults }: MyTar
                   </span>
                 ))}
                 {companies.length < 3 && (
-                  <input 
-                    type="text" 
-                    value={companyInput}
-                    onChange={(e) => setCompanyInput(e.target.value)}
-                    onKeyDown={handleAddCompany}
-                    placeholder="E.g., Google, Microsoft (Press Enter)"
-                    className="flex-1 min-w-[150px] outline-none text-sm text-slate-700 bg-transparent"
-                  />
+                  <div className="relative flex-1 min-w-[150px]">
+                    <input 
+                      type="text" 
+                      value={companyInput}
+                      onChange={(e) => { setCompanyInput(e.target.value); setCompanyDropOpen(true); }}
+                      onKeyDown={handleCompanyKeyDown}
+                      onFocus={() => setCompanyDropOpen(true)}
+                      placeholder="E.g., Google, Microsoft (Press Enter)"
+                      className="w-full outline-none text-sm text-slate-700 bg-transparent"
+                    />
+                    {companyDropOpen && companyInput.trim() && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 shadow-xl rounded-xl max-h-[150px] overflow-y-auto z-50 p-1">
+                        {POPULAR_COMPANIES.filter(c => c.toLowerCase().includes(companyInput.toLowerCase()) && !companies.includes(c)).slice(0, 8).map(c => (
+                          <div 
+                            key={c} 
+                            onClick={() => handleAddCompany(c)}
+                            className="px-3 py-2 hover:bg-indigo-50 text-sm text-slate-700 rounded-lg cursor-pointer"
+                          >
+                            {c}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -150,14 +197,30 @@ export default function MyTargetModal({ isOpen, onClose, onFetchResults }: MyTar
                   </span>
                 ))}
                 {roles.length < 2 && (
-                  <input 
-                    type="text" 
-                    value={roleInput}
-                    onChange={(e) => setRoleInput(e.target.value)}
-                    onKeyDown={handleAddRole}
-                    placeholder="E.g., AI Engineer (Press Enter)"
-                    className="flex-1 min-w-[150px] outline-none text-sm text-slate-700 bg-transparent"
-                  />
+                  <div className="relative flex-1 min-w-[150px]">
+                    <input 
+                      type="text" 
+                      value={roleInput}
+                      onChange={(e) => { setRoleInput(e.target.value); setRoleDropOpen(true); }}
+                      onKeyDown={handleRoleKeyDown}
+                      onFocus={() => setRoleDropOpen(true)}
+                      placeholder="E.g., AI Engineer (Press Enter)"
+                      className="w-full outline-none text-sm text-slate-700 bg-transparent"
+                    />
+                    {roleDropOpen && roleInput.trim() && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 shadow-xl rounded-xl max-h-[150px] overflow-y-auto z-50 p-1">
+                        {POPULAR_ROLES.filter(r => r.toLowerCase().includes(roleInput.toLowerCase()) && !roles.includes(r)).slice(0, 8).map(r => (
+                          <div 
+                            key={r} 
+                            onClick={() => handleAddRole(r)}
+                            className="px-3 py-2 hover:bg-indigo-50 text-sm text-slate-700 rounded-lg cursor-pointer"
+                          >
+                            {r}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -202,11 +265,12 @@ export default function MyTargetModal({ isOpen, onClose, onFetchResults }: MyTar
                   <input 
                     type="text"
                     value={locationInput}
-                    onChange={(e) => setLocationInput(e.target.value)}
+                    onChange={(e) => { setLocationInput(e.target.value); setLocationDropOpen(true); }}
+                    onFocus={() => setLocationDropOpen(true)}
                     placeholder="Search Indian States..."
                     className="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white"
                   />
-                  {locationInput.trim() && (
+                  {locationDropOpen && locationInput.trim() && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 shadow-xl rounded-xl max-h-[150px] overflow-y-auto z-10 p-1">
                       {INDIAN_STATES.filter(s => s.toLowerCase().includes(locationInput.toLowerCase()) && !locations.includes(s)).map(s => (
                         <div 

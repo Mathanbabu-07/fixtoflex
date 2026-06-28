@@ -10,7 +10,8 @@ import {
   Mic,
   Square,
   Loader2,
-  ArrowRight
+  ArrowRight,
+  ChevronLeft
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import InterviewReportViewer from "./InterviewReportViewer";
@@ -365,7 +366,7 @@ export default function InterviewPlacementPanel() {
                  </div>
                  <div className="text-center">
                    <h3 className="text-lg font-extrabold text-slate-800">Evaluating Answer</h3>
-                   <p className="text-sm text-slate-500 mt-2">Gemini AI is analyzing your response and generating feedback...</p>
+                   <p className="text-sm text-slate-500 mt-2">AI is analyzing your response and generating feedback...</p>
                  </div>
               </motion.div>
             )}
@@ -383,9 +384,10 @@ export default function InterviewPlacementPanel() {
                  <div className="flex gap-4 mt-2">
                    <button 
                      onClick={() => setAppState("config")}
-                     className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all"
+                     className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                    >
-                     Take Another
+                     <ChevronLeft className="w-4 h-4" />
+                     Back
                    </button>
                    <button 
                      onClick={() => { /* ReportViewer handled by overlay */ }}

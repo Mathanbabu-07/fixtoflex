@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Loader2, RefreshCw, Star, MapPin, DollarSign, Building, ExternalLink, Calendar, CheckCircle2, AlertCircle, Award, Briefcase, Filter, Clock } from "lucide-react";
+import { Loader2, RefreshCw, Star, MapPin, DollarSign, Building, ExternalLink, Calendar, CheckCircle2, AlertCircle, Award, Briefcase, Filter, Clock, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Internship {
@@ -136,13 +136,22 @@ export default function InternshipTrackerPanel({ getApiUrl, onMakeDraft }: Inter
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {hasTracked && (
+            <button
+              onClick={() => { setHasTracked(false); setInternships([]); setSelectedInternship(null); }}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all flex items-center gap-2 shadow-sm"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back</span>
+            </button>
+          )}
           <button
             onClick={() => fetchInternships(true)}
             disabled={isLoading}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-indigo-200"
+            className="px-4 py-2 bg-[#7C3AED] hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-purple-200"
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-            <span>{hasTracked ? "Refresh Internships" : "Track Internships"}</span>
+            <span>{hasTracked ? "Refresh" : "Find Internships"}</span>
           </button>
         </div>
       </div>
@@ -176,7 +185,7 @@ export default function InternshipTrackerPanel({ getApiUrl, onMakeDraft }: Inter
               <div className="w-16 h-16 border-4 border-indigo-100 rounded-full animate-pulse"></div>
               <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-indigo-600 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
             </div>
-            <p className="mt-4 text-sm font-bold text-slate-600 animate-pulse">Extracting and ranking internships via Gemini AI...</p>
+            <p className="mt-4 text-sm font-bold text-slate-600 animate-pulse">Extracting and ranking internships via AI...</p>
           </div>
         )}
 
@@ -402,7 +411,7 @@ export default function InternshipTrackerPanel({ getApiUrl, onMakeDraft }: Inter
                         <span className="w-6 h-6 rounded-md bg-indigo-50 text-indigo-600 flex items-center justify-center">
                           <Star className="w-3.5 h-3.5" />
                         </span>
-                        Gemini AI Insights
+                        AI Insights
                       </h3>
                       
                       <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-5 mb-5">

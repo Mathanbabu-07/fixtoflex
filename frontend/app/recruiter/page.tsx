@@ -214,7 +214,7 @@ function DraftMailLoadingOverlay({
             <p className="text-xs text-slate-400 font-medium text-center">
               {isComplete 
                 ? `Successfully drafted for ${candidateName}. Check your Gmail Drafts folder.` 
-                : `Using Gemini to write a personalized email to ${candidateName}`}
+                : `Using AI to write a personalized email to ${candidateName}`}
             </p>
           </div>
 
@@ -295,7 +295,7 @@ function SendMailLoadingOverlay({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0F0A2A]/60 backdrop-blur-md"
+      className="fixed inset-0 z-60 flex items-center justify-center bg-[#0F0A2A]/60 backdrop-blur-md"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 30 }}
@@ -317,7 +317,7 @@ function SendMailLoadingOverlay({
             <p className="text-xs text-slate-400 font-medium text-center">
               {isComplete 
                 ? `Successfully sent to ${candidateName}.` 
-                : `Using Gemini to write and send a personalized email to ${candidateName}`}
+                : `Using AI to write and send a personalized email to ${candidateName}`}
             </p>
           </div>
 

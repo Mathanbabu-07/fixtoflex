@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Briefcase, Loader2, RefreshCw, Star, MapPin, DollarSign, Building, ExternalLink, Calendar, CheckCircle2, AlertCircle, Target } from "lucide-react";
+import { Briefcase, Loader2, RefreshCw, Star, MapPin, DollarSign, Building, ExternalLink, Calendar, CheckCircle2, AlertCircle, Target, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MyTargetModal, { TargetPreferences } from "./MyTargetModal";
 
@@ -131,6 +131,15 @@ export default function JobTrackerPanel({ getApiUrl, onMakeDraft }: JobTrackerPa
             <Target className="w-4 h-4 text-indigo-500" />
             <span>My Target</span>
           </button>
+          {hasTracked && (
+            <button
+              onClick={() => { setHasTracked(false); setJobs([]); setSelectedJob(null); }}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all flex items-center gap-2 shadow-sm"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back</span>
+            </button>
+          )}
           <button
             onClick={() => fetchJobs(true)}
             disabled={isLoading}
@@ -171,7 +180,7 @@ export default function JobTrackerPanel({ getApiUrl, onMakeDraft }: JobTrackerPa
               <div className="w-16 h-16 border-4 border-purple-100 rounded-full animate-pulse"></div>
               <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-[#7C3AED] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
             </div>
-            <p className="mt-4 text-sm font-bold text-slate-600 animate-pulse">Extracting and ranking jobs via Gemini AI...</p>
+            <p className="mt-4 text-sm font-bold text-slate-600 animate-pulse">Extracting and ranking jobs via AI...</p>
           </div>
         )}
 
@@ -361,7 +370,7 @@ export default function JobTrackerPanel({ getApiUrl, onMakeDraft }: JobTrackerPa
                         <span className="w-6 h-6 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center">
                           <Star className="w-3.5 h-3.5" />
                         </span>
-                        Gemini AI Insights
+                        AI Insights
                       </h3>
                       
                       <div className="bg-purple-50/50 border border-purple-100 rounded-2xl p-5 mb-5">

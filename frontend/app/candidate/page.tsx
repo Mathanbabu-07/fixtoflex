@@ -1909,6 +1909,33 @@ export default function CandidateDashboard() {
               </div>
             </div>
 
+            {/* LEETCODE & HACKERRANK PLACEHOLDERS */}
+            <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-5 shadow-xl flex flex-col gap-3">
+              <span className="text-xs font-bold text-slate-800 mb-1">Coding Profiles</span>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => alert("LeetCode profile integration coming soon!")}
+                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-[#FFA116]"><Code className="w-4 h-4" /></span>
+                    <span className="truncate max-w-[180px]">Add LeetCode Profile</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+                <button
+                  onClick={() => alert("HackerRank profile integration coming soon!")}
+                  className="w-full flex items-center justify-between px-4 py-3 border border-slate-100 hover:border-purple-200 bg-slate-50/50 hover:bg-white rounded-2xl text-xs font-bold text-slate-600 transition-all duration-300 group cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-[#00EA64]"><Hash className="w-4 h-4 text-emerald-500" /></span>
+                    <span className="truncate max-w-[180px]">Add HackerRank Profile</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
+            </div>
+
           </aside>
           
         </div>

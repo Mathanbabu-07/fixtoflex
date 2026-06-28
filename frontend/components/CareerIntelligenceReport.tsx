@@ -975,7 +975,7 @@ export default function CareerIntelligenceReport({ userId, initialTargetSearch, 
                 <button onClick={handleSkipAnimation} className="px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white font-bold rounded-xl text-xs backdrop-blur-xs transition-colors cursor-pointer shrink-0">Skip Animation</button>
               )}
               <button onClick={handleBackToGeneral} className="px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white font-bold rounded-xl text-xs backdrop-blur-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1.5">
-                <ChevronLeft className="w-3.5 h-3.5" /> General Report
+                <ChevronLeft className="w-3.5 h-3.5" /> Back
               </button>
             </div>
           </div>
