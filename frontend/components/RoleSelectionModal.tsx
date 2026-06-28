@@ -25,6 +25,7 @@ export default function RoleSelectionModal({ isOpen, onClose }: RoleSelectionMod
   const [modalStage, setModalStage] = useState<"role-select" | "recruiter-soon">("role-select");
   const [selectedRole, setSelectedRole] = useState<"candidate" | "recruiter" | null>(null);
   const [isCandidateLoading, setIsCandidateLoading] = useState(false);
+  const [isRecruiterLoading, setIsRecruiterLoading] = useState(false);
 
   // Reset stage and states when modal closes or opens
   useEffect(() => {
@@ -52,10 +53,11 @@ export default function RoleSelectionModal({ isOpen, onClose }: RoleSelectionMod
 
   const handleRecruiterClick = () => {
     setSelectedRole("recruiter");
-    // Stagger transition slightly to allow hover/glow effect
+    setIsRecruiterLoading(true);
     setTimeout(() => {
-      setModalStage("recruiter-soon");
-    }, 200);
+      onClose();
+      router.push("/recruiter");
+    }, 450);
   };
 
   // Prevent scroll when modal is open
@@ -232,10 +234,20 @@ export default function RoleSelectionModal({ isOpen, onClose }: RoleSelectionMod
 
                     <button
                       onClick={handleRecruiterClick}
-                      className="w-full mt-auto py-3 px-5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg hover:shadow-indigo-500/20 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                      disabled={isRecruiterLoading}
+                      className="w-full mt-auto py-3 px-5 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg hover:shadow-indigo-500/20 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-80"
                     >
-                      <span>I&apos;m a Recruiter</span>
-                      <ArrowRight className="w-4 h-4" />
+                      {isRecruiterLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Routing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>I&apos;m a Recruiter</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
                     </button>
                   </motion.div>
 

@@ -1,244 +1,359 @@
-# Development Task: AI Personalized Gmail Draft Generation
+Recruiter UI Development Prompt (FixToFlex)
+Objective
 
-Implement a complete **AI-powered personalized Gmail Draft workflow** integrated with the existing **Job Tracker**, **My Target**, and **Internship Tracker**. Reuse the current backend pipeline, ScrapeDo workflow, Gemini integration, Gmail OAuth, and Gmail Draft creation. Do not change any existing APIs or authentication.
+Build a Recruiter Dashboard that is completely independent from the Candidate UI. Recruiter data, APIs, database tables, cache, sessions, and state must never share candidate information.
 
----
+The UI should follow the same premium SaaS design language used throughout FixToFlex (white background, subtle shadows, rounded cards, purple accent, clean typography, smooth animations), without any left sidebar/menu. The page should be a full-width dashboard with only the existing top navigation.
 
-## 1. Job & Internship Tracker UI
+Layout
 
-Add a new small rectangular button with the **official Gmail logo** beside every job/internship card (top-right position as marked in the design).
+Create a centered responsive page.
 
-Button label:
+---------------------------------------------------------
+Top Navbar
+---------------------------------------------------------
 
-**Make Draft**
+Recruiter Dashboard
 
-Supported sources:
+---------------------------------------------------------
+|                 Job Details                          |
+---------------------------------------------------------
 
-* Indeed
-* Internshala
-* Unstop
+---------------------------------------------------------
+|                Requirements                          |
+---------------------------------------------------------
 
-Each card must have its own independent **Make Draft** button.
+---------------------------------------------------------
+| Upload Resumes | AI Matching Information             |
+---------------------------------------------------------
 
----
+---------------------------------------------------------
+|        Find Better Match Button                      |
+---------------------------------------------------------
 
-## 2. Button Workflow
+Everything should be inside premium rounded white cards.
 
-When the user clicks **Make Draft**:
+Spacing should match the Candidate UI.
 
-Do not scrape again.
+Section 1 — Job Details Card
 
-Reuse the already cached job/internship data from the existing tracker pipeline.
+Title
 
-Retrieve:
+Create Job & Find Better Match
 
-* Company Name
-* Job/Internship Title
-* Job Description
-* Responsibilities
-* Requirements
-* Skills Required
-* Portal Name
-* Apply URL
+Subtitle
 
-Then internally fetch the candidate's stored profile:
+Define your hiring requirements and let AI identify the most suitable candidates.
 
-* name , college(for internships mail requesting)
-* Resume
-* Portfolio
-* Projects
-* Skills
-* Experience (if available)
-* Education
-* Certifications
-* Career Preferences
+Fields
 
-Use the existing cache and backend workflow only.
+Job Role *
 
----
+Single line input
 
-## 3. AI Mail Generation
+Example
 
-Use the new Gemini 3.1 Flash Lite API key from the existing environment.
+AI Engineer
+Company Location *
 
-Generate a unique outreach email specifically for the selected role.
+Searchable location field
 
-The mail must be personalized using:
+Example
 
-* Candidate profile
-* Resume
-* Skills
-* Projects
-* Experience
-* Company
-* Role
-* Job requirements
-* Tone
+Bangalore, Karnataka
+Salary Range
 
-Tone:
+Dropdown
 
-* Professional
-* Confident
-* Personalized
-* Human-written
-* Recruiter-friendly
-* No generic AI wording
-* No fake claims
-* ATS-friendly
+3 LPA – 5 LPA
 
-The generated draft should contain:
+6 LPA – 9 LPA
 
-* Recruiter Subject
-* Greeting
-* Personalized introduction
-* Why the candidate matches the role
-* Relevant projects
-* Relevant skills
-* Interest in the company
-* Professional closing
-* Candidate name
+10 LPA – 15 LPA
 
----
+15 LPA – 20 LPA
 
-## 4. Draft Mail Section UI
+20+ LPA
+Work Mode
 
-Immediately after clicking **Make Draft**:
+Segmented buttons
 
-Navigate to the **Draft Mail** page.
+○ Work From Home
 
-Show a mail generation animation.
+○ Onsite
 
-Example status:
+○ Hybrid
 
-* Collecting profile...
-* Reading job details...
-* Matching resume...
-* Writing personalized email...
-* Preparing Gmail Draft...
+Only one selectable.
 
-After generation, automatically append a new mail card.
+Job Description *
 
----
+Large textarea
 
-## 5. Multiple Draft Queue
+Approximately 15–20 lines
 
-Support unlimited draft generation.
+Character counter
 
-Each generated mail becomes a separate card.
+Placeholder
 
-Order must follow generation sequence.
+Paste complete job description including responsibilities and expectations...
+Section 2 — Requirements Card
 
-Example:
+Title
 
-1. Google — Software Engineer
-2. Microsoft — SDE Intern
-3. Amazon — AI Engineer
-4. Internshala — AI Internship
+Requirements
 
-Never overwrite previous drafts.
+Skills *
 
-Always append to the bottom.
+Tag input
 
----
+Recruiter can continuously enter skills.
 
-## 6. Draft Card Layout
+Examples
 
-Reuse the existing AI Outreach Draft design.
+Python
 
-Each card should display:
+SQL
 
-* Company Logo
-* Company Name
-* Role
-* Portal Badge (Indeed / Internshala / Unstop)
-* Subject
-* Email Preview
-* Generated Time
+TensorFlow
 
-Buttons:
+React
 
-* Preview
-* Edit
-* Generate Gmail Draft
+AWS
 
----
+Docker
 
-## 7. Gmail Draft Generation
+NodeJS
 
-When the user clicks **Generate Gmail Draft**:
+Show tags with removable chips.
 
-Use the existing Gmail OAuth tokens.
+Qualification *
 
-Create a Gmail Draft using Gmail API.
+Checkboxes
 
-Do not send the email.
+UG
 
-Only save it inside Gmail Drafts.
+PG
 
-Return success after creation.
+Students/Fresher
 
----
+Experience
 
-## 8. Gmail Draft Success
+Dropdown
 
-After successful creation:
+0 Years
 
-* Disable the button.
-* Show:
+1 Year
 
-✓ Draft Saved to Gmail
+2 Years
 
-Display the Gmail Draft creation timestamp.
+3 Years
 
-Allow regenerating the content if required without deleting previous drafts.
+...
 
----
+10+ Years
+Certifications (Optional)
 
-## 9. Backend Requirements
+Tag input
 
-Reuse the existing pipeline.
+Examples
 
-Never scrape again during mail generation.
+AWS
 
-Never call ScrapeDo again.
+Azure
 
-Never call the trackers again.
+Google Cloud
 
-Only use:
+CCNA
 
-* Cached job data
-* Cached internship data
-* Stored profile
-* Stored resume analysis
-* Existing Gemini workflow
-* Existing Gmail OAuth
+PMP
+Soft Skills
 
----
+Tag input
 
-## 10. Error Handling
+Examples
 
-Handle:
+Leadership
 
-* Gmail OAuth expired
-* Missing Gmail permission
-* Empty cached job
-* Missing resume
-* Gemini failure
-* Gmail API failure
+Communication
 
-Show meaningful UI messages.
+Critical Thinking
 
-Never lose generated drafts.
+Problem Solving
 
----
+Ownership
 
-## 11. Acceptance Criteria
+Time Management
+Languages
 
-* Every job and internship card has a **Make Draft** button.
-* Clicking **Make Draft** generates a personalized outreach email using cached data.
-* Draft Mail page shows a generation animation.
-* Multiple generated mails are maintained in an ordered list.
-* Each mail has its own **Generate Gmail Draft** button.
-* Clicking **Generate Gmail Draft** creates a real Gmail Draft in the user's Gmail account.
-* Existing Job Tracker, Internship Tracker, Gmail OAuth, backend workflow, and UI remain unchanged.
-* No duplicate scraping, no duplicate analysis, and no unnecessary API calls.
+Tag input
+
+Examples
+
+English
+
+Tamil
+
+Hindi
+
+French
+Tools & Frameworks
+
+Tag input
+
+Examples
+
+Git
+
+Docker
+
+Kubernetes
+
+TensorFlow
+
+PyTorch
+
+Spring Boot
+
+React
+
+Angular
+Section 3 — Upload Resumes
+
+Premium upload card.
+
+Support
+
+PDF
+
+DOCX
+
+Drag & Drop
+
+Multiple upload.
+
+Allow
+
+Maximum 50 resumes.
+
+After upload show
+
+resume1.pdf
+
+resume2.pdf
+
+resume3.pdf
+
+...
+
+Each file shows
+
+• icon
+
+• filename
+
+• size
+
+• remove button
+
+Upload progress animation.
+
+Section 4 — AI Matching Information Card
+
+Small side card.
+
+Contains bullets only.
+
+AI will analyze
+
+✓ Skills
+
+✓ Experience
+
+✓ Projects
+
+✓ Resume quality
+
+✓ Technical match
+
+✓ Cultural fit
+
+✓ ATS compatibility
+
+Bottom info card
+
+Higher quality job descriptions
+produce better candidate ranking.
+Bottom CTA
+
+Centered premium button
+
+✨ Find Better Match
+
+Large gradient purple button.
+
+Hover animation.
+
+Loading animation.
+
+UI Design Requirements
+
+Maintain FixToFlex styling.
+
+Use
+
+large rounded cards
+soft shadows
+18–22px border radius
+purple gradients
+subtle hover effects
+premium whitespace
+responsive layout
+glass-like modern SaaS appearance
+
+Do not add any left sidebar or vertical navigation.
+
+Only use the existing top navigation already present in the Recruiter UI.
+
+Responsiveness
+
+Desktop
+
+Two-column layout.
+
+Tablet
+
+Cards stack vertically.
+
+Mobile
+
+Single column.
+
+Upload section moves below requirements.
+
+Validation
+
+Required fields
+
+Job Role
+Company Location
+Job Description
+Skills
+Qualification
+Resume Upload
+
+Disable Find Better Match until required fields are completed.
+
+Animations
+Smooth fade-in on page load.
+Card hover elevation.
+Input focus glow (purple).
+Upload progress animation.
+Button ripple effect.
+Loading spinner during processing.
+Smooth transitions throughout.
+Important Constraints
+Keep the Recruiter UI completely isolated from the Candidate UI.
+Do not reuse Candidate profile data, cache, analysis results, or stored state.
+This page is only for recruiter job creation and resume matching.
+Match the premium visual quality and spacing of the provided reference while removing the left sidebar entirely.

@@ -191,7 +191,7 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
           Candidate
         </Link>
         <Link
-          href="#recruiter"
+          href="/recruiter"
           className="text-[18px] font-medium text-slate-600 hover:text-[#4F46E5] transition-colors duration-200"
         >
           Recruiter
@@ -380,7 +380,7 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
             Candidate
           </Link>
           <Link
-            href="#recruiter"
+            href="/recruiter"
             onClick={() => setIsOpen(false)}
             className="text-[18px] font-medium text-slate-700 hover:text-[#4F46E5] py-2 border-b border-slate-100"
           >
