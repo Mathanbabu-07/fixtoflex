@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS users (
     skills TEXT,
     language_proficiency TEXT,
     certifications TEXT,
+    google_access_token TEXT,
+    google_refresh_token TEXT,
+    google_token_expiry TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 

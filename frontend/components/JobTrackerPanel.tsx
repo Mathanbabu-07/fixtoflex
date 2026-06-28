@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Briefcase, Loader2, RefreshCw, Star, MapPin, DollarSign, Building, Clock, ExternalLink, Calendar, CheckCircle2, AlertCircle, Target } from "lucide-react";
+import React, { useState } from "react";
+import Image from "next/image";
+import { Briefcase, Loader2, RefreshCw, Star, MapPin, DollarSign, Building, ExternalLink, Calendar, CheckCircle2, AlertCircle, Target } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MyTargetModal, { TargetPreferences } from "./MyTargetModal";
 
@@ -62,8 +63,8 @@ export default function JobTrackerPanel({ getApiUrl }: JobTrackerPanelProps) {
       } else {
         throw new Error(data.message || "No matching jobs found for your selected targets. Try changing your company, role, salary, or location preferences.");
       }
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred while fetching target jobs.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred while fetching target jobs.");
     } finally {
       setIsLoading(false);
     }
@@ -94,8 +95,8 @@ export default function JobTrackerPanel({ getApiUrl }: JobTrackerPanelProps) {
       } else {
         throw new Error(data.message || "Failed to parse jobs");
       }
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred while fetching jobs.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred while fetching jobs.");
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +152,7 @@ export default function JobTrackerPanel({ getApiUrl }: JobTrackerPanelProps) {
             </div>
             <h3 className="text-xl font-bold text-slate-800">Ready to find your next role?</h3>
             <p className="text-sm text-slate-500 mt-2 max-w-md">
-              We'll automatically extract the best roles from Indeed and rank them according to your candidate profile, skills, and experience.
+              We&apos;ll automatically extract the best roles from Indeed and rank them according to your candidate profile, skills, and experience.
             </p>
             <button
               onClick={() => fetchJobs(false)}
@@ -282,7 +283,7 @@ export default function JobTrackerPanel({ getApiUrl }: JobTrackerPanelProps) {
                       
                       <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 mb-4">
                         {selectedJob["Company Logo"] && selectedJob["Company Logo"] !== "N/A" ? (
-                          <img src={selectedJob["Company Logo"]} alt="logo" className="w-6 h-6 object-contain" />
+                          <Image src={selectedJob["Company Logo"]} alt="logo" width={24} height={24} className="w-6 h-6 object-contain" />
                         ) : (
                           <div className="w-6 h-6 bg-slate-100 rounded flex items-center justify-center text-slate-400 text-xs">
                             <Building className="w-4 h-4" />

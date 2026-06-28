@@ -99,10 +99,21 @@ export default function InternshipTrackerPanel({ getApiUrl }: InternshipTrackerP
 
   // Handle auto-select first filtered item if selected one disappears
   useEffect(() => {
-    if (filteredInternships.length > 0 && (!selectedInternship || !filteredInternships.includes(selectedInternship))) {
-      setSelectedInternship(filteredInternships[0]);
+    let shouldUpdate = false;
+    if (filteredInternships.length > 0) {
+      if (!selectedInternship || !filteredInternships.some(i => i["Internship Title"] === selectedInternship["Internship Title"])) {
+        shouldUpdate = true;
+      }
     }
-  }, [filteredInternships]);
+    
+    if (shouldUpdate) {
+      // Use a small timeout to avoid synchronous cascading renders during paint
+      const timer = setTimeout(() => {
+        setSelectedInternship(filteredInternships[0]);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [filteredInternships, selectedInternship]);
 
   return (
     <motion.div

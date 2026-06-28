@@ -1,5 +1,8 @@
 import logging
+import httpx
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Tuple
+from config.database import settings
 from services.user_service import user_service
 from services.linkedin_service import linkedin_service
 from utils.jwt_handler import create_access_token
@@ -104,6 +107,46 @@ class AuthService:
         except Exception as e:
             logger.error(f"Error executing user mapping and session creation: {e}")
             raise e
+
+    async def process_google_oauth_callback(self, code: str, user_id: str, redirect_uri: str) -> None:
+        """
+        Exchanges Google OAuth code for tokens and saves them to the user's profile.
+        """
+        logger.info(f"Exchanging Google OAuth code for user {user_id}")
+        
+        token_url = "https://oauth2.googleapis.com/token"
+        payload = {
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "client_secret": settings.GOOGLE_CLIENT_SECRET,
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": redirect_uri
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(token_url, data=payload)
+            
+            if response.status_code != 200:
+                logger.error(f"Failed to exchange Google code: {response.text}")
+                raise ValueError("Failed to retrieve Google tokens.")
+                
+            token_data = response.json()
+            
+            access_token = token_data.get("access_token")
+            refresh_token = token_data.get("refresh_token")
+            expires_in = token_data.get("expires_in", 3599)
+            
+            expiry_date = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
+            
+            updates = {
+                "google_access_token": access_token,
+                "google_token_expiry": expiry_date.isoformat()
+            }
+            if refresh_token:
+                updates["google_refresh_token"] = refresh_token
+                
+            user_service.update_user_profile(user_id, updates)
+            logger.info("Successfully updated Google OAuth tokens for user.")
 
 # Create a singleton instance
 auth_service = AuthService()

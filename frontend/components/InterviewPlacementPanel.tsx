@@ -47,6 +47,19 @@ export default function InterviewPlacementPanel() {
   const finalTranscriptRef = useRef<string>("");
   const isRecordingRef = useRef<boolean>(false);
 
+  const stopRecordingAndTimer = () => {
+    setIsRecording(false);
+    isRecordingRef.current = false;
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // ignore
+      }
+    }
+  };
+
   // Initialize SpeechRecognition
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -78,7 +91,7 @@ export default function InterviewPlacementPanel() {
           if (isRecordingRef.current && recognitionRef.current) {
             try {
               recognitionRef.current.start();
-            } catch (e) {
+            } catch {
               // ignore already started errors
             }
           }
@@ -90,6 +103,7 @@ export default function InterviewPlacementPanel() {
       isRecordingRef.current = false;
       stopRecordingAndTimer();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const startRecordingAndTimer = () => {
@@ -119,18 +133,6 @@ export default function InterviewPlacementPanel() {
     }, 1000);
   };
 
-  const stopRecordingAndTimer = () => {
-    setIsRecording(false);
-    isRecordingRef.current = false;
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) {
-        // ignore
-      }
-    }
-  };
 
   const handleStartInterview = async () => {
     setAppState("loading");
@@ -275,7 +277,7 @@ export default function InterviewPlacementPanel() {
               <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center h-full min-h-[300px] gap-5 relative z-10">
                  <div className="relative">
                    <div className="absolute inset-0 bg-[#7C3AED]/20 blur-xl rounded-full animate-pulse" />
-                   <div className="w-20 h-20 bg-white border border-slate-100 rounded-[2rem] shadow-xl flex items-center justify-center relative">
+                   <div className="w-20 h-20 bg-white border border-slate-100 rounded-2rem] shadow-xl flex items-center justify-center relative">
                      <Loader2 className="w-10 h-10 text-[#7C3AED] animate-spin" />
                    </div>
                  </div>
@@ -357,7 +359,7 @@ export default function InterviewPlacementPanel() {
               <motion.div key="evaluating" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center h-full min-h-[300px] gap-5 relative z-10">
                  <div className="relative">
                    <div className="absolute inset-0 bg-[#7C3AED]/20 blur-xl rounded-full animate-pulse" />
-                   <div className="w-20 h-20 bg-white border border-slate-100 rounded-[2rem] shadow-xl flex items-center justify-center relative">
+                   <div className="w-20 h-20 bg-white border border-slate-100 rounded-2rem shadow-xl flex items-center justify-center relative">
                      <BrainCircuit className="w-10 h-10 text-[#7C3AED] animate-pulse" />
                    </div>
                  </div>

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "FixToFlex | AI-Powered Job Application Command Centre",
   description: "Fix your profile. Flex on every recruiter. FixToFlex is an AI-powered job application platform that analyzes your resume against any job description, closes skill gaps, and helps you land the offer.",
   icons: {
-    icon: "/logo.png",
+    icon: "/fflogo.png",
   },
 };
 

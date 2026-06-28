@@ -1,11 +1,12 @@
 import logging
 from urllib.parse import urlencode
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response, status, Depends, Request
 from pydantic import BaseModel, EmailStr
 from config.database import settings
 from services.auth_service import auth_service
 from services.user_service import user_service
 from utils.state_generator import generate_state, verify_state
+from middleware.auth_middleware import get_current_user
 
 logger = logging.getLogger("backend.routes.auth")
 
@@ -188,4 +189,74 @@ async def logout(response: Response):
         samesite=cookie_samesite
     )
     return {"success": True, "detail": "Logged out successfully."}
+
+@router.get("/google/gmail", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+async def get_google_gmail_url(user: dict = Depends(get_current_user)):
+    """
+    Generates the Google OAuth authorization URL with Gmail scopes.
+    """
+    try:
+        state = generate_state()
+        
+        # We also want to pass the user ID so we can identify them in the callback
+        # The easiest way is to append it to the state or use it in the state cache.
+        # But since the session cookie persists in the browser, the callback will still 
+        # have the cookie. However, typical OAuth state verification might be tricky 
+        # if the callback loses the cookie on cross-site redirect in some browsers.
+        # For this setup, we'll rely on the existing cookie when they return.
+        
+        params = {
+            "response_type": "code",
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "redirect_uri": f"{settings.API_URL.rstrip('/')}/auth/google/callback",
+            "state": state,
+            "scope": "openid email profile https://www.googleapis.com/auth/gmail.compose",
+            "access_type": "offline",
+            "prompt": "consent"
+        }
+        
+        auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
+        logger.info(f"Redirecting user {user['id']} to Google OAuth for Gmail.")
+        
+        return RedirectResponse(url=auth_url)
+    except Exception as e:
+        logger.error(f"Error creating Google authorization URL: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to initialize Google login flow."
+        )
+
+@router.get("/google/callback", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+async def google_callback(
+    request: Request,
+    code: str = None, 
+    state: str = None, 
+    error: str = None,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Handles Google OAuth redirect callback.
+    """
+    if error:
+        logger.error(f"Google OAuth returned error: {error}")
+        return RedirectResponse(url=f"{settings.FRONTEND_URL}/candidate?error=gmail_auth_denied")
+        
+    if not code or not state:
+        raise HTTPException(status_code=400, detail="Missing code or state")
+        
+    if not verify_state(state):
+        raise HTTPException(status_code=400, detail="State token validation failed.")
+        
+    try:
+        redirect_uri = f"{settings.API_URL.rstrip('/')}/auth/google/callback"
+        await auth_service.process_google_oauth_callback(
+            code=code, 
+            user_id=user["id"],
+            redirect_uri=redirect_uri
+        )
+        # Redirect back to the frontend
+        return RedirectResponse(url=f"{settings.FRONTEND_URL}/candidate")
+    except Exception as e:
+        logger.error(f"Failed to process Google OAuth callback: {e}")
+        return RedirectResponse(url=f"{settings.FRONTEND_URL}/candidate?error=gmail_auth_failed")
 

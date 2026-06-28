@@ -2,10 +2,24 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Award, BrainCircuit, CheckCircle2, ChevronRight, FileText, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { Award, CheckCircle2, FileText, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 
 interface InterviewReportViewerProps {
-  report: any;
+  report: {
+    overall_score: number;
+    hiring_recommendation: string;
+    performance_breakdown?: Record<string, number>;
+    detailed_feedback?: Array<{
+      evaluation_score?: number;
+      feedback_json?: {
+        hr_perspective?: string;
+        feedback?: string;
+        preferred_answer_style?: string;
+      };
+      question_text?: string;
+      transcript?: string;
+    }>;
+  };
   onClose: () => void;
 }
 
@@ -15,7 +29,6 @@ export default function InterviewReportViewer({ report, onClose }: InterviewRepo
   if (!report) return null;
 
   const scoreColor = report.overall_score >= 80 ? "text-emerald-500" : report.overall_score >= 60 ? "text-amber-500" : "text-rose-500";
-  const progressBg = report.overall_score >= 80 ? "bg-emerald-500" : report.overall_score >= 60 ? "bg-amber-500" : "bg-rose-500";
   const progressBgTrack = report.overall_score >= 80 ? "bg-emerald-100" : report.overall_score >= 60 ? "bg-amber-100" : "bg-rose-100";
 
   return (
@@ -65,7 +78,7 @@ export default function InterviewReportViewer({ report, onClose }: InterviewRepo
         <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-6 space-y-4">
           <h3 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-200 pb-2">Performance Breakdown</h3>
           <div className="grid grid-cols-1 gap-3">
-            {Object.entries(report.performance_breakdown || {}).map(([category, score]: [string, any], idx) => (
+            {Object.entries(report.performance_breakdown || {}).map(([category, score], idx) => (
               <div key={idx} className="flex flex-col gap-1.5">
                 <div className="flex justify-between items-center text-xs font-bold text-slate-700">
                   <span>{category}</span>
@@ -86,7 +99,7 @@ export default function InterviewReportViewer({ report, onClose }: InterviewRepo
           <FileText className="w-4 h-4 text-[#7C3AED]" /> Question-by-Question Feedback
         </h3>
         <div className="space-y-3">
-          {(report.detailed_feedback || []).map((q: any, idx: number) => {
+          {(report.detailed_feedback || []).map((q, idx: number) => {
             const isExpanded = expandedQuestionIndex === idx;
             const qScore = q.evaluation_score || 0;
             const fb = q.feedback_json || {};
@@ -121,7 +134,7 @@ export default function InterviewReportViewer({ report, onClose }: InterviewRepo
                         <div>
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Your Answer</span>
                           <p className="text-xs text-slate-700 italic bg-white p-3 rounded-xl border border-slate-100">
-                            "{q.transcript || "No answer recorded."}"
+                            &quot;{q.transcript || "No answer recorded."}&quot;
                           </p>
                         </div>
                         

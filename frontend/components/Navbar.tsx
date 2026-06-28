@@ -24,8 +24,8 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [mobileLoginOpen, setMobileLoginOpen] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
 
   const getApiUrl = (path: string): string => {
@@ -103,6 +103,7 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
 
   const handleLinkedInLogin = (e: React.MouseEvent) => {
     e.preventDefault();
+    setIsLoggingIn(true);
     console.log("[STEP 1] Login button clicked - Redirecting to LinkedIn Login Endpoint");
     const loginUrl = getApiUrl("/auth/linkedin/login");
     window.location.href = loginUrl;
@@ -167,7 +168,7 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
       <Link href="/" className="flex items-center gap-3 group">
         <div className="relative h-[60px] w-[60px] overflow-hidden rounded-xl bg-black flex items-center justify-center border border-slate-200/50 shadow-md">
           <Image
-            src="/logo.png"
+            src="/fflogo.png"
             alt="FixToFlex Logo"
             width={60}
             height={60}
