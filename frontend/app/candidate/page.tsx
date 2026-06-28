@@ -958,12 +958,12 @@ export default function CandidateDashboard() {
               )}
             </Link>
 
-            {/* Sidebar collapse toggle (desktop only) */}
+            {/* Sidebar Back to Home toggle (desktop only) */}
             <button
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              onClick={() => router.push("/")}
               className="hidden lg:flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-white bg-[#1b174b]/60 border border-[#2e2a7e]/50 hover:bg-[#241e6b] transition-all cursor-pointer shrink-0"
             >
-              <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${isSidebarCollapsed ? "rotate-180" : ""}`} />
+              <ChevronLeft className="w-4 h-4 transition-transform duration-300" />
             </button>
 
             {/* Mobile Hamburger toggle */}
@@ -1099,7 +1099,7 @@ export default function CandidateDashboard() {
                 <span className="absolute bottom-[-4px] left-0 right-0 h-[2.5px] bg-[#7C3AED] rounded-full" />
               </Link>
               <Link
-                href="/#recruiter"
+                href="/recruiter"
                 className="text-sm font-semibold text-slate-600 hover:text-[#7C3AED] transition-colors"
               >
                 Recruiter
