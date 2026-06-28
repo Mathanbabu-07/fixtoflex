@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     # Server settings
     PORT: int = 8000
     HOST: str = "127.0.0.1"
+    API_URL: str = "http://localhost:8000"
     FRONTEND_URL: str = "http://localhost:3001"
     APP_ENV: str = "development"
     COOKIE_SECURE: bool = False
@@ -38,6 +39,10 @@ class Settings(BaseSettings):
     LINKEDIN_CLIENT_ID: str = ""
     LINKEDIN_CLIENT_SECRET: str = ""
     LINKEDIN_REDIRECT_URI: str = "http://localhost:3001/auth/linkedin/callback"
+
+    # Google credentials
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
 
     # Scrape.do settings
     SCRAPEDO_API_KEY: str = ""
@@ -71,6 +76,7 @@ except Exception as e:
     class FallbackSettings:
         PORT = 8000
         HOST = "127.0.0.1"
+        API_URL = os.environ.get("API_URL", "http://localhost:8000")
         FRONTEND_URL = "http://localhost:3001"
         SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://placeholder-project-id.supabase.co")
         SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "placeholder")
@@ -80,6 +86,8 @@ except Exception as e:
         LINKEDIN_CLIENT_ID = os.environ.get("LINKEDIN_CLIENT_ID", "")
         LINKEDIN_CLIENT_SECRET = os.environ.get("LINKEDIN_CLIENT_SECRET", "")
         LINKEDIN_REDIRECT_URI = os.environ.get("LINKEDIN_REDIRECT_URI", "http://localhost:3001/auth/linkedin/callback")
+        GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+        GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
         SCRAPEDO_API_KEY = os.environ.get("SCRAPEDO_API_KEY", "")
         SCRAPEDO1_API_KEY = os.environ.get("SCRAPEDO1_API_KEY", "")
         SCRAPEDO_BASE_URL = os.environ.get("SCRAPEDO_BASE_URL", "http://api.scrape.do")
