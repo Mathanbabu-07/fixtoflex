@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, Menu, X, User, LogOut, Loader2 } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ChevronDown, Menu, X, User, LogOut, Loader2, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface UserProfile {
@@ -13,6 +14,7 @@ interface UserProfile {
   full_name?: string;
   profile_picture?: string;
   role?: string;
+  google_email?: string;
 }
 
 interface NavbarProps {
@@ -27,6 +29,7 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
+  const pathname = usePathname();
 
   const getApiUrl = (path: string): string => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -69,6 +72,7 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
             name: userData.full_name,
             profile_picture: userData.profile_picture,
             role: userData.role,
+            google_email: userData.google_email,
           };
           setUser(normalizedUser);
           localStorage.setItem("user_session", JSON.stringify(normalizedUser));
@@ -107,6 +111,12 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
     console.log("[STEP 1] Login button clicked - Redirecting to LinkedIn Login Endpoint");
     const loginUrl = getApiUrl("/auth/linkedin/login");
     window.location.href = loginUrl;
+  };
+
+  const handleGoogleGmailConnect = () => {
+    console.log("[NAVBAR] Connect Gmail button clicked");
+    const connectUrl = getApiUrl("/auth/google/gmail?return_to=recruiter");
+    window.location.href = connectUrl;
   };
 
   const handleLogout = async () => {
@@ -264,12 +274,25 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
             )}
           </>
         ) : (
-          /* Logged In User Profile Dropdown */
-          <div 
-            className="relative"
-            onMouseEnter={() => setShowProfileDropdown(true)}
-            onMouseLeave={() => setShowProfileDropdown(false)}
-          >
+          /* Logged In Actions Container */
+          <div className="flex items-center gap-4">
+            {/* Show Connect Gmail button if on recruiter page and not connected */}
+            {pathname === "/recruiter" && !user.google_email && (
+              <button
+                onClick={handleGoogleGmailConnect}
+                className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-50 text-[#7C3AED] hover:bg-purple-100 hover:text-purple-700 transition-colors duration-200 border border-purple-100 shadow-xs font-bold text-sm cursor-pointer"
+              >
+                <Mail className="w-4 h-4" />
+                <span>Connect Gmail</span>
+              </button>
+            )}
+
+            {/* Logged In User Profile Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setShowProfileDropdown(true)}
+              onMouseLeave={() => setShowProfileDropdown(false)}
+            >
             <button
               onClick={() => setShowProfileDropdown(!showProfileDropdown)}
               className="flex items-center gap-3 py-1 px-2.5 rounded-full hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all duration-200 cursor-pointer focus:outline-none"
@@ -327,9 +350,17 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
                         <h4 className="text-sm font-bold text-slate-800 leading-tight truncate">
                           {user.full_name || user.name}
                         </h4>
-                        <p className="text-xs text-slate-400 font-medium truncate mt-0.5">
-                          {user.email}
-                        </p>
+                        <div className="flex flex-col gap-0.5 mt-0.5">
+                          <p className="text-xs text-slate-400 font-medium truncate">
+                            {user.email}
+                          </p>
+                          {user.google_email && (
+                            <p className="text-[10px] text-[#7C3AED] font-bold truncate flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              {user.google_email}
+                            </p>
+                          )}
+                        </div>
                         <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-100/60 text-indigo-700 text-[10px] font-bold tracking-wide capitalize">
                           {user.role || "Candidate"}
                         </span>
@@ -356,6 +387,7 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
           </div>
         )}
       </div>
@@ -453,6 +485,20 @@ export default function Navbar({ onGetStartedClick }: NavbarProps) {
             </>
           ) : (
             <div className="flex flex-col gap-4 pt-2 border-t border-slate-100">
+              {/* Mobile Connect Gmail Button */}
+              {pathname === "/recruiter" && !user.google_email && (
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    handleGoogleGmailConnect();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-purple-50 text-[#7C3AED] hover:bg-purple-100 transition-colors duration-200 border border-purple-100 font-bold text-sm cursor-pointer"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Connect Gmail</span>
+                </button>
+              )}
+
               <div className="flex items-center gap-3">
                 {user.profile_picture ? (
                   <div className="relative h-12 w-12 rounded-full overflow-hidden border border-purple-100 shadow-sm">

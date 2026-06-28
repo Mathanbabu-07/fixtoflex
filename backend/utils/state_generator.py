@@ -6,7 +6,7 @@ from config.database import settings
 
 logger = logging.getLogger("backend.utils.state_generator")
 
-def generate_state() -> str:
+def generate_state(custom_claims: dict = None) -> str:
     """
     Generate a cryptographically signed state token to mitigate CSRF attacks.
     Embeds a unique ID and an expiration timestamp (10 minutes).
@@ -15,6 +15,9 @@ def generate_state() -> str:
         "jti": str(uuid.uuid4()),
         "exp": datetime.now(timezone.utc) + timedelta(minutes=10)
     }
+    
+    if custom_claims:
+        payload.update(custom_claims)
     
     try:
         state_token = jwt.encode(
@@ -28,17 +31,18 @@ def generate_state() -> str:
         # Fallback to simple uuid if signing fails (not recommended in production)
         return str(uuid.uuid4())
 
-def verify_state(state: str) -> bool:
+def verify_state(state: str) -> dict:
     """
     Verify the signature and expiration of the state token returned from the callback.
+    Returns the decoded payload if valid, otherwise returns None.
     """
     try:
-        jwt.decode(
+        payload = jwt.decode(
             state,
             settings.JWT_SECRET,
             algorithms=[settings.JWT_ALGORITHM]
         )
-        return True
+        return payload
     except jwt.ExpiredSignatureError:
         logger.error("OAuth callback state verification failed: State token has expired.")
         return False
@@ -47,4 +51,4 @@ def verify_state(state: str) -> bool:
         return False
     except Exception as e:
         logger.error(f"State verification failed with unexpected error: {e}")
-        return False
+        return None

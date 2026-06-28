@@ -191,19 +191,14 @@ async def logout(response: Response):
     return {"success": True, "detail": "Logged out successfully."}
 
 @router.get("/google/gmail", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
-async def get_google_gmail_url(user: dict = Depends(get_current_user)):
+async def get_google_gmail_url(return_to: str = None, user: dict = Depends(get_current_user)):
     """
     Generates the Google OAuth authorization URL with Gmail scopes.
+    Accepts an optional return_to parameter to dictate the callback redirect.
     """
     try:
-        state = generate_state()
-        
-        # We also want to pass the user ID so we can identify them in the callback
-        # The easiest way is to append it to the state or use it in the state cache.
-        # But since the session cookie persists in the browser, the callback will still 
-        # have the cookie. However, typical OAuth state verification might be tricky 
-        # if the callback loses the cookie on cross-site redirect in some browsers.
-        # For this setup, we'll rely on the existing cookie when they return.
+        custom_claims = {"return_to": return_to} if return_to else None
+        state = generate_state(custom_claims)
         
         params = {
             "response_type": "code",
@@ -244,8 +239,11 @@ async def google_callback(
     if not code or not state:
         raise HTTPException(status_code=400, detail="Missing code or state")
         
-    if not verify_state(state):
+    state_payload = verify_state(state)
+    if not state_payload:
         raise HTTPException(status_code=400, detail="State token validation failed.")
+        
+    return_to = state_payload.get("return_to")
         
     try:
         redirect_uri = f"{settings.API_URL.rstrip('/')}/auth/google/callback"
@@ -254,9 +252,13 @@ async def google_callback(
             user_id=user["id"],
             redirect_uri=redirect_uri
         )
-        # Redirect back to the frontend
+        # Redirect back to the requested frontend page
+        if return_to == "recruiter":
+            return RedirectResponse(url=f"{settings.FRONTEND_URL}/recruiter?success=gmail_auth_success")
         return RedirectResponse(url=f"{settings.FRONTEND_URL}/candidate?success=gmail_auth_success")
     except Exception as e:
         logger.error(f"Failed to process Google OAuth callback: {e}")
+        if return_to == "recruiter":
+            return RedirectResponse(url=f"{settings.FRONTEND_URL}/recruiter?error=gmail_auth_failed")
         return RedirectResponse(url=f"{settings.FRONTEND_URL}/candidate?error=gmail_auth_failed")
 

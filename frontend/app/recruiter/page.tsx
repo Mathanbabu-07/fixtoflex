@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Briefcase, 
   MapPin, 
@@ -145,6 +145,110 @@ function ResumePreviewModal({
         </div>
       </motion.div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Draft Mail Loading Overlay
+// ---------------------------------------------------------------------------
+
+function DraftMailLoadingOverlay({ 
+  candidateName, 
+  onClose,
+  isComplete
+}: { 
+  candidateName: string; 
+  onClose?: () => void;
+  isComplete?: boolean;
+}) {
+  const [currentStage, setCurrentStage] = useState(0);
+  const stages = [
+    "Preparing candidate profile...",
+    "Reviewing job requirements...",
+    "Writing personalized invitation...",
+    "Creating Gmail draft..."
+  ];
+
+  useEffect(() => {
+    if (isComplete) {
+      setCurrentStage(stages.length - 1);
+      return;
+    }
+    const interval = setInterval(() => {
+      setCurrentStage(prev => {
+        if (prev >= stages.length - 1) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [isComplete]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-60 flex items-center justify-center bg-[#0F0A2A]/60 backdrop-blur-md"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+      >
+        <div className="p-8">
+          <div className="flex flex-col items-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-[#7C3AED] to-[#4F46E5] flex items-center justify-center mb-5 shadow-lg shadow-purple-200">
+              {isComplete ? (
+                <CheckCircle2 className="w-8 h-8 text-white" />
+              ) : (
+                <Mail className="w-8 h-8 text-white animate-pulse" />
+              )}
+            </div>
+            <h3 className="text-xl font-extrabold text-[#1E1B4B] mb-1">
+              {isComplete ? "Draft Created!" : "Drafting Email"}
+            </h3>
+            <p className="text-xs text-slate-400 font-medium text-center">
+              {isComplete 
+                ? `Successfully drafted for ${candidateName}. Check your Gmail Drafts folder.` 
+                : `Using Gemini to write a personalized email to ${candidateName}`}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {stages.map((stage, idx) => {
+              const isCompleted = isComplete ? true : idx < currentStage;
+              const isCurrent = !isComplete && idx === currentStage;
+              return (
+                <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${isCurrent ? "bg-purple-50/70 border border-purple-100" : isCompleted ? "bg-emerald-50/50" : "bg-slate-50/50"}`}>
+                  {isCompleted ? (
+                    <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+                  ) : isCurrent ? (
+                    <Loader2 className="w-4.5 h-4.5 text-[#7C3AED] animate-spin shrink-0" />
+                  ) : (
+                    <div className="w-4.5 h-4.5 rounded-full border-2 border-slate-200 shrink-0" />
+                  )}
+                  <span className={`text-xs font-bold ${isCompleted ? "text-emerald-700" : isCurrent ? "text-[#7C3AED]" : "text-slate-400"}`}>
+                    {stage}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {isComplete && (
+            <button
+              onClick={onClose}
+              className="mt-6 w-full py-3 bg-linear-to-r from-[#7C3AED] to-[#4F46E5] text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer"
+            >
+              Done
+            </button>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -335,11 +439,18 @@ function ScoreBadge({ score }: { score: number }) {
 
 export default function RecruiterDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Authentication states
   const [sessionLoading, setSessionLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+
+  // Global toasts
+  const [toastMessage, setToastMessage] = useState<{title: string, message: string, type: "success"|"error"} | null>(null);
+
+  // Draft Mail states
+  const [draftingFor, setDraftingFor] = useState<{name: string, isComplete: boolean} | null>(null);
 
   // Form inputs states
   const [jobRole, setJobRole] = useState("");
@@ -434,7 +545,20 @@ export default function RecruiterDashboard() {
       }
     };
     checkSession();
-  }, []);
+
+    // Check URL for OAuth success
+    const successParam = searchParams.get("success");
+    if (successParam === "gmail_auth_success") {
+      setToastMessage({
+        title: "Gmail Connected",
+        message: "Your Gmail account was successfully connected.",
+        type: "success"
+      });
+      // Remove query param without refresh
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setTimeout(() => setToastMessage(null), 5000);
+    }
+  }, [searchParams]);
 
   // Validation helpers
   const isFormValid = () => {
@@ -663,6 +787,49 @@ export default function RecruiterDashboard() {
     }
   };
 
+  const handleDraftMail = async (candidate: CandidateResult) => {
+    if (!user?.google_access_token) {
+      alert("Please connect your Gmail account from the navigation bar first.");
+      return;
+    }
+    
+    setDraftingFor({ name: candidate.candidate_name, isComplete: false });
+    
+    try {
+      const apiEndpoint = getApiUrl("/recruiter/draft_mail");
+      const requestPayload = {
+        candidate_name: candidate.candidate_name,
+        candidate_email: candidate.email,
+        candidate_skills: candidate.skills_found,
+        match_score: candidate.match_score,
+        job_role: jobRole,
+        company_name: "FixToFlex", // Could be dynamic if added to form
+        job_description: jobDescription,
+        requirements: skills,
+      };
+
+      const response = await fetch(apiEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestPayload),
+        credentials: "include"
+      });
+
+      if (response.ok) {
+        // Complete the animation
+        setDraftingFor({ name: candidate.candidate_name, isComplete: true });
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to draft mail: ${errorData.detail}`);
+        setDraftingFor(null);
+      }
+    } catch (err) {
+      console.error("Draft mail error:", err);
+      alert("A network error occurred while drafting the mail.");
+      setDraftingFor(null);
+    }
+  };
+
   if (sessionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-linear-to-tr from-[#ffffff] via-[#f7f5ff] to-[#f3f0ff]">
@@ -682,12 +849,46 @@ export default function RecruiterDashboard() {
       <div className="absolute top-[120px] left-[5%] w-80 h-80 bg-purple-200/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-[10%] right-[5%] w-96 h-96 bg-indigo-100/30 rounded-full blur-3xl pointer-events-none" />
 
+      {/* Global Toast Message */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -20, x: "-50%" }}
+            className="fixed top-24 left-1/2 z-70 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 flex items-start gap-3 min-w-[300px]"
+          >
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${toastMessage.type === 'success' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
+              {toastMessage.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-800">{toastMessage.title}</h4>
+              <p className="text-xs font-medium text-slate-500 mt-0.5">{toastMessage.message}</p>
+            </div>
+            <button onClick={() => setToastMessage(null)} className="ml-auto text-slate-400 hover:text-slate-600">
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Multi-Stage Loading Overlay */}
       <AnimatePresence>
         {isMatching && (
           <MatchingLoadingOverlay 
             totalResumes={uploadedResumes.length}
             processedCount={processedCount}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Draft Mail Loading Overlay */}
+      <AnimatePresence>
+        {draftingFor && (
+          <DraftMailLoadingOverlay 
+            candidateName={draftingFor.name} 
+            isComplete={draftingFor.isComplete}
+            onClose={() => setDraftingFor(null)}
           />
         )}
       </AnimatePresence>
@@ -1428,6 +1629,16 @@ export default function RecruiterDashboard() {
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <ScoreBadge score={result.match_score} />
+                        {result.email && (
+                          <button
+                            type="button"
+                            onClick={() => handleDraftMail(result)}
+                            className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-[#7C3AED] text-xs font-bold rounded-xl cursor-pointer transition-colors shadow-sm"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            <span>Draft Mail</span>
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => setPreviewResume({ name: result.candidate_name, text: result.text_content })}
