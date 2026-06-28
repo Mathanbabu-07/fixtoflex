@@ -38,7 +38,8 @@ import {
   Hash,
   Users,
   BrainCircuit,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 
 import AIAnalysisDashboard from "@/components/AIAnalysisDashboard";
@@ -280,8 +281,61 @@ export default function CandidateDashboard() {
   const [analysisResetKey, setAnalysisResetKey] = useState(0);
 
   // Gmail Draft State
-  const [isCreatingDraft, setIsCreatingDraft] = useState(false);
   const [draftMessage, setDraftMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  interface GeneratedDraft {
+    id: string;
+    jobTitle: string;
+    companyName: string;
+    source: string;
+    timestamp: string;
+    subject?: string;
+    body?: string;
+    status: "generating" | "completed" | "error" | "saved";
+    errorText?: string;
+  }
+  const [generatedDrafts, setGeneratedDrafts] = useState<GeneratedDraft[]>([]);
+
+  const handleMakeDraft = async (job: any) => {
+    // Navigate to Draft Mail tab
+    setActiveTab("Draft Mail");
+    
+    const draftId = Math.random().toString(36).substring(7);
+    const newDraft: GeneratedDraft = {
+      id: draftId,
+      jobTitle: job["Job Title"] || job["Internship Title"] || "Unknown Role",
+      companyName: job.Company || job["Company Name"] || "Unknown Company",
+      source: job.source || "Unknown",
+      timestamp: new Date().toLocaleTimeString(),
+      status: "generating",
+    };
+    
+    setGeneratedDrafts(prev => [...prev, newDraft]);
+
+    try {
+      const res = await fetch(getApiUrl("/mail/generate"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          company: newDraft.companyName,
+          job_title: newDraft.jobTitle,
+          job_description: job["Short Description"] || "",
+          requirements: job["Missing Skills"]?.join(", ") || "",
+          source: newDraft.source
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setGeneratedDrafts(prev => prev.map(d => d.id === draftId ? { ...d, status: "completed", subject: data.subject, body: data.body } : d));
+      } else {
+        setGeneratedDrafts(prev => prev.map(d => d.id === draftId ? { ...d, status: "error", errorText: data.detail || "Failed to generate draft." } : d));
+      }
+    } catch (err: any) {
+      setGeneratedDrafts(prev => prev.map(d => d.id === draftId ? { ...d, status: "error", errorText: err.message || "Network error." } : d));
+    }
+  };
 
   // Queue Status & Scheduler State
   const [queueStatus, setQueueStatus] = useState<any>(null);
@@ -1447,11 +1501,11 @@ export default function CandidateDashboard() {
               )}
 
               {activeTab === "Job Tracker" && (
-                <JobTrackerPanel getApiUrl={getApiUrl} />
+                <JobTrackerPanel getApiUrl={getApiUrl} onMakeDraft={handleMakeDraft} />
               )}
 
               {activeTab === "Internship Opportunity" && (
-                <InternshipTrackerPanel getApiUrl={getApiUrl} />
+                <InternshipTrackerPanel getApiUrl={getApiUrl} onMakeDraft={handleMakeDraft} />
               )}
 
               {activeTab === "My Applications" && (
@@ -1495,26 +1549,19 @@ export default function CandidateDashboard() {
               )}
 
               {activeTab === "Draft Mail" && (
-                <motion.div
-                  key="draft-mail"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col gap-6"
-                >
-                  <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-6">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#7C3AED] flex items-center justify-center">
-                        <Mail className="w-5 h-5" />
+                      <div className="w-12 h-12 rounded-xl bg-purple-50 text-[#7C3AED] flex items-center justify-center">
+                        <Mail className="w-6 h-6" />
                       </div>
                       <div>
-                        <h2 className="text-lg font-bold text-slate-800">AI Outreach Draft</h2>
-                        <p className="text-xs text-slate-400">Generate high-impact cold emails targeted at recruiters.</p>
+                        <h2 className="text-xl font-bold text-slate-800">AI Outreach Drafts</h2>
+                        <p className="text-sm text-slate-500">Your personalized recruiter outreach emails.</p>
                       </div>
                     </div>
-                    
                     {/* Google User Profile in Top Right Corner */}
-                    {user?.google_email && (
+                    {user?.google_email ? (
                       <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-full shadow-sm">
                         <div className="w-6 h-6 rounded-full overflow-hidden bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-bold">
                           {user.google_profile_picture ? (
@@ -1527,65 +1574,129 @@ export default function CandidateDashboard() {
                           {user.google_email}
                         </span>
                       </div>
+                    ) : (
+                      <button onClick={() => window.location.href = getApiUrl("/auth/google/gmail")} className="px-4 py-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm text-xs font-semibold rounded-xl transition-all flex items-center gap-2">
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                        <span>Login to Gmail</span>
+                      </button>
                     )}
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl text-[11px] font-mono text-slate-600 space-y-2">
-                      <div><span className="text-slate-400">To:</span> recruiter@google.com</div>
-                      <div><span className="text-slate-400">Subject:</span> Application for SWE Intern - {user?.full_name || "Guest User"}</div>
-                      <hr className="border-slate-200/50 my-2" />
-                      <p>Dear Hiring Manager,</p>
-                      <p>I recently upgraded my profile for Software Engineering positions, aligning my project details with Google&apos;s core stack. I would love to connect to discuss active SDE internship opportunities...</p>
+                  {generatedDrafts.length === 0 ? (
+                    <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-10 text-center shadow-xl">
+                      <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-4">
+                        <Mail className="w-10 h-10 text-slate-300" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-700">No Drafts Generated</h3>
+                      <p className="text-sm text-slate-500 mt-2 max-w-sm mx-auto">Go to the Job Tracker or Internship Tracker and click <strong>Make Draft</strong> to generate personalized outreach emails.</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <button 
-                        onClick={async () => {
-                          if (!user?.google_email) {
-                            setDraftMessage({ text: "Please login with Google first.", type: "error" });
-                            setTimeout(() => setDraftMessage(null), 4000);
-                            return;
-                          }
-                          setIsCreatingDraft(true);
-                          setDraftMessage(null);
-                          try {
-                            const res = await fetch(getApiUrl("/mail/create-draft"), {
-                              method: "POST",
-                              headers: {
-                                "Content-Type": "application/json",
-                              },
-                              credentials: "include",
-                            });
-                            const data = await res.json();
-                            if (res.ok && data.success) {
-                              setDraftMessage({ text: "Gmail draft created successfully.", type: "success" });
-                            } else {
-                              setDraftMessage({ text: data.detail || "Failed to create draft.", type: "error" });
-                            }
-                          } catch (err: any) {
-                            setDraftMessage({ text: err.message || "Network error occurred.", type: "error" });
-                          } finally {
-                            setIsCreatingDraft(false);
-                            setTimeout(() => setDraftMessage(null), 4000);
-                          }
-                        }}
-                        disabled={isCreatingDraft}
-                        className="px-4 py-2 bg-[#7C3AED] text-white text-xs font-semibold rounded-xl hover:bg-purple-700 transition-all flex items-center gap-1.5 disabled:opacity-50"
-                      >
-                        {isCreatingDraft ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                        <span>Create Gmail Draft</span>
-                        {!isCreatingDraft && <ArrowRight className="w-3.5 h-3.5" />}
-                      </button>
-                      
-                      {!user?.google_email && (
-                        <button onClick={() => window.location.href = getApiUrl("/auth/google/gmail")} className="px-4 py-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm text-xs font-semibold rounded-xl transition-all flex items-center gap-2">
-                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                          <span>Login with Google to Draft Emails</span>
-                        </button>
-                      )}
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      <AnimatePresence>
+                        {generatedDrafts.map((draft) => (
+                          <motion.div
+                            key={draft.id}
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-6 shadow-md shadow-slate-200/50 flex flex-col gap-4"
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`text-[9px] font-black uppercase tracking-widest ${draft.source === 'Internshala' ? 'text-blue-500' : 'text-indigo-600'}`}>
+                                    {draft.source}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 rounded-sm">
+                                    {draft.timestamp}
+                                  </span>
+                                </div>
+                                <h3 className="font-bold text-slate-800">{draft.jobTitle}</h3>
+                                <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                  <Building className="w-3.5 h-3.5" /> {draft.companyName}
+                                </div>
+                              </div>
+                              {draft.status === "saved" && (
+                                <span className="flex items-center gap-1 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold">
+                                  <CheckCircle2 className="w-3.5 h-3.5" /> Saved to Gmail
+                                </span>
+                              )}
+                            </div>
+
+                            {draft.status === "generating" && (
+                              <div className="bg-slate-50 border border-slate-100 p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-3">
+                                <div className="relative">
+                                  <div className="w-12 h-12 border-4 border-purple-100 rounded-full animate-pulse"></div>
+                                  <div className="absolute top-0 left-0 w-12 h-12 border-4 border-t-[#7C3AED] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-slate-700 animate-pulse">Generating personalized outreach...</p>
+                                  <p className="text-[11px] text-slate-400 mt-1">Collecting profile, matching resume, and structuring email.</p>
+                                </div>
+                              </div>
+                            )}
+
+                            {draft.status === "error" && (
+                              <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3">
+                                <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                                <div className="text-xs text-red-700 font-medium">{draft.errorText}</div>
+                              </div>
+                            )}
+
+                            {(draft.status === "completed" || draft.status === "saved") && draft.subject && draft.body && (
+                              <>
+                                <div className="bg-slate-50/70 p-4 border border-slate-100 rounded-2xl text-[12px] font-mono text-slate-700 leading-relaxed max-h-64 overflow-y-auto custom-scrollbar">
+                                  <div className="font-sans font-semibold text-slate-800 mb-2 pb-2 border-b border-slate-200">
+                                    <span className="text-slate-400 mr-2 font-normal">Subject:</span> {draft.subject}
+                                  </div>
+                                  <div className="whitespace-pre-wrap">{draft.body}</div>
+                                </div>
+                                <div className="flex justify-end mt-2">
+                                  <button
+                                    onClick={async () => {
+                                      if (!user?.google_email) {
+                                        setDraftMessage({ text: "Please login to Gmail first.", type: "error" });
+                                        setTimeout(() => setDraftMessage(null), 4000);
+                                        return;
+                                      }
+                                      
+                                      // Set specific draft to a loading state if we want, or just global
+                                      setDraftMessage(null);
+                                      try {
+                                        const res = await fetch(getApiUrl("/mail/create-draft"), {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          credentials: "include",
+                                          body: JSON.stringify({ subject: draft.subject, body: draft.body })
+                                        });
+                                        const data = await res.json();
+                                        if (res.ok && data.success) {
+                                          setGeneratedDrafts(prev => prev.map(d => d.id === draft.id ? { ...d, status: "saved" } : d));
+                                          setDraftMessage({ text: "Gmail draft created successfully.", type: "success" });
+                                        } else {
+                                          setDraftMessage({ text: data.detail || "Failed to create draft.", type: "error" });
+                                        }
+                                      } catch (err: any) {
+                                        setDraftMessage({ text: err.message || "Network error occurred.", type: "error" });
+                                      } finally {
+                                        setTimeout(() => setDraftMessage(null), 4000);
+                                      }
+                                    }}
+                                    disabled={draft.status === "saved"}
+                                    className="px-5 py-2.5 bg-[#7C3AED] text-white text-xs font-bold rounded-xl hover:bg-purple-700 transition-all flex items-center gap-2 shadow-md shadow-purple-200 disabled:opacity-50 disabled:shadow-none"
+                                  >
+                                    <Mail className="w-4 h-4" />
+                                    <span>{draft.status === "saved" ? "Generated in Gmail" : "Generate Gmail Draft"}</span>
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
                     </div>
-                  </div>
-                </motion.div>
+                  )}
+                </div>
               )}
 
             </AnimatePresence>

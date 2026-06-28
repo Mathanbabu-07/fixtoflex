@@ -1,127 +1,244 @@
-Implement Gmail OAuth by extending the existing custom authentication system. Do not introduce NextAuth, Firebase, Clerk, Supabase Auth, or any new authentication framework.
+# Development Task: AI Personalized Gmail Draft Generation
 
-Current authentication already exists in:
-
-* backend/routes/auth.py
-* backend/services/auth_service.py
-* backend/middleware/auth_middleware.py
-* frontend/app/auth/linkedin/callback/page.tsx
-
-Reuse this authentication architecture.
-
-## Backend
-
-Update the Google OAuth flow inside `backend/routes/auth.py` and `backend/services/auth_service.py`.
-
-When redirecting users to Google OAuth, request the following scopes:
-
-* openid
-* email
-* profile
-* https://www.googleapis.com/auth/gmail.compose
-
-Also include OAuth parameters:
-
-* access_type=offline
-* prompt=consent
-
-This ensures Google returns a Refresh Token together with the Access Token.
-
-Do not modify the LinkedIn authentication flow.
+Implement a complete **AI-powered personalized Gmail Draft workflow** integrated with the existing **Job Tracker**, **My Target**, and **Internship Tracker**. Reuse the current backend pipeline, ScrapeDo workflow, Gemini integration, Gmail OAuth, and Gmail Draft creation. Do not change any existing APIs or authentication.
 
 ---
 
-## Token Storage
+## 1. Job & Internship Tracker UI
 
-After successful Google login, save these values with the user:
+Add a new small rectangular button with the **official Gmail logo** beside every job/internship card (top-right position as marked in the design).
 
-* google_access_token
-* google_refresh_token
-* google_token_expiry
+Button label:
 
-Do not overwrite existing authentication fields.
+**Make Draft**
 
-If the user already exists, update these Gmail OAuth fields.
+Supported sources:
 
----
+* Indeed
+* Internshala
+* Unstop
 
-## Database
-
-If necessary, add nullable columns:
-
-* google_access_token
-* google_refresh_token
-* google_token_expiry
-
-Do not modify existing authentication logic.
+Each card must have its own independent **Make Draft** button.
 
 ---
 
-## Frontend
+## 2. Button Workflow
 
-give login button inside the draft mail section in candidate ui
+When the user clicks **Make Draft**:
 
-Do not create another login page.
+Do not scrape again.
 
-If the logged-in user does not have Gmail permission, automatically redirect them through the existing Google OAuth flow requesting the new Gmail scope.
+Reuse the already cached job/internship data from the existing tracker pipeline.
 
-After successful authorization, return to the previous page.
+Retrieve:
 
----
+* Company Name
+* Job/Internship Title
+* Job Description
+* Responsibilities
+* Requirements
+* Skills Required
+* Portal Name
+* Apply URL
 
-## Environment Variables
+Then internally fetch the candidate's stored profile:
 
-Reuse:
+* name , college(for internships mail requesting)
+* Resume
+* Portfolio
+* Projects
+* Skills
+* Experience (if available)
+* Education
+* Certifications
+* Career Preferences
 
-GOOGLE_CLIENT_ID
-
-GOOGLE_CLIENT_SECRET
-
-Do not create duplicate variables.
-
----
-
-## Gmail Service
-
-Create a new backend service:
-
-backend/services/gmail_service.py
-
-This service should:
-
-* Build Google OAuth credentials from the stored access token and refresh token.
-* Automatically refresh expired access tokens.
-* Return an authenticated Gmail API client.
-
-Do not implement draft creation yet.
-
-Only implement Gmail authentication.
+Use the existing cache and backend workflow only.
 
 ---
 
-## API Endpoint
+## 3. AI Mail Generation
 
-Create:
+Use the new Gemini 3.1 Flash Lite API key from the existing environment.
 
-GET /auth/google/gmail
+Generate a unique outreach email specifically for the selected role.
 
-Purpose:
+The mail must be personalized using:
 
-* Request Gmail permission if missing.
-* Save Gmail OAuth tokens.
-* Redirect back to the frontend.
+* Candidate profile
+* Resume
+* Skills
+* Projects
+* Experience
+* Company
+* Role
+* Job requirements
+* Tone
+
+Tone:
+
+* Professional
+* Confident
+* Personalized
+* Human-written
+* Recruiter-friendly
+* No generic AI wording
+* No fake claims
+* ATS-friendly
+
+The generated draft should contain:
+
+* Recruiter Subject
+* Greeting
+* Personalized introduction
+* Why the candidate matches the role
+* Relevant projects
+* Relevant skills
+* Interest in the company
+* Professional closing
+* Candidate name
 
 ---
 
-## Validation
+## 4. Draft Mail Section UI
 
-After login, verify:
+Immediately after clicking **Make Draft**:
 
-* Gmail compose scope is granted.
-* Refresh token exists.
-* Access token exists.
-* Tokens are stored successfully.
-* Existing Google login continues to work.
-* Existing LinkedIn login remains unchanged.
+Navigate to the **Draft Mail** page.
 
-Do not implement email generation or Gmail Draft creation in this step. Only implement Gmail OAuth authentication while preserving the current authentication architecture.
+Show a mail generation animation.
+
+Example status:
+
+* Collecting profile...
+* Reading job details...
+* Matching resume...
+* Writing personalized email...
+* Preparing Gmail Draft...
+
+After generation, automatically append a new mail card.
+
+---
+
+## 5. Multiple Draft Queue
+
+Support unlimited draft generation.
+
+Each generated mail becomes a separate card.
+
+Order must follow generation sequence.
+
+Example:
+
+1. Google — Software Engineer
+2. Microsoft — SDE Intern
+3. Amazon — AI Engineer
+4. Internshala — AI Internship
+
+Never overwrite previous drafts.
+
+Always append to the bottom.
+
+---
+
+## 6. Draft Card Layout
+
+Reuse the existing AI Outreach Draft design.
+
+Each card should display:
+
+* Company Logo
+* Company Name
+* Role
+* Portal Badge (Indeed / Internshala / Unstop)
+* Subject
+* Email Preview
+* Generated Time
+
+Buttons:
+
+* Preview
+* Edit
+* Generate Gmail Draft
+
+---
+
+## 7. Gmail Draft Generation
+
+When the user clicks **Generate Gmail Draft**:
+
+Use the existing Gmail OAuth tokens.
+
+Create a Gmail Draft using Gmail API.
+
+Do not send the email.
+
+Only save it inside Gmail Drafts.
+
+Return success after creation.
+
+---
+
+## 8. Gmail Draft Success
+
+After successful creation:
+
+* Disable the button.
+* Show:
+
+✓ Draft Saved to Gmail
+
+Display the Gmail Draft creation timestamp.
+
+Allow regenerating the content if required without deleting previous drafts.
+
+---
+
+## 9. Backend Requirements
+
+Reuse the existing pipeline.
+
+Never scrape again during mail generation.
+
+Never call ScrapeDo again.
+
+Never call the trackers again.
+
+Only use:
+
+* Cached job data
+* Cached internship data
+* Stored profile
+* Stored resume analysis
+* Existing Gemini workflow
+* Existing Gmail OAuth
+
+---
+
+## 10. Error Handling
+
+Handle:
+
+* Gmail OAuth expired
+* Missing Gmail permission
+* Empty cached job
+* Missing resume
+* Gemini failure
+* Gmail API failure
+
+Show meaningful UI messages.
+
+Never lose generated drafts.
+
+---
+
+## 11. Acceptance Criteria
+
+* Every job and internship card has a **Make Draft** button.
+* Clicking **Make Draft** generates a personalized outreach email using cached data.
+* Draft Mail page shows a generation animation.
+* Multiple generated mails are maintained in an ordered list.
+* Each mail has its own **Generate Gmail Draft** button.
+* Clicking **Generate Gmail Draft** creates a real Gmail Draft in the user's Gmail account.
+* Existing Job Tracker, Internship Tracker, Gmail OAuth, backend workflow, and UI remain unchanged.
+* No duplicate scraping, no duplicate analysis, and no unnecessary API calls.
