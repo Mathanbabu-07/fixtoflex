@@ -255,7 +255,7 @@ async def google_callback(
             redirect_uri=redirect_uri
         )
         # Redirect back to the frontend
-        return RedirectResponse(url=f"{settings.FRONTEND_URL}/candidate")
+        return RedirectResponse(url=f"{settings.FRONTEND_URL}/candidate?success=gmail_auth_success")
     except Exception as e:
         logger.error(f"Failed to process Google OAuth callback: {e}")
         return RedirectResponse(url=f"{settings.FRONTEND_URL}/candidate?error=gmail_auth_failed")

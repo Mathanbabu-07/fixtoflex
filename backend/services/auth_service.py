@@ -138,10 +138,27 @@ class AuthService:
             
             expiry_date = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
             
+            # Fetch Google user info (email and profile picture) using the access token
+            google_email = None
+            google_profile_picture = None
+            try:
+                userinfo_url = "https://www.googleapis.com/oauth2/v2/userinfo"
+                userinfo_resp = await client.get(userinfo_url, headers={"Authorization": f"Bearer {access_token}"})
+                if userinfo_resp.status_code == 200:
+                    uinfo = userinfo_resp.json()
+                    google_email = uinfo.get("email")
+                    google_profile_picture = uinfo.get("picture")
+            except Exception as e:
+                logger.error(f"Failed to fetch Google userinfo: {e}")
+
             updates = {
                 "google_access_token": access_token,
                 "google_token_expiry": expiry_date.isoformat()
             }
+            if google_email:
+                updates["google_email"] = google_email
+            if google_profile_picture:
+                updates["google_profile_picture"] = google_profile_picture
             if refresh_token:
                 updates["google_refresh_token"] = refresh_token
                 
