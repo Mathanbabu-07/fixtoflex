@@ -279,6 +279,10 @@ export default function CandidateDashboard() {
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [analysisResetKey, setAnalysisResetKey] = useState(0);
 
+  // Gmail Draft State
+  const [isCreatingDraft, setIsCreatingDraft] = useState(false);
+  const [draftMessage, setDraftMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
   // Queue Status & Scheduler State
   const [queueStatus, setQueueStatus] = useState<any>(null);
   const [schedulePref, setSchedulePref] = useState("Weekly");
@@ -1535,9 +1539,42 @@ export default function CandidateDashboard() {
                       <p>I recently upgraded my profile for Software Engineering positions, aligning my project details with Google&apos;s core stack. I would love to connect to discuss active SDE internship opportunities...</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <button className="px-4 py-2 bg-[#7C3AED] text-white text-xs font-semibold rounded-xl hover:bg-purple-700 transition-all flex items-center gap-1.5">
-                        <span>Copy Outreach Template</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
+                      <button 
+                        onClick={async () => {
+                          if (!user?.google_email) {
+                            setDraftMessage({ text: "Please login with Google first.", type: "error" });
+                            setTimeout(() => setDraftMessage(null), 4000);
+                            return;
+                          }
+                          setIsCreatingDraft(true);
+                          setDraftMessage(null);
+                          try {
+                            const res = await fetch(getApiUrl("/mail/create-draft"), {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                              },
+                              credentials: "include",
+                            });
+                            const data = await res.json();
+                            if (res.ok && data.success) {
+                              setDraftMessage({ text: "Gmail draft created successfully.", type: "success" });
+                            } else {
+                              setDraftMessage({ text: data.detail || "Failed to create draft.", type: "error" });
+                            }
+                          } catch (err: any) {
+                            setDraftMessage({ text: err.message || "Network error occurred.", type: "error" });
+                          } finally {
+                            setIsCreatingDraft(false);
+                            setTimeout(() => setDraftMessage(null), 4000);
+                          }
+                        }}
+                        disabled={isCreatingDraft}
+                        className="px-4 py-2 bg-[#7C3AED] text-white text-xs font-semibold rounded-xl hover:bg-purple-700 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        {isCreatingDraft ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                        <span>Create Gmail Draft</span>
+                        {!isCreatingDraft && <ArrowRight className="w-3.5 h-3.5" />}
                       </button>
                       
                       {!user?.google_email && (
@@ -1769,6 +1806,22 @@ export default function CandidateDashboard() {
 
       {/* SUCCESS MESSAGES */}
       <AnimatePresence>
+        {draftMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 text-white px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 font-semibold text-sm ${draftMessage.type === "success" ? "bg-emerald-600" : "bg-red-500"}`}
+          >
+            {draftMessage.type === "success" ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-100" />
+            ) : (
+              <X className="w-5 h-5 text-red-100" />
+            )}
+            {draftMessage.text}
+          </motion.div>
+        )}
+        
         {gmailSuccess && (
           <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
