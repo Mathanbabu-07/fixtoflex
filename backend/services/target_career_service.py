@@ -61,7 +61,7 @@ class TargetCareerService:
             del unified_context["has_any_data"]
 
         # 4. Scrape fresh company/job requirements from Indeed + Internshala
-        company_query = f'"{company}" {role}'
+        company_query = f'{company} {role}'
         location_str = location or ""
 
         indeed_task = self.job_service._scrape_indeed(company_query, location_str)
@@ -75,6 +75,18 @@ class TargetCareerService:
                 logger.error(f"Scraping error: {result}")
             elif isinstance(result, list):
                 raw_jobs.extend(result)
+
+        # Fallback: if company-specific search returned nothing, try role-only search
+        if not raw_jobs:
+            logger.info(f"No results for '{company_query}', retrying with role-only: '{role}'")
+            fallback_indeed = self.job_service._scrape_indeed(role, location_str)
+            fallback_internshala = self.job_service._scrape_internshala(role, location_str)
+            fallback_results = await asyncio.gather(fallback_indeed, fallback_internshala, return_exceptions=True)
+            for result in fallback_results:
+                if isinstance(result, Exception):
+                    logger.error(f"Fallback scraping error: {result}")
+                elif isinstance(result, list):
+                    raw_jobs.extend(result)
 
         if not raw_jobs:
             return {

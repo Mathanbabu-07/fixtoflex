@@ -657,6 +657,7 @@ export default function CandidateDashboard() {
   }, []);
 
   const [showFirstTimeModal, setShowFirstTimeModal] = useState(false);
+  const [showLinkedInPopup, setShowLinkedInPopup] = useState(false);
 
   useEffect(() => {
     if (user && !isDemoMode) {
@@ -666,6 +667,17 @@ export default function CandidateDashboard() {
       }
     }
   }, [user, isDemoMode]);
+
+  // Show LinkedIn login popup once per session when in demo/guest mode
+  useEffect(() => {
+    if (isDemoMode && !sessionLoading) {
+      const dismissed = sessionStorage.getItem("linkedin_popup_dismissed");
+      if (!dismissed) {
+        const timer = setTimeout(() => setShowLinkedInPopup(true), 1200);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isDemoMode, sessionLoading]);
 
   // Login handler
   const handleLinkedInLogin = (e: React.MouseEvent) => {
@@ -919,6 +931,76 @@ export default function CandidateDashboard() {
 
   return (
     <div className="relative min-h-screen bg-slate-50/50 flex flex-col lg:flex-row overflow-hidden font-sans">
+
+      {/* ─── LinkedIn Login Popup Modal ─── */}
+      <AnimatePresence>
+        {showLinkedInPopup && (
+          <motion.div
+            key="linkedin-popup-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-9999 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            onClick={() => {
+              setShowLinkedInPopup(false);
+              sessionStorage.setItem("linkedin_popup_dismissed", "true");
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-white rounded-3xl shadow-2xl border border-slate-100 p-8 max-w-md w-[90%] mx-auto text-center"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  setShowLinkedInPopup(false);
+                  sessionStorage.setItem("linkedin_popup_dismissed", "true");
+                }}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* LinkedIn Icon */}
+              <div className="w-16 h-16 rounded-2xl bg-[#0A66C2] flex items-center justify-center mx-auto mb-5 shadow-lg shadow-blue-500/20">
+                <LinkedInIcon className="w-8 h-8 text-white fill-white" />
+              </div>
+
+              <h3 className="text-xl font-extrabold text-slate-800 mb-2">Welcome to FixToFlex</h3>
+              <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                Please login with your LinkedIn to use all features — AI analysis, job tracking, draft mails, and more.
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={(e) => {
+                    setShowLinkedInPopup(false);
+                    sessionStorage.setItem("linkedin_popup_dismissed", "true");
+                    handleLinkedInLogin(e);
+                  }}
+                  className="w-full px-6 py-3.5 bg-[#0A66C2] hover:bg-[#004182] text-white font-bold rounded-xl text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+                >
+                  <LinkedInIcon className="w-4 h-4 fill-white" />
+                  Login with LinkedIn
+                </button>
+                <button
+                  onClick={() => {
+                    setShowLinkedInPopup(false);
+                    sessionStorage.setItem("linkedin_popup_dismissed", "true");
+                  }}
+                  className="w-full px-6 py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 font-semibold rounded-xl text-sm transition-colors cursor-pointer"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* FLOATING BACKGROUND PARTICLES (Sleek Glassmorphic Environment) */}
       <div className="absolute top-[10%] left-[25%] w-32 h-32 bg-purple-400/10 rounded-full blur-3xl pointer-events-none animate-drift-slow" />
